@@ -1,4 +1,5 @@
 import { MessageCircle, Home, UserRound } from "lucide-react-native"
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { Tabs } from "expo-router"
 import { StyleSheet, Text, View } from "react-native"
 import { azd } from "@/theme/azd-tokens"
@@ -32,6 +33,8 @@ function TabItem({ focused, label, icon }: TabIconProps) {
 }
 
 export default function TabsLayout() {
+  const t = useAppTranslation()
+
   return (
     <Tabs
       screenOptions={{
@@ -43,27 +46,27 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Start",
+          title: t("tabStart"),
           tabBarIcon: ({ focused }) => (
-            <TabItem focused={focused} label="Start" icon="home" />
+            <TabItem focused={focused} label={t("tabStart")} icon="home" />
           ),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: "Chats",
+          title: t("tabChats"),
           tabBarIcon: ({ focused }) => (
-            <TabItem focused={focused} label="Chats" icon="chat" />
+            <TabItem focused={focused} label={t("tabChats")} icon="chat" />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profil",
+          title: t("tabProfile"),
           tabBarIcon: ({ focused }) => (
-            <TabItem focused={focused} label="Profil" icon="profile" />
+            <TabItem focused={focused} label={t("tabProfile")} icon="profile" />
           ),
         }}
       />

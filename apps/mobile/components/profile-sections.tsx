@@ -1,5 +1,6 @@
 import { Bell, Building2, ChevronRight, LogOut, UserRound } from "lucide-react-native"
 import type { ReactNode } from "react"
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native"
 import { Avatar } from "@/components/avatar"
 import { azd } from "@/theme/azd-tokens"
@@ -99,10 +100,12 @@ export function NotificationToggle({
   value,
   onValueChange,
 }: NotificationToggleProps) {
+  const t = useAppTranslation()
+
   return (
     <ProfileNavRow
       icon="bell"
-      label="Benachrichtigungen"
+      label={t("notifications")}
       trailing={
         <Switch
           value={value}

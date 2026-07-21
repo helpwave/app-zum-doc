@@ -13,7 +13,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "../../packages/app-zum-doc-utils/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

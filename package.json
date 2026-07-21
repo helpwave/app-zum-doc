@@ -1,20 +1,24 @@
 {
   "name": "app-zum-doc",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
+  "private": true,
+  "description": "App zum Doc monorepo",
   "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "init": "pnpm -r run init",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "start": "pnpm --filter app-zum-doc-mobile start",
+    "android": "pnpm --filter app-zum-doc-mobile android",
+    "ios": "pnpm --filter app-zum-doc-mobile ios"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
       "version": "^11.13.0",
-      "onFail": "download"
+      "onFail": "ignore"
     }
-  },
-  "type": "module"
+  }
 }

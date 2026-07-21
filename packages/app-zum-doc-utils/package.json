@@ -1,0 +1,44 @@
+{
+  "name": "app-zum-doc-utils",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared utilities and translations for App zum Doc",
+  "type": "module",
+  "files": [
+    "src",
+    "locales"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./i18n": {
+      "types": "./src/i18n/index.ts",
+      "default": "./src/i18n/index.ts"
+    },
+    "./hooks": {
+      "types": "./src/hooks/index.ts",
+      "default": "./src/hooks/index.ts"
+    }
+  },
+  "scripts": {
+    "build-intl": "build-intl --force -i ./locales -o ./src/i18n/translations.ts -n appZumDocTranslation",
+    "init": "pnpm run build-intl",
+    "build": "node -e \"process.exit(0)\"",
+    "lint": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "@helpwave/hightide-utils": "0.0.1",
+    "@helpwave/internationalization": "0.4.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "react": "19.1.0",
+    "typescript": "~5.9.2"
+  }
+}

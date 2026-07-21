@@ -1,5 +1,6 @@
 import { HightideProvider, useHightide } from "@helpwave/hightide-native/global-contexts"
 import { QueryClientProvider } from "@tanstack/react-query"
+import { appZumDocTranslation } from "app-zum-doc-utils/i18n"
 import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
@@ -62,7 +63,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HightideProvider>
+      <HightideProvider translation={{ translation: appZumDocTranslation }}>
         <SafeAreaProvider>
           <HightideGate>
             <AppStack />

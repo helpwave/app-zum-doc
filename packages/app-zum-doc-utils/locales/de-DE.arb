@@ -1,0 +1,51 @@
+{
+  "@@locale": "de-DE",
+  "tabStart": "Start",
+  "tabChats": "Chats",
+  "tabProfile": "Profil",
+  "chatsTitle": "Chats",
+  "newMessage": "Neue Nachricht",
+  "searchPracticeOrMessage": "Praxis oder Nachricht suchen",
+  "loadingChats": "Chats werden geladen…",
+  "loadingHome": "Übersicht wird geladen…",
+  "loadingProfile": "Profil wird geladen…",
+  "loadingMessages": "Nachrichten werden geladen…",
+  "retry": "Erneut versuchen",
+  "errorTitle": "Etwas ist schiefgelaufen",
+  "errorUnknown": "Unbekannter Fehler",
+  "messagePlaceholder": "Nachricht …",
+  "sendMessage": "Nachricht senden",
+  "addAttachment": "Anhang hinzufügen",
+  "downloadAttachment": "Anhang herunterladen",
+  "back": "Zurück",
+  "call": "Anrufen",
+  "readReceipt": "Gelesen",
+  "quickAccess": "Schnellzugriff",
+  "recentMessages": "Aktuelle Nachrichten",
+  "unreadCount": "{count} ungelesen",
+  "@unreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nextAppointment": "Nächster Termin",
+  "yourPractice": "Ihre Hausarztpraxis",
+  "personalData": "Persönliche Daten",
+  "practiceSection": "Praxis",
+  "settingsSection": "Einstellungen",
+  "name": "Name",
+  "dateOfBirth": "Geburtsdatum",
+  "email": "E-Mail",
+  "phone": "Telefon",
+  "practice": "Praxis",
+  "address": "Adresse",
+  "practiceDetails": "Praxisdetails",
+  "notifications": "Benachrichtigungen",
+  "editPersonalData": "Persönliche Daten bearbeiten",
+  "signOut": "Abmelden",
+  "actionMessage": "Nachricht senden",
+  "actionPrescriptions": "Rezepte",
+  "actionAppointments": "Termine"
+}

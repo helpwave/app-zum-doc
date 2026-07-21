@@ -1,4 +1,5 @@
 import { ChevronLeft, Phone } from "lucide-react-native"
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useEffect, useRef } from "react"
 import {
@@ -23,6 +24,7 @@ import {
 import { azd } from "@/theme/azd-tokens"
 
 export default function ChatThreadScreen() {
+  const t = useAppTranslation()
   const { id } = useLocalSearchParams<{ id: string }>()
   const conversationId = typeof id === "string" ? id : ""
   const insets = useSafeAreaInsets()
@@ -61,7 +63,7 @@ export default function ChatThreadScreen() {
           onPress={() => router.back()}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel="Zurück"
+          accessibilityLabel={t("back")}
         >
           <ChevronLeft size={22} color={azd.green[600]} />
         </Pressable>
@@ -80,19 +82,19 @@ export default function ChatThreadScreen() {
                 {contact.name}
               </Text>
               <Text style={styles.appBarSubtitle} numberOfLines={1}>
-                {contact.subtitle ?? "Praxis"}
+                {contact.subtitle ?? t("practice")}
               </Text>
             </View>
           </>
         ) : (
           <View style={styles.appBarText}>
-            <Text style={styles.appBarTitle}>Chat</Text>
+            <Text style={styles.appBarTitle}>{t("tabChats")}</Text>
           </View>
         )}
         <Pressable
           style={styles.callButton}
           accessibilityRole="button"
-          accessibilityLabel="Anrufen"
+          accessibilityLabel={t("call")}
         >
           <Phone size={18} color={azd.green[600]} />
         </Pressable>
@@ -103,7 +105,7 @@ export default function ChatThreadScreen() {
         isError={isError}
         error={error}
         onRetry={refetch}
-        loadingLabel="Nachrichten werden geladen…"
+        loadingLabel={t("loadingMessages")}
       >
         <FlatList
           data={messagesQuery.data ?? []}
@@ -120,13 +122,14 @@ export default function ChatThreadScreen() {
           )}
         />
         <Composer
+          placeholder={t("messagePlaceholder")}
           onSend={(text) => {
             sendMessage.mutate(text)
           }}
           isSending={sendMessage.isPending}
           errorMessage={
             sendMessage.isError
-              ? (sendMessage.error?.message ?? "Senden fehlgeschlagen")
+              ? (sendMessage.error?.message ?? t("errorUnknown"))
               : null
           }
         />

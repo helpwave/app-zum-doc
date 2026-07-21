@@ -1,5 +1,6 @@
 import { Image } from "expo-image"
 import { Calendar, ChevronRight, MessageCircle, Pill } from "lucide-react-native"
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { azd } from "@/theme/azd-tokens"
 import type { HomeSummary } from "@/api/mock/types"
@@ -11,6 +12,8 @@ type HomeHeroProps = {
 }
 
 export function HomeHero({ summary }: HomeHeroProps) {
+  const t = useAppTranslation()
+
   return (
     <View style={styles.hero}>
       <Text style={styles.greeting}>
@@ -24,7 +27,7 @@ export function HomeHero({ summary }: HomeHeroProps) {
         />
         <View style={styles.practiceText}>
           <Text style={styles.practiceName}>{summary.practiceName}</Text>
-          <Text style={styles.practiceMeta}>Ihre Hausarztpraxis</Text>
+          <Text style={styles.practiceMeta}>{t("yourPractice")}</Text>
         </View>
       </View>
     </View>
@@ -36,13 +39,15 @@ type NextAppointmentCardProps = {
 }
 
 export function NextAppointmentCard({ appointment }: NextAppointmentCardProps) {
+  const t = useAppTranslation()
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.iconTile}>
           <Calendar size={18} color={azd.green[600]} />
         </View>
-        <Text style={styles.cardEyebrow}>Nächster Termin</Text>
+        <Text style={styles.cardEyebrow}>{t("nextAppointment")}</Text>
       </View>
       <Text style={styles.cardTitle}>{appointment.title}</Text>
       <Text style={styles.cardDetail}>{appointment.dateLabel}</Text>
@@ -66,11 +71,20 @@ const actionIcons = {
 } as const
 
 export function QuickActions({ actions, onPress }: QuickActionsProps) {
+  const t = useAppTranslation()
+  const labels = {
+    message: t("actionMessage"),
+    prescriptions: t("actionPrescriptions"),
+    appointments: t("actionAppointments"),
+  } as const
+
   return (
     <View style={styles.actions}>
       {actions.map((action) => {
         const Icon =
           actionIcons[action.id as keyof typeof actionIcons] ?? MessageCircle
+        const label =
+          labels[action.id as keyof typeof labels] ?? action.label
         return (
           <Pressable
             key={action.id}
@@ -80,7 +94,7 @@ export function QuickActions({ actions, onPress }: QuickActionsProps) {
             <View style={styles.actionIcon}>
               <Icon size={18} color={azd.green[600]} />
             </View>
-            <Text style={styles.actionLabel}>{action.label}</Text>
+            <Text style={styles.actionLabel}>{label}</Text>
             <ChevronRight size={16} color={azd.fg[7]} />
           </Pressable>
         )

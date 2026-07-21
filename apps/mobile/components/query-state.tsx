@@ -1,4 +1,5 @@
 import { Button } from "@helpwave/hightide-native/components"
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import type { ReactNode } from "react"
 import {
   ActivityIndicator,
@@ -25,15 +26,18 @@ export function QueryState({
   isError,
   error,
   onRetry,
-  loadingLabel = "Wird geladen…",
+  loadingLabel,
   children,
   style,
 }: QueryStateProps) {
+  const t = useAppTranslation()
+  const resolvedLoadingLabel = loadingLabel ?? t("loadingChats")
+
   if (isPending) {
     return (
       <View style={[styles.center, style]}>
         <ActivityIndicator size="large" color={azd.green[600]} />
-        <Text style={styles.loadingLabel}>{loadingLabel}</Text>
+        <Text style={styles.loadingLabel}>{resolvedLoadingLabel}</Text>
       </View>
     )
   }
@@ -41,9 +45,9 @@ export function QueryState({
   if (isError) {
     return (
       <View style={[styles.center, style]}>
-        <Text style={styles.errorTitle}>Etwas ist schiefgelaufen</Text>
+        <Text style={styles.errorTitle}>{t("errorTitle")}</Text>
         <Text style={styles.errorBody}>
-          {error?.message ?? "Unbekannter Fehler"}
+          {error?.message ?? t("errorUnknown")}
         </Text>
         {onRetry ? (
           <Button
@@ -63,7 +67,7 @@ export function QueryState({
               fontWeight: "500",
             })}
           >
-            Erneut versuchen
+            {t("retry")}
           </Button>
         ) : null}
       </View>

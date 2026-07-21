@@ -1,0 +1,51 @@
+{
+  "@@locale": "en-US",
+  "tabStart": "Home",
+  "tabChats": "Chats",
+  "tabProfile": "Profile",
+  "chatsTitle": "Chats",
+  "newMessage": "New message",
+  "searchPracticeOrMessage": "Search practice or message",
+  "loadingChats": "Loading chats…",
+  "loadingHome": "Loading overview…",
+  "loadingProfile": "Loading profile…",
+  "loadingMessages": "Loading messages…",
+  "retry": "Try again",
+  "errorTitle": "Something went wrong",
+  "errorUnknown": "Unknown error",
+  "messagePlaceholder": "Message …",
+  "sendMessage": "Send message",
+  "addAttachment": "Add attachment",
+  "downloadAttachment": "Download attachment",
+  "back": "Back",
+  "call": "Call",
+  "readReceipt": "Read",
+  "quickAccess": "Quick access",
+  "recentMessages": "Recent messages",
+  "unreadCount": "{count} unread",
+  "@unreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nextAppointment": "Next appointment",
+  "yourPractice": "Your GP practice",
+  "personalData": "Personal data",
+  "practiceSection": "Practice",
+  "settingsSection": "Settings",
+  "name": "Name",
+  "dateOfBirth": "Date of birth",
+  "email": "Email",
+  "phone": "Phone",
+  "practice": "Practice",
+  "address": "Address",
+  "practiceDetails": "Practice details",
+  "notifications": "Notifications",
+  "editPersonalData": "Edit personal data",
+  "signOut": "Sign out",
+  "actionMessage": "Send message",
+  "actionPrescriptions": "Prescriptions",
+  "actionAppointments": "Appointments"
+}

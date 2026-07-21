@@ -1,3 +1,4 @@
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -13,6 +14,7 @@ import { usePatientProfile } from "@/hooks/use-patient-profile"
 import { azd } from "@/theme/azd-tokens"
 
 export default function ProfileScreen() {
+  const t = useAppTranslation()
   const insets = useSafeAreaInsets()
   const profileQuery = usePatientProfile()
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
@@ -32,7 +34,7 @@ export default function ProfileScreen() {
         onRetry={() => {
           void profileQuery.refetch()
         }}
-        loadingLabel="Profil wird geladen…"
+        loadingLabel={t("loadingProfile")}
         style={styles.query}
       >
         {profileQuery.data ? (
@@ -42,52 +44,52 @@ export default function ProfileScreen() {
           >
             <ProfileHeader profile={profileQuery.data} />
 
-            <ProfileSection title="Persönliche Daten">
-              <ProfileInfoRow label="Name" value={profileQuery.data.fullName} />
+            <ProfileSection title={t("personalData")}>
+              <ProfileInfoRow label={t("name")} value={profileQuery.data.fullName} />
               <ProfileInfoRow
-                label="Geburtsdatum"
+                label={t("dateOfBirth")}
                 value={profileQuery.data.dateOfBirth}
               />
-              <ProfileInfoRow label="E-Mail" value={profileQuery.data.email} />
-              <ProfileInfoRow label="Telefon" value={profileQuery.data.phone} />
+              <ProfileInfoRow label={t("email")} value={profileQuery.data.email} />
+              <ProfileInfoRow label={t("phone")} value={profileQuery.data.phone} />
             </ProfileSection>
 
-            <ProfileSection title="Praxis">
+            <ProfileSection title={t("practiceSection")}>
               <ProfileInfoRow
-                label="Praxis"
+                label={t("practice")}
                 value={profileQuery.data.practiceName}
               />
               <ProfileInfoRow
-                label="Adresse"
+                label={t("address")}
                 value={profileQuery.data.practiceAddress}
               />
               <ProfileNavRow
                 icon="practice"
-                label="Praxisdetails"
+                label={t("practiceDetails")}
                 onPress={() => {
-                  Alert.alert("Praxis", "Details folgen in einem späteren Release.")
+                  Alert.alert(t("practice"), "Details folgen in einem späteren Release.")
                 }}
               />
             </ProfileSection>
 
-            <ProfileSection title="Einstellungen">
+            <ProfileSection title={t("settingsSection")}>
               <NotificationToggle
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
               />
               <ProfileNavRow
                 icon="user"
-                label="Persönliche Daten bearbeiten"
+                label={t("editPersonalData")}
                 onPress={() => {
-                  Alert.alert("Profil", "Bearbeiten ist hier noch nicht verfügbar.")
+                  Alert.alert(t("tabProfile"), "Bearbeiten ist hier noch nicht verfügbar.")
                 }}
               />
               <ProfileNavRow
                 icon="logout"
-                label="Abmelden"
+                label={t("signOut")}
                 danger
                 onPress={() => {
-                  Alert.alert("Abmelden", "Sie sind in dieser Demo nicht angemeldet.")
+                  Alert.alert(t("signOut"), "Sie sind in dieser Demo nicht angemeldet.")
                 }}
               />
             </ProfileSection>

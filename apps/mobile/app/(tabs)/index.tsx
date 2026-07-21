@@ -1,3 +1,4 @@
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { useRouter } from "expo-router"
 import { ScrollView, StyleSheet, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -12,6 +13,7 @@ import { useHomeSummary } from "@/hooks/use-home-summary"
 import { azd } from "@/theme/azd-tokens"
 
 export default function HomeScreen() {
+  const t = useAppTranslation()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const homeQuery = useHomeSummary()
@@ -25,7 +27,7 @@ export default function HomeScreen() {
         onRetry={() => {
           void homeQuery.refetch()
         }}
-        loadingLabel="Übersicht wird geladen…"
+        loadingLabel={t("loadingHome")}
         style={styles.query}
       >
         {homeQuery.data ? (
@@ -37,7 +39,7 @@ export default function HomeScreen() {
             {homeQuery.data.nextAppointment ? (
               <NextAppointmentCard appointment={homeQuery.data.nextAppointment} />
             ) : null}
-            <Text style={styles.sectionTitle}>Schnellzugriff</Text>
+            <Text style={styles.sectionTitle}>{t("quickAccess")}</Text>
             <QuickActions
               actions={homeQuery.data.quickActions}
               onPress={(href) => {
@@ -47,10 +49,10 @@ export default function HomeScreen() {
             {homeQuery.data.recentConversation ? (
               <>
                 <View style={styles.recentHeader}>
-                  <Text style={styles.sectionTitle}>Aktuelle Nachrichten</Text>
+                  <Text style={styles.sectionTitle}>{t("recentMessages")}</Text>
                   {homeQuery.data.unreadChatCount > 0 ? (
                     <Text style={styles.unreadHint}>
-                      {homeQuery.data.unreadChatCount} ungelesen
+                      {t("unreadCount", { count: homeQuery.data.unreadChatCount })}
                     </Text>
                   ) : null}
                 </View>

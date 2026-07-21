@@ -1,4 +1,5 @@
 import { MessageCircle } from "lucide-react-native"
+import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { useRouter } from "expo-router"
 import { useState } from "react"
 import {
@@ -16,6 +17,7 @@ import { useConversations } from "@/hooks/use-conversations"
 import { azd } from "@/theme/azd-tokens"
 
 export default function ChatListScreen() {
+  const t = useAppTranslation()
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const [search, setSearch] = useState("")
@@ -24,18 +26,22 @@ export default function ChatListScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScreenHeader
-        title="Chats"
+        title={t("chatsTitle")}
         trailing={
           <Pressable
             style={styles.composeButton}
             accessibilityRole="button"
-            accessibilityLabel="Neue Nachricht"
+            accessibilityLabel={t("newMessage")}
           >
             <MessageCircle size={19} color={azd.green[600]} />
           </Pressable>
         }
       >
-        <SearchField value={search} onChangeText={setSearch} />
+        <SearchField
+          value={search}
+          onChangeText={setSearch}
+          placeholder={t("searchPracticeOrMessage")}
+        />
       </ScreenHeader>
 
       <QueryState
@@ -45,7 +51,7 @@ export default function ChatListScreen() {
         onRetry={() => {
           void conversationsQuery.refetch()
         }}
-        loadingLabel="Chats werden geladen…"
+        loadingLabel={t("loadingChats")}
       >
         <FlatList
           data={conversationsQuery.data ?? []}

@@ -1,14 +1,18 @@
 {
-  "name": "app-zum-doc",
+  "name": "app-zum-doc-mobile",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "init": "node -e \"process.exit(0)\"",
+    "build": "node -e \"process.exit(0)\"",
+    "test": "node -e \"process.exit(0)\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -19,6 +23,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "@tanstack/react-query": "^5.101.3",
+    "app-zum-doc-utils": "workspace:*",
     "expo": "~54.0.34",
     "expo-asset": "^57.0.6",
     "expo-constants": "~18.0.13",
