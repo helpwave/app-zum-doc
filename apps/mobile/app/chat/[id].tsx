@@ -1,5 +1,12 @@
 import { ChevronLeft, Phone } from "lucide-react-native"
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
+import {
+  useAppTranslation,
+  useConversation,
+  useMarkConversationRead,
+  useMessages,
+  useResolveCardAction,
+  useSendMessage,
+} from "app-zum-doc-utils/hooks"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useEffect, useRef } from "react"
 import {
@@ -14,13 +21,6 @@ import { Avatar } from "@/components/avatar"
 import { ChatMessageItem } from "@/components/chat-message-item"
 import { Composer } from "@/components/composer"
 import { QueryState } from "@/components/query-state"
-import {
-  useConversation,
-  useMarkConversationRead,
-  useMessages,
-  useResolveCardAction,
-  useSendMessage,
-} from "@/hooks/use-conversations"
 import { azd } from "@/theme/azd-tokens"
 
 export default function ChatThreadScreen() {

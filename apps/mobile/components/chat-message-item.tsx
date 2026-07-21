@@ -2,7 +2,7 @@ import { AttachmentCard } from "@/components/attachment-card"
 import { MessageBubble } from "@/components/message-bubble"
 import { DateDivider, SystemLine } from "@/components/system-line"
 import { StructuredCard } from "@/components/structured-card"
-import type { ChatMessage } from "@/api/mock/types"
+import type { ChatMessage } from "app-zum-doc-utils/api/types"
 
 type ChatMessageItemProps = {
   message: ChatMessage

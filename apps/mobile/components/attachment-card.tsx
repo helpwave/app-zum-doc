@@ -1,7 +1,7 @@
 import { Download, FileText } from "lucide-react-native"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { azd } from "@/theme/azd-tokens"
-import type { AttachmentMessage } from "@/api/mock/types"
+import type { AttachmentMessage } from "app-zum-doc-utils/api/types"
 
 type AttachmentCardProps = {
   message: AttachmentMessage

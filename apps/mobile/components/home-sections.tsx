@@ -3,7 +3,7 @@ import { Calendar, ChevronRight, MessageCircle, Pill } from "lucide-react-native
 import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { azd } from "@/theme/azd-tokens"
-import type { HomeSummary } from "@/api/mock/types"
+import type { HomeSummary } from "app-zum-doc-utils/api/types"
 
 const practiceLogo = require("../assets/images/practice-logo.png")
 

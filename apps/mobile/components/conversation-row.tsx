@@ -2,7 +2,7 @@ import { MessageCircle } from "lucide-react-native"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Avatar } from "@/components/avatar"
 import { azd } from "@/theme/azd-tokens"
-import type { Conversation } from "@/api/mock/types"
+import type { Conversation } from "app-zum-doc-utils/api/types"
 
 type ConversationRowProps = {
   conversation: Conversation

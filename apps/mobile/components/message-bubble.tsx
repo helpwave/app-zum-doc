@@ -1,7 +1,7 @@
 import { CheckCheck } from "lucide-react-native"
 import { StyleSheet, Text, View } from "react-native"
 import { azd } from "@/theme/azd-tokens"
-import type { TextMessage } from "@/api/mock/types"
+import type { TextMessage } from "app-zum-doc-utils/api/types"
 
 type MessageBubbleProps = {
   message: TextMessage

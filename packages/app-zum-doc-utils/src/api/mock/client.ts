@@ -11,7 +11,7 @@ import type {
   PatientProfile,
   StructuredCardMessage,
   TextMessage,
-} from "./types"
+} from "../types"
 
 const delayMs = 550
 

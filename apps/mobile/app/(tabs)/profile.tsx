@@ -1,4 +1,7 @@
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
+import {
+  useAppTranslation,
+  usePatientProfile,
+} from "app-zum-doc-utils/hooks"
 import { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -10,7 +13,6 @@ import {
   ProfileSection,
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
-import { usePatientProfile } from "@/hooks/use-patient-profile"
 import { azd } from "@/theme/azd-tokens"
 
 export default function ProfileScreen() {

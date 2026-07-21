@@ -20,9 +20,26 @@
     "./hooks": {
       "types": "./src/hooks/index.ts",
       "default": "./src/hooks/index.ts"
+    },
+    "./api": {
+      "types": "./src/api/index.ts",
+      "default": "./src/api/index.ts"
+    },
+    "./api/types": {
+      "types": "./src/api/types.ts",
+      "default": "./src/api/types.ts"
+    },
+    "./api/mock": {
+      "types": "./src/api/mock/index.ts",
+      "default": "./src/api/mock/index.ts"
+    },
+    "./api/client": {
+      "types": "./src/api/client.ts",
+      "default": "./src/api/client.ts"
     }
   },
   "scripts": {
+    "clean": "rm -rf node_modules",
     "build-intl": "build-intl --force -i ./locales -o ./src/i18n/translations.ts -n appZumDocTranslation",
     "init": "pnpm run build-intl",
     "build": "node -e \"process.exit(0)\"",
@@ -34,9 +51,11 @@
     "@helpwave/internationalization": "0.4.0"
   },
   "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
     "react": "^19.0.0"
   },
   "devDependencies": {
+    "@tanstack/react-query": "^5.101.3",
     "@types/react": "~19.1.0",
     "react": "19.1.0",
     "typescript": "~5.9.2"

@@ -6,14 +6,8 @@ import {
   markConversationRead,
   resolveCardAction,
   sendMessage,
-} from "@/api/mock/client"
-
-export const conversationKeys = {
-  all: ["conversations"] as const,
-  list: (search?: string) => ["conversations", "list", search ?? ""] as const,
-  detail: (id: string) => ["conversations", "detail", id] as const,
-  messages: (id: string) => ["conversations", "messages", id] as const,
-}
+} from "../api/client"
+import { conversationKeys, homeKeys } from "./query-keys"
 
 export function useConversations(search?: string) {
   return useQuery({
@@ -45,7 +39,7 @@ export function useMarkConversationRead() {
     mutationFn: (conversationId: string) => markConversationRead(conversationId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: conversationKeys.all })
-      await queryClient.invalidateQueries({ queryKey: ["home"] })
+      await queryClient.invalidateQueries({ queryKey: homeKeys.all })
     },
   })
 }
@@ -58,7 +52,7 @@ export function useSendMessage(conversationId: string) {
     onSuccess: async (messages) => {
       queryClient.setQueryData(conversationKeys.messages(conversationId), messages)
       await queryClient.invalidateQueries({ queryKey: conversationKeys.all })
-      await queryClient.invalidateQueries({ queryKey: ["home"] })
+      await queryClient.invalidateQueries({ queryKey: homeKeys.all })
     },
   })
 }

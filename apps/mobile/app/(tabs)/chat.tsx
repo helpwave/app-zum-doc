@@ -1,5 +1,8 @@
 import { MessageCircle } from "lucide-react-native"
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
+import {
+  useAppTranslation,
+  useConversations,
+} from "app-zum-doc-utils/hooks"
 import { useRouter } from "expo-router"
 import { useState } from "react"
 import {
@@ -13,7 +16,6 @@ import { ConversationRow } from "@/components/conversation-row"
 import { QueryState } from "@/components/query-state"
 import { ScreenHeader } from "@/components/screen-header"
 import { SearchField } from "@/components/search-field"
-import { useConversations } from "@/hooks/use-conversations"
 import { azd } from "@/theme/azd-tokens"
 
 export default function ChatListScreen() {

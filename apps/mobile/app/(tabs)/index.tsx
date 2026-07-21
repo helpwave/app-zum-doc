@@ -1,4 +1,7 @@
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
+import {
+  useAppTranslation,
+  useHomeSummary,
+} from "app-zum-doc-utils/hooks"
 import { useRouter } from "expo-router"
 import { ScrollView, StyleSheet, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -9,7 +12,6 @@ import {
   QuickActions,
 } from "@/components/home-sections"
 import { QueryState } from "@/components/query-state"
-import { useHomeSummary } from "@/hooks/use-home-summary"
 import { azd } from "@/theme/azd-tokens"
 
 export default function HomeScreen() {

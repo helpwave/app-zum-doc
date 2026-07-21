@@ -2,7 +2,7 @@ import { Button } from "@helpwave/hightide-native/components"
 import { CalendarDays } from "lucide-react-native"
 import { StyleSheet, Text, View } from "react-native"
 import { azd } from "@/theme/azd-tokens"
-import type { StructuredCardMessage } from "@/api/mock/types"
+import type { StructuredCardMessage } from "app-zum-doc-utils/api/types"
 
 type StructuredCardProps = {
   message: StructuredCardMessage

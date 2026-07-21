@@ -1,15 +1,17 @@
 {
-  "name": "app-zum-doc",
+  "name": "app-zum-doc-monorepo",
   "version": "1.0.0",
   "private": true,
   "description": "App zum Doc monorepo",
-  "license": "ISC",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
-    "init": "pnpm -r run init",
+    "clean": "pnpm -r run clean && rm -rf node_modules",
+    "init": "pnpm install && pnpm -r run init",
     "build": "pnpm -r run build",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
+    "reset": "pnpm run clean && pnpm run init",
     "start": "pnpm --filter app-zum-doc-mobile start",
     "android": "pnpm --filter app-zum-doc-mobile android",
     "ios": "pnpm --filter app-zum-doc-mobile ios"

@@ -3,7 +3,7 @@ import type {
   Conversation,
   HomeSummary,
   PatientProfile,
-} from "./types"
+} from "../types"
 
 export const conversationsSeed: Conversation[] = [
   {

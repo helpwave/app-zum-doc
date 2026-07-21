@@ -3,3 +3,7 @@ packages:
   - "packages/*"
 allowBuilds:
   unrs-resolver: true
+nodeLinker: hoisted
+minimumReleaseAgeExclude:
+  - "@helpwave/hightide-design@0.0.1"
+  - "@helpwave/hightide-utils@0.0.1"

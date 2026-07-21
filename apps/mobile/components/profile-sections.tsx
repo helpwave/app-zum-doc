@@ -4,7 +4,7 @@ import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native"
 import { Avatar } from "@/components/avatar"
 import { azd } from "@/theme/azd-tokens"
-import type { PatientProfile } from "@/api/mock/types"
+import type { PatientProfile } from "app-zum-doc-utils/api/types"
 
 type ProfileHeaderProps = {
   profile: PatientProfile
