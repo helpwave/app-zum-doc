@@ -1,25 +1,43 @@
-import { Bell, Building2, ChevronRight, LogOut, UserRound } from "lucide-react-native"
-import type { ReactNode } from "react"
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native"
-import { Avatar } from "@/components/avatar"
-import { azd } from "@/theme/azd-tokens"
-import type { PatientProfile } from "app-zum-doc-utils/api/types"
+import { useAppTranslation } from "@/app/hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { SelectionSheet } from "@/components/selection-sheet"
+import { azdLayout } from "@/theme/azd-tokens"
+import type { PatientProfile } from "@app-zum-doc/utils/api"
+import {
+  Avatar,
+  MenuActionItem,
+  MenuNavigationItem
+} from "@helpwave/hightide-native/components"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
+import {
+  Bell,
+  Building2,
+  Languages,
+  LogOut,
+  Moon,
+  UserRound,
+} from "lucide-react-native"
+import { useMemo, useState, type ReactNode } from "react"
+import { StyleSheet, Text, View } from "react-native"
 
 type ProfileHeaderProps = {
   profile: PatientProfile
 }
 
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.profileSections
+
   return (
     <View style={styles.header}>
       <Avatar
-        id={profile.id}
         name={profile.fullName}
-        size={72}
+        size="lg"
       />
-      <Text style={styles.name}>{profile.fullName}</Text>
-      <Text style={styles.meta}>
+      <Text style={[styles.name, { color: colors.name }]}>
+        {profile.fullName}
+      </Text>
+      <Text style={[styles.meta, { color: colors.meta }]}>
         geb. {profile.dateOfBirth} · Vers.-Nr. {profile.insuranceNumber} ·{" "}
         {profile.insuranceType}
       </Text>
@@ -27,40 +45,44 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   )
 }
 
-type ProfileSectionProps = {
-  title: string
-  children: ReactNode
-}
-
-export function ProfileSection({ title, children }: ProfileSectionProps) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionCard}>{children}</View>
-    </View>
-  )
-}
-
-type ProfileInfoRowProps = {
-  label: string
-  value: string
-}
-
-export function ProfileInfoRow({ label, value }: ProfileInfoRowProps) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  )
-}
+type ProfileNavIcon = "user" | "practice" | "bell" | "logout" | "theme" | "language"
 
 type ProfileNavRowProps = {
-  icon: "user" | "practice" | "bell" | "logout"
+  icon: ProfileNavIcon
   label: string
   onPress?: () => void
   danger?: boolean
   trailing?: ReactNode
+}
+
+function NavIcon({
+  icon,
+  danger = false,
+}: {
+  icon: ProfileNavIcon
+  danger?: boolean
+}) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.profileSections
+  const Icon =
+    icon === "user"
+      ? UserRound
+      : icon === "practice"
+        ? Building2
+        : icon === "bell"
+          ? Bell
+          : icon === "theme"
+            ? Moon
+            : icon === "language"
+              ? Languages
+              : LogOut
+
+  return (
+    <Icon
+      size={18}
+      color={danger ? colors.iconDanger : colors.icon}
+    />
+  )
 }
 
 export function ProfileNavRow({
@@ -70,131 +92,160 @@ export function ProfileNavRow({
   danger = false,
   trailing,
 }: ProfileNavRowProps) {
-  const Icon =
-    icon === "user"
-      ? UserRound
-      : icon === "practice"
-        ? Building2
-        : icon === "bell"
-          ? Bell
-          : LogOut
+  if (trailing != null || danger) {
+    return (
+      <MenuActionItem
+        label={label}
+        leading={<NavIcon icon={icon} danger={danger} />}
+        trailing={trailing}
+        danger={danger}
+        onPress={onPress}
+      />
+    )
+  }
 
   return (
-    <Pressable
+    <MenuNavigationItem
+      label={label}
+      leading={<NavIcon icon={icon} />}
       onPress={onPress}
-      style={({ pressed }) => [styles.navRow, pressed && styles.navPressed]}
-    >
-      <Icon size={18} color={danger ? azd.semantic.danger : azd.green[600]} />
-      <Text style={[styles.navLabel, danger && styles.navDanger]}>{label}</Text>
-      {trailing ?? <ChevronRight size={16} color={azd.fg[7]} />}
-    </Pressable>
+    />
   )
 }
 
-type NotificationToggleProps = {
-  value: boolean
-  onValueChange: (value: boolean) => void
-}
 
-export function NotificationToggle({
-  value,
-  onValueChange,
-}: NotificationToggleProps) {
+export function ThemeModeSetting() {
   const t = useAppTranslation()
+  const { theme, themeMode, preferredThemeMode, setTheme, supportedThemes } =
+    useAzdTheme()
+  const { locale } = useLocalization()
+  const colors = theme.components.profileSections
+  const [isOpen, setIsOpen] = useState(false)
+  const selectedPreference = preferredThemeMode ?? "system"
+  const options = useMemo(
+    () => [
+      {
+        id: "system",
+        label: t("themeSystem"),
+      },
+      ...Object.keys(supportedThemes).map((mode) => ({
+        id: mode,
+        label:
+          supportedThemes[mode]?.nameTranslations[locale]
+          ?? supportedThemes[mode]?.nameTranslations["en-US"]
+          ?? mode,
+      })),
+    ],
+    [locale, supportedThemes, t],
+  )
+  const currentName =
+    preferredThemeMode == null
+      ? t("themeSystem")
+      : supportedThemes[themeMode]?.nameTranslations[locale]
+        ?? supportedThemes[themeMode]?.nameTranslations["en-US"]
+        ?? themeMode
 
   return (
-    <ProfileNavRow
-      icon="bell"
-      label={t("notifications")}
-      trailing={
-        <Switch
-          value={value}
-          onValueChange={onValueChange}
-          trackColor={{ false: azd.divider, true: azd.green[300] }}
-          thumbColor={value ? azd.green[600] : "#FFFFFF"}
-        />
-      }
-    />
+    <>
+      <ProfileNavRow
+        icon="theme"
+        label={t("themeMode")}
+        onPress={() => {
+          setIsOpen(true)
+        }}
+        trailing={
+          <Text style={[styles.settingValue, { color: colors.meta }]}>
+            {currentName}
+          </Text>
+        }
+      />
+      <SelectionSheet
+        visible={isOpen}
+        title={t("themeMode")}
+        options={options}
+        value={selectedPreference}
+        onChange={(nextPreference) => {
+          setTheme(nextPreference === "system" ? null : nextPreference)
+        }}
+        onCancel={() => {
+          setIsOpen(false)
+        }}
+        onDone={() => {
+          setIsOpen(false)
+        }}
+      />
+    </>
+  )
+}
+
+export function LocaleSetting() {
+  const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.profileSections
+  const { locale, setLocale, supportedLocales } = useLocalization()
+  const [isOpen, setIsOpen] = useState(false)
+  const options = useMemo(
+    () =>
+      Object.keys(supportedLocales).map((localeKey) => ({
+        id: localeKey,
+        label: supportedLocales[localeKey]?.localName ?? localeKey,
+      })),
+    [supportedLocales],
+  )
+  const currentName =
+    supportedLocales[locale]?.localName ?? locale
+
+  return (
+    <>
+      <ProfileNavRow
+        icon="language"
+        label={t("language")}
+        onPress={() => {
+          setIsOpen(true)
+        }}
+        trailing={
+          <Text style={[styles.settingValue, { color: colors.meta }]}>
+            {currentName}
+          </Text>
+        }
+      />
+      <SelectionSheet
+        visible={isOpen}
+        title={t("language")}
+        options={options}
+        value={locale}
+        onChange={setLocale}
+        onCancel={() => {
+          setIsOpen(false)
+        }}
+        onDone={() => {
+          setIsOpen(false)
+        }}
+      />
+    </>
   )
 }
 
 const styles = StyleSheet.create({
   header: {
     alignItems: "center",
-    gap: azd.space[2],
-    paddingVertical: azd.space[5],
+    gap: azdLayout.space[2],
+    paddingVertical: azdLayout.space[5],
   },
   name: {
-    fontFamily: azd.font.display,
+    fontFamily: azdLayout.font.display,
     fontWeight: "700",
     fontSize: 22,
-    color: azd.fg[1],
-    marginTop: azd.space[2],
+    marginTop: azdLayout.space[2],
   },
   meta: {
-    fontFamily: azd.font.tabular,
+    fontFamily: azdLayout.font.tabular,
     fontSize: 13,
-    color: azd.fg[5],
     textAlign: "center",
-    paddingHorizontal: azd.space[4],
+    paddingHorizontal: azdLayout.space[4],
   },
-  section: {
-    marginBottom: azd.space[5],
-    gap: azd.space[2],
-  },
-  sectionTitle: {
-    fontFamily: azd.font.tabular,
-    fontWeight: "700",
-    fontSize: 12,
-    color: azd.fg[6],
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-    paddingHorizontal: 4,
-  },
-  sectionCard: {
-    backgroundColor: azd.bg.surface,
-    borderRadius: azd.radius.md,
-    borderWidth: 1,
-    borderColor: azd.border,
-    overflow: "hidden",
-  },
-  infoRow: {
-    paddingHorizontal: azd.space[4],
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: azd.divider,
-    gap: 4,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: azd.fg[5],
-  },
-  infoValue: {
-    fontFamily: azd.font.display,
-    fontWeight: "500",
-    fontSize: 15,
-    color: azd.fg[1],
-  },
-  navRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: azd.space[3],
-    paddingHorizontal: azd.space[4],
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: azd.divider,
-  },
-  navPressed: {
-    backgroundColor: azd.bg.app,
-  },
-  navLabel: {
-    flex: 1,
-    fontFamily: azd.font.display,
-    fontWeight: "500",
-    fontSize: 15,
-    color: azd.fg[1],
-  },
-  navDanger: {
-    color: azd.semantic.danger,
+  settingValue: {
+    fontFamily: azdLayout.font.tabular,
+    fontSize: 14,
   },
 })

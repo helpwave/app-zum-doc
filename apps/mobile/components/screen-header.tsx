@@ -1,6 +1,8 @@
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { azdLayout } from "@/theme/azd-tokens"
 import type { ReactNode } from "react"
 import { StyleSheet, Text, View } from "react-native"
-import { azd } from "@/theme/azd-tokens"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type ScreenHeaderProps = {
   title: string
@@ -9,10 +11,23 @@ type ScreenHeaderProps = {
 }
 
 export function ScreenHeader({ title, trailing, children }: ScreenHeaderProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.screenHeader
+  const insets = useSafeAreaInsets()
+
   return (
-    <View style={styles.header}>
+    <View
+      style={[
+        styles.header,
+        {
+          paddingTop: insets.top + azdLayout.space[5],
+          backgroundColor: colors.background,
+          borderBottomColor: colors.border,
+        },
+      ]}
+    >
       <View style={styles.titleRow}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: colors.title }]}>{title}</Text>
         {trailing}
       </View>
       {children}
@@ -22,13 +37,10 @@ export function ScreenHeader({ title, trailing, children }: ScreenHeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: azd.bg.surface,
-    paddingHorizontal: azd.space[4],
-    paddingTop: azd.space[5],
+    paddingHorizontal: azdLayout.space[4],
     paddingBottom: 14,
     gap: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: azd.divider,
   },
   titleRow: {
     flexDirection: "row",
@@ -36,10 +48,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: {
-    fontFamily: azd.font.display,
+    fontFamily: azdLayout.font.display,
     fontWeight: "700",
     fontSize: 28,
     lineHeight: 28,
-    color: azd.green[600],
   },
 })

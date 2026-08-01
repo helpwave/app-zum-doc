@@ -7,7 +7,7 @@ import {
   resolveCardAction,
   sendMessage,
 } from "../api/client"
-import { conversationKeys, homeKeys } from "./query-keys"
+import { conversationKeys, homeKeys } from "./queryKeys"
 
 export function useConversations(search?: string) {
   return useQuery({

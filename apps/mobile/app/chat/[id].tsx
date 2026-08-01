@@ -1,30 +1,36 @@
-import { ChevronLeft, Phone } from "lucide-react-native"
 import {
-  useAppTranslation,
+  AzdAvatarImage,
+  contactAvatarImage,
+} from "@/components/azd-avatar-image"
+import { ChatMessageItem } from "@/components/chat-message-item"
+import { Composer } from "@/components/composer"
+import { QueryState } from "@/components/query-state"
+import { useAppTranslation } from "../hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import {
+  AvatarWithStatus,
+  ChatMessageList,
+  ChatThreadHeader,
+  IconButton,
+} from "@helpwave/hightide-native/components"
+import {
   useConversation,
   useMarkConversationRead,
   useMessages,
   useResolveCardAction,
   useSendMessage,
-} from "app-zum-doc-utils/hooks"
+} from "@app-zum-doc/utils/hooks"
 import { useLocalSearchParams, useRouter } from "expo-router"
+import { ChevronLeft, Phone } from "lucide-react-native"
 import { useEffect, useRef } from "react"
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native"
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { Avatar } from "@/components/avatar"
-import { ChatMessageItem } from "@/components/chat-message-item"
-import { Composer } from "@/components/composer"
-import { QueryState } from "@/components/query-state"
-import { azd } from "@/theme/azd-tokens"
 
 export default function ChatThreadScreen() {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.screen
+  const headerColors = theme.components.screenHeader
   const { id } = useLocalSearchParams<{ id: string }>()
   const conversationId = typeof id === "string" ? id : ""
   const insets = useSafeAreaInsets()
@@ -57,47 +63,56 @@ export default function ChatThreadScreen() {
   const contact = conversationQuery.data?.contact
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.appBar}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel={t("back")}
-        >
-          <ChevronLeft size={22} color={azd.green[600]} />
-        </Pressable>
-        {contact ? (
-          <>
-            <Avatar
-              id={contact.id}
-              name={contact.name}
-              initials={contact.initials}
-              imageUri={contact.imageUri}
-              presence={contact.presence}
-              size={40}
+    <KeyboardAvoidingView 
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background },
+      ]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View
+        style={[
+          styles.headerShell,
+          {
+            paddingTop: insets.top,
+            backgroundColor: headerColors.background,
+          },
+        ]}
+      >
+        <ChatThreadHeader
+          leftActions={
+            <IconButton
+              accessibilityLabel={t("back")}
+              icon={ChevronLeft}
+              size="md"
+              color="primary"
+              coloringStyle="text"
+              onPress={() => router.back()}
             />
-            <View style={styles.appBarText}>
-              <Text style={styles.appBarTitle} numberOfLines={1}>
-                {contact.name}
-              </Text>
-              <Text style={styles.appBarSubtitle} numberOfLines={1}>
-                {contact.subtitle ?? t("practice")}
-              </Text>
-            </View>
-          </>
-        ) : (
-          <View style={styles.appBarText}>
-            <Text style={styles.appBarTitle}>{t("tabChats")}</Text>
-          </View>
-        )}
-        <Pressable
-          style={styles.callButton}
-          accessibilityRole="button"
-          accessibilityLabel={t("call")}
-        >
-          <Phone size={18} color={azd.green[600]} />
-        </Pressable>
+          }
+          avatar={
+            contact ? (
+              <AvatarWithStatus
+                name={contact.name}
+                image={contactAvatarImage(contact.imageUri, contact.name)}
+                ImageComponent={AzdAvatarImage}
+                status={contact.presence ?? "unknown"}
+                size="sm"
+              />
+            ) : undefined
+          }
+          title={contact?.name ?? t("tabChats")}
+          subtitle={contact ? (contact.subtitle ?? t("practice")) : undefined}
+          rightActions={
+            <IconButton
+              accessibilityLabel={t("call")}
+              icon={Phone}
+              size="md"
+              color="primary"
+              coloringStyle="text"
+            />
+          }
+        />
       </View>
 
       <QueryState
@@ -107,20 +122,18 @@ export default function ChatThreadScreen() {
         onRetry={refetch}
         loadingLabel={t("loadingMessages")}
       >
-        <FlatList
-          data={messagesQuery.data ?? []}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messages}
-          renderItem={({ item }) => (
+        <ChatMessageList>
+          {(messagesQuery.data ?? []).map((item) => (
             <ChatMessageItem
+              key={item.id}
               message={item}
               isCardActionPending={resolveCard.isPending}
               onCardAction={(messageId, actionId) => {
                 resolveCard.mutate({ messageId, actionId })
               }}
             />
-          )}
-        />
+          ))}
+        </ChatMessageList>
         <Composer
           placeholder={t("messagePlaceholder")}
           onSend={(text) => {
@@ -134,52 +147,13 @@ export default function ChatThreadScreen() {
           }
         />
       </QueryState>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: azd.bg.app,
   },
-  appBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: azd.bg.surface,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: azd.divider,
-  },
-  appBarText: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
-  appBarTitle: {
-    fontFamily: azd.font.display,
-    fontWeight: "700",
-    fontSize: 16,
-    color: azd.fg[1],
-  },
-  appBarSubtitle: {
-    fontSize: 12,
-    fontWeight: "300",
-    color: azd.fg[5],
-  },
-  callButton: {
-    width: 40,
-    height: 40,
-    borderRadius: azd.radius.pill,
-    backgroundColor: azd.bg.app,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  messages: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    gap: 12,
-  },
+  headerShell: {},
 })

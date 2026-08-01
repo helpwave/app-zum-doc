@@ -1,5 +1,7 @@
+import { useAppTranslation } from "@/app/hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { azdLayout } from "@/theme/azd-tokens"
 import { Button } from "@helpwave/hightide-native/components"
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
 import type { ReactNode } from "react"
 import {
   ActivityIndicator,
@@ -9,7 +11,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
-import { azd } from "@/theme/azd-tokens"
 
 type QueryStateProps = {
   isPending: boolean
@@ -31,22 +32,40 @@ export function QueryState({
   style,
 }: QueryStateProps) {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.queryState
   const resolvedLoadingLabel = loadingLabel ?? t("loadingChats")
 
   if (isPending) {
     return (
-      <View style={[styles.center, style]}>
-        <ActivityIndicator size="large" color={azd.green[600]} />
-        <Text style={styles.loadingLabel}>{resolvedLoadingLabel}</Text>
+      <View
+        style={[
+          styles.center,
+          { backgroundColor: colors.background },
+          style,
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.spinner} />
+        <Text style={[styles.loadingLabel, { color: colors.loadingText }]}>
+          {resolvedLoadingLabel}
+        </Text>
       </View>
     )
   }
 
   if (isError) {
     return (
-      <View style={[styles.center, style]}>
-        <Text style={styles.errorTitle}>{t("errorTitle")}</Text>
-        <Text style={styles.errorBody}>
+      <View
+        style={[
+          styles.center,
+          { backgroundColor: colors.background },
+          style,
+        ]}
+      >
+        <Text style={[styles.errorTitle, { color: colors.title }]}>
+          {t("errorTitle")}
+        </Text>
+        <Text style={[styles.errorBody, { color: colors.description }]}>
           {error?.message ?? t("errorUnknown")}
         </Text>
         {onRetry ? (
@@ -55,17 +74,6 @@ export function QueryState({
             coloringStyle="solid"
             size="md"
             onPress={onRetry}
-            buttonStyle={() => ({
-              backgroundColor: azd.green[600],
-              borderRadius: azd.radius.pill,
-              paddingHorizontal: azd.space[5],
-              paddingVertical: azd.space[3],
-            })}
-            textStyle={() => ({
-              color: "#FFFFFF",
-              fontFamily: azd.font.display,
-              fontWeight: "500",
-            })}
           >
             {t("retry")}
           </Button>
@@ -82,28 +90,24 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: azd.space[6],
-    gap: azd.space[3],
-    backgroundColor: azd.bg.surface,
+    paddingHorizontal: azdLayout.space[6],
+    gap: azdLayout.space[3],
   },
   loadingLabel: {
-    fontFamily: azd.font.display,
+    fontFamily: azdLayout.font.display,
     fontSize: 14,
-    color: azd.fg[5],
-    marginTop: azd.space[2],
+    marginTop: azdLayout.space[2],
   },
   errorTitle: {
-    fontFamily: azd.font.display,
+    fontFamily: azdLayout.font.display,
     fontWeight: "700",
     fontSize: 18,
-    color: azd.fg[1],
     textAlign: "center",
   },
   errorBody: {
-    fontFamily: azd.font.display,
+    fontFamily: azdLayout.font.display,
     fontSize: 14,
-    color: azd.fg[4],
     textAlign: "center",
-    marginBottom: azd.space[2],
+    marginBottom: azdLayout.space[2],
   },
 })

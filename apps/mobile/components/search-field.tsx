@@ -1,6 +1,7 @@
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { azdLayout } from "@/theme/azd-tokens"
 import { Search } from "lucide-react-native"
 import { StyleSheet, TextInput, View } from "react-native"
-import { azd } from "@/theme/azd-tokens"
 
 type SearchFieldProps = {
   value: string
@@ -13,15 +14,18 @@ export function SearchField({
   onChangeText,
   placeholder = "Praxis oder Nachricht suchen",
 }: SearchFieldProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.searchField
+
   return (
-    <View style={styles.shell}>
-      <Search size={16} color={azd.fg[6]} />
+    <View style={[styles.shell, { backgroundColor: colors.background }]}>
+      <Search size={16} color={colors.icon} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={azd.fg[7]}
-        style={styles.input}
+        placeholderTextColor={colors.placeholder}
+        style={[styles.input, { color: colors.text }]}
         autoCorrect={false}
         autoCapitalize="none"
         clearButtonMode="while-editing"
@@ -33,8 +37,7 @@ export function SearchField({
 const styles = StyleSheet.create({
   shell: {
     height: 40,
-    borderRadius: azd.radius.pill,
-    backgroundColor: azd.bg.app,
+    borderRadius: azdLayout.radius.pill,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
@@ -42,9 +45,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: azd.font.display,
+    fontFamily: azdLayout.font.display,
     fontSize: 15,
-    color: azd.fg[1],
     paddingVertical: 0,
   },
 })

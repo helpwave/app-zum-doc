@@ -80,25 +80,47 @@ export type ChatMessage =
   | StructuredCardMessage
   | AttachmentMessage
 
+export type HomeQuickActionId = "prescription" | "appointment" | "referral"
+
+export type HomeQuickAction = {
+  id: HomeQuickActionId
+  label: string
+  href: string
+}
+
+export type HomeDoctorCard = {
+  id: string
+  name: string
+  specialty: string
+  phone: string
+  imageUri: string | null
+  initials?: string
+  isOpen: boolean
+  openStatusLabel: string
+}
+
+export type RequestKind = "prescription" | "appointment" | "referral"
+
+export type RequestStatus =
+  | "in_progress"
+  | "confirmed"
+  | "ready_for_pickup"
+  | "completed"
+
+export type HomeRequest = {
+  id: string
+  doctorName: string
+  title: string
+  kind: RequestKind
+  kindLabel: string
+  status: RequestStatus
+  statusLabel: string
+}
+
 export type HomeSummary = {
-  greeting: string
-  patientFirstName: string
-  practiceName: string
-  practiceLogoUri: string | null
-  nextAppointment: {
-    title: string
-    dateLabel: string
-    timeLabel: string
-    room: string
-    doctorName: string
-  } | null
-  unreadChatCount: number
-  recentConversation: Conversation | null
-  quickActions: {
-    id: string
-    label: string
-    href: "/chat" | "/(tabs)/chat" | string
-  }[]
+  quickActions: HomeQuickAction[]
+  myDoctors: HomeDoctorCard[]
+  recentRequests: HomeRequest[]
 }
 
 export type PatientProfile = {
@@ -113,4 +135,26 @@ export type PatientProfile = {
   practiceName: string
   practiceAddress: string
   notificationsEnabled: boolean
+}
+
+export type DoctorsOfficeOpeningPeriod = {
+  dayLabel: string
+  times: string[]
+}
+
+export type DoctorsOffice = {
+  id: string
+  name: string
+  specialty: string
+  phone: string
+  imageUri: string | null
+  initials?: string
+  isOpen: boolean
+  openStatusLabel: string
+  openingHours: DoctorsOfficeOpeningPeriod[]
+  addressLine1: string
+  addressLine2: string
+  websiteLabel: string
+  websiteUrl: string
+  additionalOfferLabel: string
 }

@@ -1,226 +1,633 @@
+import { useAppTranslation } from "@/app/hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { azdLayout } from "@/theme/azd-tokens"
+import type {
+  HomeDoctorCard,
+  HomeQuickAction,
+  HomeRequest,
+  HomeSummary,
+} from "@app-zum-doc/utils/api"
 import { Image } from "expo-image"
-import { Calendar, ChevronRight, MessageCircle, Pill } from "lucide-react-native"
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
-import { Pressable, StyleSheet, Text, View } from "react-native"
-import { azd } from "@/theme/azd-tokens"
-import type { HomeSummary } from "app-zum-doc-utils/api/types"
+import { LinearGradient } from "expo-linear-gradient"
+import {
+  Calendar,
+  ChevronRight,
+  FileText,
+  Phone,
+  Pill,
+  Search,
+} from "lucide-react-native"
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
-const practiceLogo = require("../assets/images/practice-logo.png")
+const doctorPortrait = require("../assets/images/doctor-portrait.png")
 
-type HomeHeroProps = {
-  summary: HomeSummary
+type StartHeroProps = {
+  onSearchPress: () => void
+  quickActions: HomeSummary["quickActions"]
+  onQuickActionPress: (action: HomeQuickAction) => void
 }
 
-export function HomeHero({ summary }: HomeHeroProps) {
+export function StartHero({
+  onSearchPress,
+  quickActions,
+  onQuickActionPress,
+}: StartHeroProps) {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.homeSections
+  const insets = useSafeAreaInsets()
 
   return (
-    <View style={styles.hero}>
-      <Text style={styles.greeting}>
-        {summary.greeting}, {summary.patientFirstName}
+    <LinearGradient
+      colors={[colors.heroStart, colors.heroEnd]}
+      start={{ x: 0.05, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.hero, { paddingTop: insets.top + azdLayout.space[3] }]}
+    >
+      <View style={styles.heroDecor} pointerEvents="none" />
+      <Text style={[styles.heroTitle, { color: colors.heroTitle }]}>
+        {t("appName")}
       </Text>
-      <View style={styles.practiceRow}>
-        <Image
-          source={practiceLogo}
-          style={styles.logo}
-          contentFit="cover"
-        />
-        <View style={styles.practiceText}>
-          <Text style={styles.practiceName}>{summary.practiceName}</Text>
-          <Text style={styles.practiceMeta}>{t("yourPractice")}</Text>
-        </View>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t("searchDoctor")}
+        onPress={onSearchPress}
+        style={[
+          styles.searchField,
+          {
+            backgroundColor: colors.searchBackground,
+            ...azdLayout.shadow.hero,
+          },
+        ]}
+      >
+        <Search size={16} color={colors.searchIcon} />
+        <Text style={[styles.searchPlaceholder, { color: colors.searchPlaceholder }]}>
+          {t("searchDoctor")}
+        </Text>
+      </Pressable>
+
+      <View style={styles.quickActions}>
+        {quickActions.map((action) => (
+          <StartQuickActionCard
+            key={action.id}
+            action={action}
+            onPress={() => onQuickActionPress(action)}
+          />
+        ))}
       </View>
-    </View>
+    </LinearGradient>
   )
 }
 
-type NextAppointmentCardProps = {
-  appointment: NonNullable<HomeSummary["nextAppointment"]>
+type StartQuickActionCardProps = {
+  action: HomeQuickAction
+  onPress: () => void
 }
 
-export function NextAppointmentCard({ appointment }: NextAppointmentCardProps) {
-  const t = useAppTranslation()
-
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.iconTile}>
-          <Calendar size={18} color={azd.green[600]} />
-        </View>
-        <Text style={styles.cardEyebrow}>{t("nextAppointment")}</Text>
-      </View>
-      <Text style={styles.cardTitle}>{appointment.title}</Text>
-      <Text style={styles.cardDetail}>{appointment.dateLabel}</Text>
-      <Text style={styles.cardMeta}>
-        {appointment.timeLabel} · {appointment.room}
-      </Text>
-      <Text style={styles.cardDoctor}>{appointment.doctorName}</Text>
-    </View>
-  )
-}
-
-type QuickActionsProps = {
-  actions: HomeSummary["quickActions"]
-  onPress: (href: string) => void
-}
-
-const actionIcons = {
-  message: MessageCircle,
-  prescriptions: Pill,
-  appointments: Calendar,
+const quickActionIcons = {
+  prescription: Pill,
+  appointment: Calendar,
+  referral: FileText,
 } as const
 
-export function QuickActions({ actions, onPress }: QuickActionsProps) {
-  const t = useAppTranslation()
-  const labels = {
-    message: t("actionMessage"),
-    prescriptions: t("actionPrescriptions"),
-    appointments: t("actionAppointments"),
-  } as const
+function StartQuickActionCard({
+  action,
+  onPress,
+}: StartQuickActionCardProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.homeSections
+  const Icon = quickActionIcons[action.id]
 
   return (
-    <View style={styles.actions}>
-      {actions.map((action) => {
-        const Icon =
-          actionIcons[action.id as keyof typeof actionIcons] ?? MessageCircle
-        const label =
-          labels[action.id as keyof typeof labels] ?? action.label
-        return (
-          <Pressable
-            key={action.id}
-            style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
-            onPress={() => onPress(action.href)}
-          >
-            <View style={styles.actionIcon}>
-              <Icon size={18} color={azd.green[600]} />
-            </View>
-            <Text style={styles.actionLabel}>{label}</Text>
-            <ChevronRight size={16} color={azd.fg[7]} />
-          </Pressable>
-        )
-      })}
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={[
+        styles.quickAction,
+        {
+          backgroundColor: colors.actionBackground,
+          ...azdLayout.shadow.lift,
+        },
+      ]}
+    >
+      <Icon size={24} color={colors.actionIcon} />
+      <Text style={[styles.quickActionLabel, { color: colors.actionText }]}>
+        {action.label}
+      </Text>
+    </Pressable>
+  )
+}
+
+type SectionHeaderProps = {
+  title: string
+  onShowAll: () => void
+}
+
+export function StartSectionHeader({ title, onShowAll }: SectionHeaderProps) {
+  const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.homeSections
+
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={[styles.sectionTitle, { color: colors.sectionTitle }]}>
+        {title}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onShowAll}
+        style={styles.showAllRow}
+      >
+        <Text style={[styles.showAll, { color: colors.showAll }]}>
+          {t("showAll")}
+        </Text>
+        <View style={styles.showAllIconWrap}>
+          <ChevronRight size={12} color={colors.showAll} strokeWidth={2.4} />
+        </View>
+      </Pressable>
     </View>
+  )
+}
+
+type MyDoctorsSectionProps = {
+  doctors: HomeDoctorCard[]
+  onShowAll: () => void
+  onDoctorPress: (doctorId: string) => void
+}
+
+export function MyDoctorsSection({
+  doctors,
+  onShowAll,
+  onDoctorPress,
+}: MyDoctorsSectionProps) {
+  const t = useAppTranslation()
+
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionPadding}>
+        <StartSectionHeader title={t("myDoctors")} onShowAll={onShowAll} />
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.doctorsScroll}
+      >
+        {doctors.map((doctor) => (
+          <StartDoctorCard
+            key={doctor.id}
+            doctor={doctor}
+            onPress={() => onDoctorPress(doctor.id)}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  )
+}
+
+type StartDoctorCardProps = {
+  doctor: HomeDoctorCard
+  onPress: () => void
+}
+
+export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.homeSections
+  const hasPortrait = doctor.imageUri === "doctor-portrait"
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={[
+        styles.doctorCard,
+        {
+          backgroundColor: colors.cardBackground,
+          ...azdLayout.shadow.pop,
+        },
+      ]}
+    >
+      {hasPortrait ? (
+        <Image
+          source={doctorPortrait}
+          style={styles.doctorPhoto}
+          contentFit="cover"
+        />
+      ) : (
+        <View
+          style={[
+            styles.doctorPhoto,
+            styles.doctorInitials,
+            { backgroundColor: colors.avatarBackground },
+          ]}
+        >
+          <Text style={[styles.doctorInitialsText, { color: colors.avatarText }]}>
+            {doctor.initials ?? doctor.name.slice(0, 2).toUpperCase()}
+          </Text>
+        </View>
+      )}
+      <View style={styles.doctorBody}>
+        <View style={styles.doctorTop}>
+          <Text style={[styles.doctorName, { color: colors.doctorName }]}>
+            {doctor.name}
+          </Text>
+          <Text
+            style={[styles.doctorSpecialty, { color: colors.doctorSpecialty }]}
+            numberOfLines={2}
+          >
+            {doctor.specialty}
+          </Text>
+        </View>
+        <View style={styles.doctorBottom}>
+          <View style={styles.doctorMetaRow}>
+            <View style={styles.doctorMetaIconWrap}>
+              <View
+                style={[
+                  styles.statusDot,
+                  {
+                    backgroundColor: doctor.isOpen
+                      ? colors.openDot
+                      : colors.closedDot,
+                  },
+                ]}
+              />
+            </View>
+            <Text
+              style={[styles.doctorMeta, { color: colors.doctorMeta }]}
+              numberOfLines={1}
+            >
+              {doctor.openStatusLabel}
+            </Text>
+          </View>
+          <View style={styles.doctorMetaRow}>
+            <View style={styles.doctorMetaIconWrap}>
+              <Phone size={12} color={colors.doctorName} fill={colors.doctorName} />
+            </View>
+            <Text
+              style={[styles.doctorMeta, { color: colors.doctorMeta }]}
+              numberOfLines={1}
+            >
+              {doctor.phone}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Pressable>
+  )
+}
+
+type RecentRequestsSectionProps = {
+  requests: HomeRequest[]
+  onShowAll: () => void
+  onRequestPress: (requestId: string) => void
+}
+
+export function RecentRequestsSection({
+  requests,
+  onShowAll,
+  onRequestPress,
+}: RecentRequestsSectionProps) {
+  const t = useAppTranslation()
+
+  return (
+    <View style={[styles.section, styles.sectionPadding]}>
+      <StartSectionHeader title={t("recentRequests")} onShowAll={onShowAll} />
+      <View style={styles.requestsList}>
+        {requests.map((request) => (
+          <RequestTile
+            key={request.id}
+            request={request}
+            onPress={() => onRequestPress(request.id)}
+          />
+        ))}
+      </View>
+    </View>
+  )
+}
+
+type RequestTileProps = {
+  request: HomeRequest
+  onPress: () => void
+}
+
+export function RequestTile({ request, onPress }: RequestTileProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.homeSections
+  const isWarning = request.status === "in_progress"
+  const KindIcon =
+    request.kind === "prescription"
+      ? Pill
+      : request.kind === "appointment"
+        ? Calendar
+        : FileText
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={[
+        styles.requestTile,
+        {
+          backgroundColor: colors.cardBackground,
+          ...azdLayout.shadow.pop,
+        },
+      ]}
+    >
+      <View style={styles.requestBody}>
+        <View style={styles.requestText}>
+          <Text style={[styles.requestDoctor, { color: colors.requestDoctor }]}>
+            {request.doctorName}
+          </Text>
+          <Text style={[styles.requestTitle, { color: colors.requestTitle }]}>
+            {request.title}
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor: isWarning
+                ? colors.statusWarningBackground
+                : colors.statusSuccessBackground,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.statusBadgeDot,
+              {
+                backgroundColor: isWarning
+                  ? colors.statusWarningDot
+                  : colors.statusSuccessDot,
+              },
+            ]}
+          />
+          <Text
+            style={[
+              styles.statusBadgeLabel,
+              {
+                color: isWarning
+                  ? colors.statusWarningText
+                  : colors.statusSuccessText,
+              },
+            ]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {request.statusLabel}
+          </Text>
+        </View>
+      </View>
+      <View
+        style={[
+          styles.kindTag,
+          { backgroundColor: colors.kindTagBackground },
+        ]}
+      >
+        <KindIcon size={15} color={colors.kindTagText} />
+        <Text
+          style={[styles.kindTagLabel, { color: colors.kindTagText }]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {request.kindLabel}
+        </Text>
+      </View>
+    </Pressable>
   )
 }
 
 const styles = StyleSheet.create({
   hero: {
-    gap: azd.space[4],
-    marginBottom: azd.space[5],
+    paddingHorizontal: azdLayout.space[4],
+    paddingBottom: azdLayout.space[5],
+    gap: 22,
+    overflow: "hidden",
   },
-  greeting: {
-    fontFamily: azd.font.display,
-    fontWeight: "700",
-    fontSize: 28,
-    color: azd.green[600],
+  heroDecor: {
+    position: "absolute",
+    left: -120,
+    top: 40,
+    width: 340,
+    height: 340,
+    borderRadius: 9999,
+    borderWidth: 22,
+    borderColor: "rgba(245,245,245,0.12)",
   },
-  practiceRow: {
+  heroTitle: {
+    fontFamily: azdLayout.font.display,
+    fontWeight: "600",
+    fontSize: 24,
+    textAlign: "center",
+    letterSpacing: -0.43,
+  },
+  searchField: {
+    height: 46,
+    borderRadius: azdLayout.radius.pill,
     flexDirection: "row",
     alignItems: "center",
-    gap: azd.space[3],
+    gap: azdLayout.space[2],
+    paddingHorizontal: azdLayout.space[4],
   },
-  logo: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: azd.green[100],
+  searchPlaceholder: {
+    flex: 1,
+    fontFamily: azdLayout.font.display,
+    fontSize: 15,
   },
-  practiceText: {
-    gap: 2,
+  quickActions: {
+    flexDirection: "row",
+    gap: azdLayout.space[3],
   },
-  practiceName: {
-    fontFamily: azd.font.display,
+  quickAction: {
+    flex: 1,
+    borderRadius: azdLayout.radius.md,
+    padding: azdLayout.space[3],
+    gap: azdLayout.space[3],
+  },
+  quickActionLabel: {
+    fontFamily: azdLayout.font.display,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  section: {
+    gap: azdLayout.space[3],
+  },
+  sectionPadding: {
+    paddingHorizontal: azdLayout.space[4],
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionTitle: {
+    fontFamily: azdLayout.font.display,
     fontWeight: "700",
     fontSize: 16,
-    color: azd.fg[1],
   },
-  practiceMeta: {
-    fontSize: 13,
-    color: azd.fg[5],
-  },
-  card: {
-    backgroundColor: azd.bg.surface,
-    borderRadius: azd.radius.md,
-    borderWidth: 1,
-    borderColor: azd.border,
-    padding: azd.space[4],
+  showAllRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 4,
-    marginBottom: azd.space[5],
-    ...azd.shadow.card,
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 8,
-  },
-  iconTile: {
-    width: 32,
-    height: 32,
-    borderRadius: azd.radius.sm,
-    backgroundColor: "rgba(5,121,134,0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardEyebrow: {
-    fontFamily: azd.font.tabular,
-    fontWeight: "700",
-    fontSize: 12,
-    color: azd.green[600],
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-  },
-  cardTitle: {
-    fontFamily: azd.font.display,
-    fontWeight: "700",
-    fontSize: 18,
-    color: azd.fg[1],
-  },
-  cardDetail: {
-    fontSize: 15,
-    color: azd.fg[3],
-    marginTop: 4,
-  },
-  cardMeta: {
+  showAll: {
+    fontFamily: azdLayout.font.display,
     fontSize: 14,
-    color: azd.fg[4],
+    lineHeight: 16,
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
-  cardDoctor: {
-    marginTop: 8,
-    fontSize: 13,
-    color: azd.fg[5],
-  },
-  actions: {
-    gap: azd.space[2],
-    marginBottom: azd.space[5],
-  },
-  action: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: azd.space[3],
-    backgroundColor: azd.bg.surface,
-    borderRadius: azd.radius.md,
-    borderWidth: 1,
-    borderColor: azd.border,
-    paddingHorizontal: azd.space[4],
-    paddingVertical: 14,
-  },
-  actionPressed: {
-    backgroundColor: azd.bg.app,
-  },
-  actionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: azd.radius.pill,
-    backgroundColor: azd.bg.app,
+  showAllIconWrap: {
+    height: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  actionLabel: {
+  doctorsScroll: {
+    paddingHorizontal: azdLayout.space[4],
+    paddingVertical: azdLayout.space[2],
+    gap: azdLayout.space[3],
+  },
+  doctorCard: {
+    width: 306,
+    height: 155,
+    borderRadius: azdLayout.radius.sm,
+    flexDirection: "row",
+    gap: 10,
+    padding: 10,
+  },
+  doctorPhoto: {
+    width: 97,
+    borderRadius: 7,
+  },
+  doctorInitials: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  doctorInitialsText: {
+    fontFamily: azdLayout.font.display,
+    fontWeight: "600",
+    fontSize: 28,
+  },
+  doctorBody: {
     flex: 1,
-    fontFamily: azd.font.display,
+    justifyContent: "space-between",
+    paddingVertical: azdLayout.space[2],
+  },
+  doctorTop: {
+    gap: 2,
+  },
+  doctorName: {
+    fontFamily: azdLayout.font.display,
+    fontWeight: "600",
+    fontSize: 18,
+    letterSpacing: -0.43,
+  },
+  doctorSpecialty: {
+    fontFamily: azdLayout.font.display,
+    fontSize: 13,
+  },
+  doctorBottom: {
+    gap: 10,
+  },
+  doctorMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  doctorMetaIconWrap: {
+    width: 12,
+    height: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 9999,
+  },
+  doctorMeta: {
+    flex: 1,
+    fontFamily: azdLayout.font.display,
+    fontSize: 13,
+    lineHeight: 16,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+  requestsList: {
+    gap: 10,
+  },
+  requestTile: {
+    borderRadius: azdLayout.radius.md,
+    padding: azdLayout.space[4],
+    flexDirection: "row",
+    gap: azdLayout.space[3],
+    alignItems: "flex-start",
+  },
+  requestBody: {
+    flex: 1,
+    gap: azdLayout.space[2],
+  },
+  requestText: {
+    gap: 2,
+  },
+  requestDoctor: {
+    fontFamily: azdLayout.font.display,
     fontWeight: "500",
-    fontSize: 15,
-    color: azd.fg[1],
+    fontSize: 16,
+    letterSpacing: -0.43,
+  },
+  requestTitle: {
+    fontFamily: azdLayout.font.display,
+    fontWeight: "600",
+    fontSize: 17,
+    letterSpacing: -0.43,
+  },
+  statusBadge: {
+    width: 132,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: azdLayout.radius.pill,
+    overflow: "hidden",
+  },
+  statusBadgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 9999,
+    flexShrink: 0,
+  },
+  statusBadgeLabel: {
+    flexShrink: 1,
+    fontFamily: azdLayout.font.display,
+    fontWeight: "500",
+    fontSize: 13,
+  },
+  kindTag: {
+    width: 132,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: azdLayout.space[2],
+    paddingVertical: azdLayout.space[2],
+    paddingHorizontal: azdLayout.space[3],
+    borderRadius: azdLayout.radius.md,
+    overflow: "hidden",
+    flexShrink: 0,
+  },
+  kindTagLabel: {
+    flexShrink: 1,
+    fontFamily: azdLayout.font.display,
+    fontWeight: "500",
+    fontSize: 14,
+    letterSpacing: -0.43,
   },
 })

@@ -1,37 +1,129 @@
-import { HightideProvider, useHightide } from "@helpwave/hightide-native/global-contexts"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { queryClient } from "@/lib/query-client"
+import { azdSupportedThemes } from "@/theme/azd-theme"
+import { HightideProvider, useHightide, useTheme } from "@helpwave/hightide-native/global-contexts"
 import { QueryClientProvider } from "@tanstack/react-query"
-import { appZumDocTranslation } from "app-zum-doc-utils/i18n"
+import { appZumDocTranslation } from "@app-zum-doc/utils/i18n"
+import { tealPalette } from "@app-zum-doc/utils/theme"
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native"
 import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
+import * as SystemUI from "expo-system-ui"
 import { useEffect, type ReactNode } from "react"
-import { ActivityIndicator, View } from "react-native"
+import { ActivityIndicator, Text, View } from "react-native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
-import { queryClient } from "@/lib/query-client"
-import { azd } from "@/theme/azd-tokens"
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined)
 
 function LoadingView() {
+  const { theme, isInitialized } = useTheme()
+  const color = isInitialized ? theme.semantic.primary : tealPalette.value[600]
+
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ActivityIndicator color={azd.green[600]} />
+      <ActivityIndicator color={color} />
+      <Text>Initializing</Text>
     </View>
   )
 }
 
 function AppStack() {
+  const { theme, themeMode } = useAzdTheme()
+  const backgroundColor = theme.components.screen.background
+  const baseTheme = themeMode === "dark" ? DarkTheme : DefaultTheme
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(backgroundColor)
+  }, [backgroundColor])
+
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen
-        name="chat/[id]"
-        options={{
-          animation: "slide_from_right",
+    <ThemeProvider
+      value={{
+        ...baseTheme,
+        colors: {
+          ...baseTheme.colors,
+          background: backgroundColor,
+          card: backgroundColor,
+        },
+      }}
+    >
+      <Stack
+        screenOptions={{
           headerShown: false,
+          contentStyle: { backgroundColor },
         }}
-      />
-    </Stack>
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="chat/[id]"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="doctor/[id]"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="search"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="doctors"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/index"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/[id]"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/prescription"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/appointment"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/referral"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+      </Stack>
+    </ThemeProvider>
   )
 }
 
@@ -57,16 +149,22 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError])
 
-  if (!fontsLoaded && !fontError) {
-    return <LoadingView />
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
-      <HightideProvider translation={{ translation: appZumDocTranslation }}>
+      <HightideProvider
+        theme={{
+          supportedThemes: azdSupportedThemes,
+          fallbackTheme: "light",
+        }}
+        translation={{ translation: appZumDocTranslation }}
+      >
         <SafeAreaProvider>
           <HightideGate>
-            <AppStack />
+             {!fontsLoaded && !fontError ? (
+              <LoadingView />
+            ) : (
+              <AppStack />
+            )}
           </HightideGate>
         </SafeAreaProvider>
       </HightideProvider>

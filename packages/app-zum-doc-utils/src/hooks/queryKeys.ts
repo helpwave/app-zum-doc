@@ -14,3 +14,8 @@ export const profileKeys = {
   all: ["profile"] as const,
   patient: ["profile", "patient"] as const,
 }
+
+export const doctorsOfficeKeys = {
+  all: ["doctorsOffice"] as const,
+  detail: (id: string) => ["doctorsOffice", "detail", id] as const,
+}

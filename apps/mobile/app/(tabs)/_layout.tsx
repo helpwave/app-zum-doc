@@ -1,46 +1,64 @@
-import { MessageCircle, Home, UserRound } from "lucide-react-native"
-import { useAppTranslation } from "app-zum-doc-utils/hooks"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { azdLayout } from "@/theme/azd-tokens"
 import { Tabs } from "expo-router"
+import { Home, MessageCircle, UserRound } from "lucide-react-native"
 import { StyleSheet, Text, View } from "react-native"
-import { azd } from "@/theme/azd-tokens"
+import { useAppTranslation } from "../hooks/useAppTranslation"
 
 type TabIconProps = {
   focused: boolean
-  label: string
   icon: "home" | "chat" | "profile"
 }
 
-function TabItem({ focused, label, icon }: TabIconProps) {
+function TabItem({ focused, icon }: TabIconProps) {
+  const { theme } = useAzdTheme()
+  const colors = theme.components.tabBar
   const Icon =
     icon === "home" ? Home : icon === "chat" ? MessageCircle : UserRound
-  const color = focused ? "#FFFFFF" : azd.fg[7]
-
-  if (focused) {
-    return (
-      <View style={styles.activePill}>
-        <Icon size={22} color={color} />
-        <Text style={styles.activeLabel}>{label}</Text>
-      </View>
-    )
-  }
+  const color = focused ? colors.activeForeground : colors.inactive
 
   return (
-    <View style={styles.inactiveItem}>
-      <Icon size={24} color={color} />
-      <Text style={styles.inactiveLabel}>{label}</Text>
+    <View
+      style={[
+        styles.chip,
+        focused && { backgroundColor: colors.activeBackground },
+      ]}
+    >
+      <Icon size={22} color={color} />
     </View>
   )
 }
 
 export default function TabsLayout() {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.tabBar
+  const backgroundColor = theme.components.screen.background
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: styles.tabBar,
+        sceneStyle: { backgroundColor },
+        tabBarActiveTintColor: theme.semantic.primary,
+        tabBarInactiveTintColor: colors.inactive,
+        tabBarLabel: ({ focused, color, children }) => (
+          <Text
+            style={[
+              styles.label,
+              { color, fontWeight: focused ? "700" : "500" },
+            ]}
+          >
+            {children}
+          </Text>
+        ),
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+          },
+        ],
       }}
     >
       <Tabs.Screen
@@ -48,7 +66,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabStart"),
           tabBarIcon: ({ focused }) => (
-            <TabItem focused={focused} label={t("tabStart")} icon="home" />
+            <TabItem focused={focused} icon="home" />
           ),
         }}
       />
@@ -57,7 +75,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabChats"),
           tabBarIcon: ({ focused }) => (
-            <TabItem focused={focused} label={t("tabChats")} icon="chat" />
+            <TabItem focused={focused} icon="chat" />
           ),
         }}
       />
@@ -66,7 +84,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabProfile"),
           tabBarIcon: ({ focused }) => (
-            <TabItem focused={focused} label={t("tabProfile")} icon="profile" />
+            <TabItem focused={focused} icon="profile" />
           ),
         }}
       />
@@ -80,34 +98,17 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 0,
     paddingHorizontal: 20,
-    backgroundColor: azd.bg.surface,
-    borderTopColor: azd.divider,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  activePill: {
-    flexDirection: "row",
+  chip: {
     alignItems: "center",
-    gap: 8,
-    height: 40,
+    justifyContent: "center",
+    paddingVertical: 6,
     paddingHorizontal: 18,
-    borderRadius: azd.radius.pill,
-    backgroundColor: azd.green[300],
+    borderRadius: azdLayout.radius.pill,
   },
-  activeLabel: {
-    fontFamily: azd.font.display,
-    fontWeight: "500",
-    fontSize: 14,
-    color: "#FFFFFF",
-  },
-  inactiveItem: {
-    width: 70,
-    alignItems: "center",
-    gap: 5,
-  },
-  inactiveLabel: {
-    fontFamily: azd.font.display,
-    fontWeight: "500",
+  label: {
+    fontFamily: azdLayout.font.display,
     fontSize: 11,
-    color: azd.fg[7],
   },
 })

@@ -1,12 +1,14 @@
 import {
   buildHomeSummary,
   conversationsSeed,
+  doctorsOfficesSeed,
   messagesByConversation,
   patientProfileSeed,
 } from "./data"
 import type {
   ChatMessage,
   Conversation,
+  DoctorsOffice,
   HomeSummary,
   PatientProfile,
   StructuredCardMessage,
@@ -191,11 +193,29 @@ export async function resolveCardAction(
 }
 
 export async function fetchHomeSummary(): Promise<HomeSummary> {
-  return withMockLatency(() => buildHomeSummary(conversationsState))
+  return withMockLatency(() => buildHomeSummary())
 }
 
 export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
+}
+
+export async function fetchDoctorsOffice(
+  doctorsOfficeId: string,
+): Promise<DoctorsOffice> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesSeed[doctorsOfficeId]
+    if (!office) {
+      throw new Error("Arztpraxis nicht gefunden.")
+    }
+    return {
+      ...office,
+      openingHours: office.openingHours.map((period) => ({
+        ...period,
+        times: [...period.times],
+      })),
+    }
+  })
 }
 
 export function resetMockStore(): void {

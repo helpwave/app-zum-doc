@@ -1,8 +1,11 @@
+import {
+  ChatDateDivider,
+  ChatSystemLine,
+} from "@helpwave/hightide-native/components"
 import { AttachmentCard } from "@/components/attachment-card"
 import { MessageBubble } from "@/components/message-bubble"
-import { DateDivider, SystemLine } from "@/components/system-line"
 import { StructuredCard } from "@/components/structured-card"
-import type { ChatMessage } from "app-zum-doc-utils/api/types"
+import type { ChatMessage } from "@app-zum-doc/utils/api"
 
 type ChatMessageItemProps = {
   message: ChatMessage
@@ -17,9 +20,9 @@ export function ChatMessageItem({
 }: ChatMessageItemProps) {
   switch (message.type) {
     case "date":
-      return <DateDivider label={message.label} />
+      return <ChatDateDivider>{message.label}</ChatDateDivider>
     case "system":
-      return <SystemLine body={message.body} />
+      return <ChatSystemLine>{message.body}</ChatSystemLine>
     case "text":
       return <MessageBubble message={message} />
     case "card":

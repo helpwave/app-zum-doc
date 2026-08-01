@@ -1,6 +1,7 @@
 import type {
   ChatMessage,
   Conversation,
+  DoctorsOffice,
   HomeSummary,
   PatientProfile,
 } from "../types"
@@ -174,36 +175,118 @@ export const patientProfileSeed: PatientProfile = {
   notificationsEnabled: true,
 }
 
-export function buildHomeSummary(
-  conversations: Conversation[],
-): HomeSummary {
-  const unread = conversations.reduce(
-    (sum, conversation) => sum + conversation.unreadCount,
-    0,
-  )
-  const recent =
-    conversations.find((conversation) => conversation.unreadCount > 0) ??
-    conversations[0] ??
-    null
+export const doctorsOfficesSeed: Record<string, DoctorsOffice> = {
+  "office-moser": {
+    id: "office-moser",
+    name: "Dr. Moser",
+    specialty: "Allgemeinmedizin - Innere Medizin",
+    phone: "040 3187612001",
+    imageUri: "doctor-portrait",
+    isOpen: true,
+    openStatusLabel: "Praxis ist geöffnet",
+    openingHours: [
+      { dayLabel: "Montag", times: ["7:00 - 16:00"] },
+      { dayLabel: "Dienstag", times: ["7:00 - 12:00", "14:00 - 16:00"] },
+      { dayLabel: "Mittwoch", times: ["7:00 - 12:00"] },
+      { dayLabel: "Donnerstag", times: ["7:00 - 16:00"] },
+      { dayLabel: "Freitag", times: ["7:00 - 12:00"] },
+      { dayLabel: "Samstag", times: [] },
+      { dayLabel: "Sonntag", times: [] },
+    ],
+    addressLine1: "Teichweg 12",
+    addressLine2: "22637 Nordberg",
+    websiteLabel: "www.dr-moser.de",
+    websiteUrl: "https://www.dr-moser.de",
+    additionalOfferLabel: "Online-Termin für Impfungen",
+  },
+  "office-haumann": {
+    id: "office-haumann",
+    name: "Dr. Haumann",
+    specialty: "Allgemeinmedizin",
+    phone: "0241 5566 730",
+    imageUri: null,
+    initials: "HM",
+    isOpen: false,
+    openStatusLabel: "Praxis ist geschlossen",
+    openingHours: [
+      { dayLabel: "Montag", times: ["8:00 - 12:00"] },
+      { dayLabel: "Dienstag", times: ["8:00 - 12:00"] },
+      { dayLabel: "Mittwoch", times: [] },
+      { dayLabel: "Donnerstag", times: ["8:00 - 12:00", "14:00 - 17:00"] },
+      { dayLabel: "Freitag", times: ["8:00 - 12:00"] },
+      { dayLabel: "Samstag", times: [] },
+      { dayLabel: "Sonntag", times: [] },
+    ],
+    addressLine1: "Pontstraße 55",
+    addressLine2: "52062 Aachen",
+    websiteLabel: "www.dr-haumann.de",
+    websiteUrl: "https://www.dr-haumann.de",
+    additionalOfferLabel: "Videosprechstunde",
+  },
+}
+
+export function buildHomeSummary(): HomeSummary {
+  const moser = doctorsOfficesSeed["office-moser"]
+  const haumann = doctorsOfficesSeed["office-haumann"]
 
   return {
-    greeting: "Guten Tag",
-    patientFirstName: patientProfileSeed.firstName,
-    practiceName: "Hausarztpraxis Altstadt",
-    practiceLogoUri: "practice-logo",
-    nextAppointment: {
-      title: "Besprechung Blutwerte",
-      dateLabel: "Mi. 8. Juli 2026",
-      timeLabel: "15:00 – 15:30 Uhr",
-      room: "Sprechzimmer 2",
-      doctorName: "Dr. med. Sophie Vogt",
-    },
-    unreadChatCount: unread,
-    recentConversation: recent,
     quickActions: [
-      { id: "message", label: "Nachricht senden", href: "/(tabs)/chat" },
-      { id: "prescriptions", label: "Rezepte", href: "/(tabs)/chat" },
-      { id: "appointments", label: "Termine", href: "/(tabs)/chat" },
+      {
+        id: "prescription",
+        label: "Rezept",
+        href: "/requests/prescription",
+      },
+      {
+        id: "appointment",
+        label: "Termin",
+        href: "/requests/appointment",
+      },
+      {
+        id: "referral",
+        label: "Überweisung",
+        href: "/requests/referral",
+      },
+    ],
+    myDoctors: [
+      {
+        id: moser.id,
+        name: moser.name,
+        specialty: moser.specialty,
+        phone: moser.phone,
+        imageUri: moser.imageUri,
+        isOpen: moser.isOpen,
+        openStatusLabel: moser.openStatusLabel,
+      },
+      {
+        id: haumann.id,
+        name: haumann.name,
+        specialty: haumann.specialty,
+        phone: haumann.phone,
+        imageUri: haumann.imageUri,
+        initials: haumann.initials,
+        isOpen: haumann.isOpen,
+        openStatusLabel: haumann.openStatusLabel,
+      },
+    ],
+    recentRequests: [
+      {
+        id: "req-aciclovir",
+        doctorName: "Dr. Moser",
+        title: "Aciclovir 800 Heumann",
+        kind: "prescription",
+        kindLabel: "Rezept",
+        status: "in_progress",
+        statusLabel: "In Bearbeitung",
+      },
+      {
+        id: "req-radiologie",
+        doctorName: "Dr. Moser",
+        title: "Radiologie Dr. Kern",
+        kind: "referral",
+        kindLabel: "Überweisung",
+        status: "ready_for_pickup",
+        statusLabel: "Abholbereit",
+      },
     ],
   }
 }

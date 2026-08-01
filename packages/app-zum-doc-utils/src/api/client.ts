@@ -1,6 +1,7 @@
 export {
   fetchConversation,
   fetchConversations,
+  fetchDoctorsOffice,
   fetchHomeSummary,
   fetchMessages,
   fetchPatientProfile,

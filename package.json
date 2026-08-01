@@ -12,9 +12,9 @@
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
     "reset": "pnpm run clean && pnpm run init",
-    "start": "pnpm --filter app-zum-doc-mobile start",
-    "android": "pnpm --filter app-zum-doc-mobile android",
-    "ios": "pnpm --filter app-zum-doc-mobile ios"
+    "start": "pnpm --filter \"@app-zum-doc/mobile\" start",
+    "android": "pnpm --filter \"@app-zum-doc/mobile\" android",
+    "ios": "pnpm --filter \"@app-zum-doc/mobile\" ios"
   },
   "devEngines": {
     "packageManager": {

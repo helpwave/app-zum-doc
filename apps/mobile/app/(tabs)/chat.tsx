@@ -1,42 +1,44 @@
-import { MessageCircle } from "lucide-react-native"
-import {
-  useAppTranslation,
-  useConversations,
-} from "app-zum-doc-utils/hooks"
-import { useRouter } from "expo-router"
-import { useState } from "react"
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ConversationRow } from "@/components/conversation-row"
 import { QueryState } from "@/components/query-state"
 import { ScreenHeader } from "@/components/screen-header"
 import { SearchField } from "@/components/search-field"
-import { azd } from "@/theme/azd-tokens"
+import { useAppTranslation } from "../hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import {
+  ChatConversationList,
+  IconButton,
+} from "@helpwave/hightide-native/components"
+import { useConversations } from "@app-zum-doc/utils/hooks"
+import { useRouter } from "expo-router"
+import { MessageCircle } from "lucide-react-native"
+import { useState } from "react"
+import { StyleSheet, View } from "react-native"
 
 export default function ChatListScreen() {
   const t = useAppTranslation()
-  const insets = useSafeAreaInsets()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.screen
   const router = useRouter()
   const [search, setSearch] = useState("")
   const conversationsQuery = useConversations(search)
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background },
+      ]}
+    >
       <ScreenHeader
         title={t("chatsTitle")}
         trailing={
-          <Pressable
-            style={styles.composeButton}
-            accessibilityRole="button"
+          <IconButton
             accessibilityLabel={t("newMessage")}
-          >
-            <MessageCircle size={19} color={azd.green[600]} />
-          </Pressable>
+            icon={MessageCircle}
+            size="md"
+            color="primary"
+            coloringStyle="text"
+          />
         }
       >
         <SearchField
@@ -55,11 +57,10 @@ export default function ChatListScreen() {
         }}
         loadingLabel={t("loadingChats")}
       >
-        <FlatList
-          data={conversationsQuery.data ?? []}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
+        <ChatConversationList>
+          {(conversationsQuery.data ?? []).map((item) => (
             <ConversationRow
+              key={item.id}
               conversation={item}
               onPress={() => {
                 router.push({
@@ -68,10 +69,8 @@ export default function ChatListScreen() {
                 })
               }}
             />
-          )}
-          contentContainerStyle={styles.listContent}
-          style={styles.list}
-        />
+          ))}
+        </ChatConversationList>
       </QueryState>
     </View>
   )
@@ -80,21 +79,5 @@ export default function ChatListScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: azd.bg.app,
-  },
-  composeButton: {
-    width: 38,
-    height: 38,
-    borderRadius: azd.radius.pill,
-    backgroundColor: azd.bg.app,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  list: {
-    flex: 1,
-    backgroundColor: azd.bg.surface,
-  },
-  listContent: {
-    flexGrow: 1,
   },
 })

@@ -1,23 +1,26 @@
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
-  useAppTranslation,
-  usePatientProfile,
-} from "app-zum-doc-utils/hooks"
+  LocaleSetting,
+  ProfileHeader,
+  ProfileNavRow,
+  ThemeModeSetting
+} from "@/components/profile-sections"
+import { QueryState } from "@/components/query-state"
+import { azdLayout } from "@/theme/azd-tokens"
+import { usePatientProfile } from "@app-zum-doc/utils/hooks"
+import { Menu, MenuItem, Switch } from "@helpwave/hightide-native/components"
+import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import {
-  NotificationToggle,
-  ProfileHeader,
-  ProfileInfoRow,
-  ProfileNavRow,
-  ProfileSection,
-} from "@/components/profile-sections"
-import { QueryState } from "@/components/query-state"
-import { azd } from "@/theme/azd-tokens"
+import { useAppTranslation } from "../hooks/useAppTranslation"
 
 export default function ProfileScreen() {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const colors = theme.components.screen
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const profileQuery = usePatientProfile()
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
 
@@ -28,7 +31,12 @@ export default function ProfileScreen() {
   }, [profileQuery.data])
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.screen,
+        { paddingTop: insets.top, backgroundColor: colors.background },
+      ]}
+    >
       <QueryState
         isPending={profileQuery.isPending}
         isError={profileQuery.isError}
@@ -37,7 +45,7 @@ export default function ProfileScreen() {
           void profileQuery.refetch()
         }}
         loadingLabel={t("loadingProfile")}
-        style={styles.query}
+        style={{ backgroundColor: colors.background }}
       >
         {profileQuery.data ? (
           <ScrollView
@@ -46,22 +54,22 @@ export default function ProfileScreen() {
           >
             <ProfileHeader profile={profileQuery.data} />
 
-            <ProfileSection title={t("personalData")}>
-              <ProfileInfoRow label={t("name")} value={profileQuery.data.fullName} />
-              <ProfileInfoRow
+            <Menu title={t("personalData")}>
+              <MenuItem label={t("name")} value={profileQuery.data.fullName} />
+              <MenuItem
                 label={t("dateOfBirth")}
                 value={profileQuery.data.dateOfBirth}
               />
-              <ProfileInfoRow label={t("email")} value={profileQuery.data.email} />
-              <ProfileInfoRow label={t("phone")} value={profileQuery.data.phone} />
-            </ProfileSection>
+              <MenuItem label={t("email")} value={profileQuery.data.email} />
+              <MenuItem label={t("phone")} value={profileQuery.data.phone} />
+            </Menu>
 
-            <ProfileSection title={t("practiceSection")}>
-              <ProfileInfoRow
+            <Menu title={t("practiceSection")}>
+              <MenuItem
                 label={t("practice")}
                 value={profileQuery.data.practiceName}
               />
-              <ProfileInfoRow
+              <MenuItem
                 label={t("address")}
                 value={profileQuery.data.practiceAddress}
               />
@@ -69,16 +77,27 @@ export default function ProfileScreen() {
                 icon="practice"
                 label={t("practiceDetails")}
                 onPress={() => {
-                  Alert.alert(t("practice"), "Details folgen in einem späteren Release.")
+                  router.push({
+                    pathname: "/doctor/[id]",
+                    params: { id: "office-moser" },
+                  })
                 }}
               />
-            </ProfileSection>
+            </Menu>
 
-            <ProfileSection title={t("settingsSection")}>
-              <NotificationToggle
-                value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
+            <Menu title={t("settingsSection")}>
+              <ProfileNavRow
+                icon="bell"
+                label={t("notifications")}
+                trailing={
+                  <Switch
+                    value={notificationsEnabled}
+                    onValueChange={setNotificationsEnabled}
+                  />
+                }
               />
+              <ThemeModeSetting />
+              <LocaleSetting />
               <ProfileNavRow
                 icon="user"
                 label={t("editPersonalData")}
@@ -94,7 +113,7 @@ export default function ProfileScreen() {
                   Alert.alert(t("signOut"), "Sie sind in dieser Demo nicht angemeldet.")
                 }}
               />
-            </ProfileSection>
+            </Menu>
           </ScrollView>
         ) : null}
       </QueryState>
@@ -105,13 +124,9 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: azd.bg.app,
-  },
-  query: {
-    backgroundColor: azd.bg.app,
   },
   content: {
-    paddingHorizontal: azd.space[4],
-    paddingBottom: azd.space[8],
+    paddingHorizontal: azdLayout.space[4],
+    paddingBottom: azdLayout.space[8],
   },
 })
