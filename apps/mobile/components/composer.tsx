@@ -1,5 +1,4 @@
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import {
   ChatMessageComposer,
   IconButton,
@@ -28,11 +27,10 @@ export function Composer({
       {errorMessage ? (
         <Text
           style={{
-            fontFamily: azdLayout.font.display,
-            fontSize: 12,
+            ...theme.typography.body.sm,
             color: colors.errorText,
-            paddingHorizontal: 14,
-            paddingTop: 8,
+            paddingHorizontal: theme.spacing.lg - theme.spacing.xs,
+            paddingTop: theme.spacing.md,
             backgroundColor: colors.errorBackground,
           }}
         >

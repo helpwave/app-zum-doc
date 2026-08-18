@@ -9,7 +9,6 @@ import {
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
-import { azdLayout } from "@/theme/azd-tokens"
 import { useDoctorsOffice } from "@app-zum-doc/utils/hooks"
 import { Card, ListNavigationItem } from "@helpwave/hightide-native/components"
 import { useLocalSearchParams, useRouter } from "expo-router"
@@ -48,7 +47,7 @@ export default function DoctorDetailScreen() {
           <ScrollView
             contentContainerStyle={[
               { flexGrow: 1 },
-              { paddingBottom: insets.bottom + azdLayout.space[6] },
+              { paddingBottom: insets.bottom + theme.spacing.xl },
             ]}
             showsVerticalScrollIndicator={false}
           >

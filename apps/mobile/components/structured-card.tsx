@@ -1,5 +1,4 @@
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import type { StructuredCardMessage } from "@app-zum-doc/utils/api"
 import {
   Button,
@@ -39,18 +38,17 @@ export function StructuredCard({
           <ThemedText appearance="description">{message.subtitle}</ThemedText>
         </View>
       </View>
-      <View style={{ gap: 4 }}>
+      <View style={{ gap: theme.spacing.sm }}>
         <Text
           style={{
-            fontFamily: azdLayout.font.display,
-            fontWeight: "700",
-            fontSize: 17,
+            ...theme.typography.heading.md,
+            fontWeight: theme.typography.fontWeights.bold,
             color: colors.title,
           }}
         >
           {message.primary}
         </Text>
-        <Text style={{ fontSize: 14, color: colors.detail }}>
+        <Text style={{ ...theme.typography.body.sm, color: colors.detail }}>
           {message.detail}
         </Text>
       </View>

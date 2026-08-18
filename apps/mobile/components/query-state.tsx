@@ -1,11 +1,9 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import { Button } from "@helpwave/hightide-native/components"
 import type { ReactNode } from "react"
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   View,
   type StyleProp,
@@ -35,18 +33,26 @@ export function QueryState({
   const { theme } = useAzdTheme()
   const colors = theme.components.queryState
   const resolvedLoadingLabel = loadingLabel ?? t("loadingChats")
+  const centerStyle = {
+    flex: 1,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.md + theme.spacing.sm,
+    backgroundColor: colors.background,
+  }
 
   if (isPending) {
     return (
-      <View
-        style={[
-          styles.center,
-          { backgroundColor: colors.background },
-          style,
-        ]}
-      >
+      <View style={[centerStyle, style]}>
         <ActivityIndicator size="large" color={colors.spinner} />
-        <Text style={[styles.loadingLabel, { color: colors.loadingText }]}>
+        <Text
+          style={{
+            ...theme.typography.body.sm,
+            color: colors.loadingText,
+            marginTop: theme.spacing.md,
+          }}
+        >
           {resolvedLoadingLabel}
         </Text>
       </View>
@@ -55,17 +61,25 @@ export function QueryState({
 
   if (isError) {
     return (
-      <View
-        style={[
-          styles.center,
-          { backgroundColor: colors.background },
-          style,
-        ]}
-      >
-        <Text style={[styles.errorTitle, { color: colors.title }]}>
+      <View style={[centerStyle, style]}>
+        <Text
+          style={{
+            ...theme.typography.heading.md,
+            fontWeight: theme.typography.fontWeights.bold,
+            textAlign: "center",
+            color: colors.title,
+          }}
+        >
           {t("errorTitle")}
         </Text>
-        <Text style={[styles.errorBody, { color: colors.description }]}>
+        <Text
+          style={{
+            ...theme.typography.body.sm,
+            textAlign: "center",
+            color: colors.description,
+            marginBottom: theme.spacing.md,
+          }}
+        >
           {error?.message ?? t("errorUnknown")}
         </Text>
         {onRetry ? (
@@ -79,30 +93,3 @@ export function QueryState({
 
   return <>{children}</>
 }
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: azdLayout.space[6],
-    gap: azdLayout.space[3],
-  },
-  loadingLabel: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 14,
-    marginTop: azdLayout.space[2],
-  },
-  errorTitle: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "700",
-    fontSize: 18,
-    textAlign: "center",
-  },
-  errorBody: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: azdLayout.space[2],
-  },
-})

@@ -1,7 +1,6 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { SelectionSheet } from "@/components/selection-sheet"
-import { azdLayout } from "@/theme/azd-tokens"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
   Avatar,
@@ -11,7 +10,7 @@ import {
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
 import { useMemo, useState } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { Text, View } from "react-native"
 
 type ProfileHeaderProps = {
   profile: PatientProfile
@@ -22,15 +21,36 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const colors = theme.components.profileSections
 
   return (
-    <View style={styles.header}>
+    <View
+      style={{
+        alignItems: "center",
+        gap: theme.spacing.md,
+        paddingVertical: theme.spacing.lg + theme.spacing.sm,
+      }}
+    >
       <Avatar
         name={profile.fullName}
         size="lg"
       />
-      <Text style={[styles.name, { color: colors.name }]}>
+      <Text
+        style={{
+          ...theme.typography.heading.lg,
+          fontWeight: theme.typography.fontWeights.bold,
+          color: colors.name,
+          marginTop: theme.spacing.md,
+        }}
+      >
         {profile.fullName}
       </Text>
-      <Text style={[styles.meta, { color: colors.meta }]}>
+      <Text
+        style={{
+          ...theme.typography.body.sm,
+          fontFamily: theme.typography.fontFamilies.default,
+          textAlign: "center",
+          paddingHorizontal: theme.spacing.lg,
+          color: colors.meta,
+        }}
+      >
         geb. {profile.dateOfBirth} · Vers.-Nr. {profile.insuranceNumber} ·{" "}
         {profile.insuranceType}
       </Text>
@@ -79,7 +99,13 @@ export function ThemeModeSetting() {
           setIsOpen(true)
         }}
         trailing={
-          <Text style={[styles.settingValue, { color: colors.meta }]}>
+          <Text
+            style={{
+              ...theme.typography.body.sm,
+              fontFamily: theme.typography.fontFamilies.default,
+              color: colors.meta,
+            }}
+          >
             {currentName}
           </Text>
         }
@@ -129,7 +155,13 @@ export function LocaleSetting() {
           setIsOpen(true)
         }}
         trailing={
-          <Text style={[styles.settingValue, { color: colors.meta }]}>
+          <Text
+            style={{
+              ...theme.typography.body.sm,
+              fontFamily: theme.typography.fontFamilies.default,
+              color: colors.meta,
+            }}
+          >
             {currentName}
           </Text>
         }
@@ -150,27 +182,3 @@ export function LocaleSetting() {
     </>
   )
 }
-
-const styles = StyleSheet.create({
-  header: {
-    alignItems: "center",
-    gap: azdLayout.space[2],
-    paddingVertical: azdLayout.space[5],
-  },
-  name: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "700",
-    fontSize: 22,
-    marginTop: azdLayout.space[2],
-  },
-  meta: {
-    fontFamily: azdLayout.font.tabular,
-    fontSize: 13,
-    textAlign: "center",
-    paddingHorizontal: azdLayout.space[4],
-  },
-  settingValue: {
-    fontFamily: azdLayout.font.tabular,
-    fontSize: 14,
-  },
-})

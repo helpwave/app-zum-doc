@@ -137,8 +137,10 @@ function HightideGate({ children }: { children: ReactNode }) {
 }
 
 export default function RootLayout() {
+  // TODO fix this
   const [fontsLoaded, fontError] = useFonts({
     SpaceGrotesk: require("../assets/fonts/SpaceGrotesk-Regular.ttf"),
+    "Space Grotesk": require("../assets/fonts/SpaceGrotesk-Regular.ttf"),
     Inter: require("../assets/fonts/Inter_28pt-Regular.ttf"),
   })
 

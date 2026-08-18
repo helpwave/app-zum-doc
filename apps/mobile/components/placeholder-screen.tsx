@@ -1,10 +1,9 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import { ThemedText } from "@helpwave/hightide-native/components"
 import { ChevronLeft } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { Pressable, Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type PlaceholderScreenProps = {
@@ -28,41 +27,69 @@ export function PlaceholderScreen({
 
   return (
     <View
-      style={[
-        styles.screen,
-        { backgroundColor: colors.background },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
       <View
-        style={[
-          styles.header,
-          {
-            paddingTop: insets.top + 14,
-            borderBottomColor: headerColors.border,
-            backgroundColor: headerColors.background,
-          },
-        ]}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.lg - theme.spacing.xs,
+          paddingBottom: theme.spacing.lg - theme.spacing.xs,
+          borderBottomWidth: theme.border.thin,
+          borderBottomColor: headerColors.border,
+          backgroundColor: headerColors.background,
+        }}
       >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t("back")}
           onPress={onBack}
-          hitSlop={8}
-          style={styles.side}
+          hitSlop={theme.spacing.md}
+          style={{
+            width: theme.elements.control.xs.size,
+            alignItems: "flex-start",
+          }}
         >
           <ChevronLeft
             size={theme.icongraphy.sizes.md}
             color={theme.colors.primary.color}
           />
         </Pressable>
-        <Text style={[styles.title, { color: headerColors.title }]}>
+        <Text
+          style={{
+            ...theme.typography.heading.md,
+            color: headerColors.title,
+          }}
+        >
           {title}
         </Text>
-        <View style={styles.side} />
+        <View
+          style={{
+            width: theme.elements.control.xs.size,
+          }}
+        />
       </View>
-      <View style={styles.body}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: theme.spacing.xl,
+        }}
+      >
         {children ?? (
-          <ThemedText style={[styles.description]} appearance="description">
+          <ThemedText
+            style={{
+              ...theme.typography.body.md,
+              textAlign: "center",
+            }}
+            appearance="description"
+          >
             {description ?? t("placeholderComingSoon")}
           </ThemedText>
         )}
@@ -70,38 +97,3 @@ export function PlaceholderScreen({
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: azdLayout.space[4],
-    paddingBottom: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  side: {
-    width: 32,
-    alignItems: "flex-start",
-  },
-  title: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 17,
-  },
-  body: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: azdLayout.space[6],
-  },
-  description: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 15,
-    textAlign: "center",
-    lineHeight: 22,
-  },
-})

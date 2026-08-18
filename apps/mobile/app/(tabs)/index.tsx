@@ -6,10 +6,9 @@ import {
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "../hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import { useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { useRouter, type Href } from "expo-router"
-import { ScrollView, StyleSheet, View } from "react-native"
+import { ScrollView, View } from "react-native"
 
 export default function HomeScreen() {
   const t = useAppTranslation()
@@ -20,10 +19,10 @@ export default function HomeScreen() {
 
   return (
     <View
-      style={[
-        styles.screen,
-        { backgroundColor: colors.screenBackground },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.screenBackground,
+      }}
     >
       <QueryState
         isPending={homeQuery.isPending}
@@ -37,7 +36,9 @@ export default function HomeScreen() {
       >
         {homeQuery.data ? (
           <ScrollView
-            contentContainerStyle={styles.content}
+            contentContainerStyle={{
+              paddingBottom: theme.spacing.xxl + theme.spacing.md,
+            }}
             showsVerticalScrollIndicator={false}
           >
             <StartHero
@@ -50,7 +51,12 @@ export default function HomeScreen() {
               }}
             />
 
-            <View style={styles.body}>
+            <View
+              style={{
+                paddingTop: theme.spacing.xl,
+                gap: theme.spacing.xxl,
+              }}
+            >
               <MyDoctorsSection
                 doctors={homeQuery.data.myDoctors}
                 onShowAll={() => {
@@ -83,16 +89,3 @@ export default function HomeScreen() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  content: {
-    paddingBottom: azdLayout.space[8],
-  },
-  body: {
-    paddingTop: azdLayout.space[6],
-    gap: azdLayout.space[7],
-  },
-})

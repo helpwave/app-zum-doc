@@ -1,6 +1,6 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
+import { toShadowStyle } from "@/theme/azd-theme"
 import type {
   HomeDoctorCard,
   HomeQuickAction,
@@ -20,7 +20,6 @@ import {
 import {
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native"
@@ -49,10 +48,37 @@ export function StartHero({
       colors={[colors.heroStart, colors.heroEnd]}
       start={{ x: 0.05, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.hero, { paddingTop: insets.top + azdLayout.space[3] }]}
+      style={{
+        paddingHorizontal: theme.spacing.lg,
+        paddingTop: insets.top + theme.spacing.md + theme.spacing.sm,
+        paddingBottom: theme.spacing.lg + theme.spacing.sm,
+        gap: theme.spacing.xl - theme.spacing.xs,
+        overflow: "hidden",
+      }}
     >
-      <View style={styles.heroDecor} pointerEvents="none" />
-      <Text style={[styles.heroTitle, { color: colors.heroTitle }]}>
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          left: -120,
+          top: 40,
+          width: 340,
+          height: 340,
+          borderRadius: 9999,
+          borderWidth: theme.spacing.xl - theme.spacing.xs,
+          borderColor: theme.semantics.withAppearance({
+            color: "#F5F5F5",
+            appearance: "faded",
+          }),
+        }}
+      />
+      <Text
+        style={{
+          ...theme.typography.heading.lg,
+          textAlign: "center",
+          color: colors.heroTitle,
+        }}
+      >
         {t("appName")}
       </Text>
 
@@ -60,21 +86,35 @@ export function StartHero({
         accessibilityRole="button"
         accessibilityLabel={t("searchDoctor")}
         onPress={onSearchPress}
-        style={[
-          styles.searchField,
-          {
-            backgroundColor: colors.searchBackground,
-            ...azdLayout.shadow.hero,
-          },
-        ]}
+        style={{
+          height: theme.elements.control.md.size - theme.spacing.xs,
+          borderRadius: 9999,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.md,
+          paddingHorizontal: theme.spacing.lg,
+          backgroundColor: colors.searchBackground,
+          ...toShadowStyle(theme.shadow.dialog),
+        }}
       >
-        <Search size={16} color={colors.searchIcon} />
-        <Text style={[styles.searchPlaceholder, { color: colors.searchPlaceholder }]}>
+        <Search size={theme.icongraphy.sizes.xs} color={colors.searchIcon} />
+        <Text
+          style={{
+            flex: 1,
+            ...theme.typography.body.md,
+            color: colors.searchPlaceholder,
+          }}
+        >
           {t("searchDoctor")}
         </Text>
       </Pressable>
 
-      <View style={styles.quickActions}>
+      <View
+        style={{
+          flexDirection: "row",
+          gap: theme.spacing.md + theme.spacing.sm,
+        }}
+      >
         {quickActions.map((action) => (
           <StartQuickActionCard
             key={action.id}
@@ -110,16 +150,23 @@ function StartQuickActionCard({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={[
-        styles.quickAction,
-        {
-          backgroundColor: colors.actionBackground,
-          ...azdLayout.shadow.lift,
-        },
-      ]}
+      style={{
+        flex: 1,
+        borderRadius: theme.borderRadius.lg,
+        padding: theme.spacing.md + theme.spacing.sm,
+        gap: theme.spacing.md + theme.spacing.sm,
+        backgroundColor: colors.actionBackground,
+        ...toShadowStyle(theme.shadow.popover),
+      }}
     >
-      <Icon size={24} color={colors.actionIcon} />
-      <Text style={[styles.quickActionLabel, { color: colors.actionText }]}>
+      <Icon size={theme.icongraphy.sizes.md} color={colors.actionIcon} />
+      <Text
+        style={{
+          ...theme.typography.body.sm,
+          fontWeight: theme.typography.fontWeights.semibold,
+          color: colors.actionText,
+        }}
+      >
         {action.label}
       </Text>
     </Pressable>
@@ -137,19 +184,50 @@ export function StartSectionHeader({ title, onShowAll }: SectionHeaderProps) {
   const colors = theme.components.homeSections
 
   return (
-    <View style={styles.sectionHeader}>
-      <Text style={[styles.sectionTitle, { color: colors.sectionTitle }]}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <Text
+        style={{
+          ...theme.typography.heading.sm,
+          fontWeight: theme.typography.fontWeights.bold,
+          color: colors.sectionTitle,
+        }}
+      >
         {title}
       </Text>
       <Pressable
         accessibilityRole="button"
         onPress={onShowAll}
-        style={styles.showAllRow}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: theme.spacing.sm,
+        }}
       >
-        <Text style={[styles.showAll, { color: colors.showAll }]}>
+        <Text
+          style={{
+            ...theme.typography.body.sm,
+            lineHeight: theme.icongraphy.sizes.xs,
+            includeFontPadding: false,
+            textAlignVertical: "center",
+            color: colors.showAll,
+          }}
+        >
           {t("showAll")}
         </Text>
-        <View style={styles.showAllIconWrap}>
+        <View
+          style={{
+            height: theme.icongraphy.sizes.xs,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <ChevronRight size={12} color={colors.showAll} strokeWidth={2.4} />
         </View>
       </Pressable>
@@ -169,16 +247,21 @@ export function MyDoctorsSection({
   onDoctorPress,
 }: MyDoctorsSectionProps) {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
 
   return (
-    <View style={styles.section}>
-      <View style={styles.sectionPadding}>
+    <View style={{ gap: theme.spacing.md + theme.spacing.sm }}>
+      <View style={{ paddingHorizontal: theme.spacing.lg }}>
         <StartSectionHeader title={t("myDoctors")} onShowAll={onShowAll} />
       </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.doctorsScroll}
+        contentContainerStyle={{
+          paddingHorizontal: theme.spacing.lg,
+          paddingVertical: theme.spacing.md,
+          gap: theme.spacing.md + theme.spacing.sm,
+        }}
       >
         {doctors.map((doctor) => (
           <StartDoctorCard
@@ -201,77 +284,145 @@ export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
   const hasPortrait = doctor.imageUri === "doctor-portrait"
+  const photoStyle = {
+    width: 97,
+    borderRadius: theme.borderRadius.md,
+  }
 
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={[
-        styles.doctorCard,
-        {
-          backgroundColor: colors.cardBackground,
-          ...azdLayout.shadow.pop,
-        },
-      ]}
+      style={{
+        width: 306,
+        height: 155,
+        borderRadius: theme.borderRadius.md,
+        flexDirection: "row",
+        gap: theme.spacing.md + theme.spacing.xs,
+        padding: theme.spacing.md + theme.spacing.xs,
+        backgroundColor: colors.cardBackground,
+        ...toShadowStyle(theme.shadow.container),
+      }}
     >
       {hasPortrait ? (
         <Image
           source={doctorPortrait}
-          style={styles.doctorPhoto}
+          style={photoStyle}
           contentFit="cover"
         />
       ) : (
         <View
-          style={[
-            styles.doctorPhoto,
-            styles.doctorInitials,
-            { backgroundColor: colors.avatarBackground },
-          ]}
+          style={{
+            ...photoStyle,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.avatarBackground,
+          }}
         >
-          <Text style={[styles.doctorInitialsText, { color: colors.avatarText }]}>
+          <Text
+            style={{
+              ...theme.typography.heading.lg,
+              fontWeight: theme.typography.fontWeights.semibold,
+              color: colors.avatarText,
+            }}
+          >
             {doctor.initials ?? doctor.name.slice(0, 2).toUpperCase()}
           </Text>
         </View>
       )}
-      <View style={styles.doctorBody}>
-        <View style={styles.doctorTop}>
-          <Text style={[styles.doctorName, { color: colors.doctorName }]}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "space-between",
+          paddingVertical: theme.spacing.md,
+        }}
+      >
+        <View style={{ gap: theme.spacing.xs }}>
+          <Text
+            style={{
+              ...theme.typography.heading.md,
+              color: colors.doctorName,
+            }}
+          >
             {doctor.name}
           </Text>
           <Text
-            style={[styles.doctorSpecialty, { color: colors.doctorSpecialty }]}
+            style={{
+              ...theme.typography.body.sm,
+              color: colors.doctorSpecialty,
+            }}
             numberOfLines={2}
           >
             {doctor.specialty}
           </Text>
         </View>
-        <View style={styles.doctorBottom}>
-          <View style={styles.doctorMetaRow}>
-            <View style={styles.doctorMetaIconWrap}>
+        <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: theme.spacing.sm,
+            }}
+          >
+            <View
+              style={{
+                width: 12,
+                height: theme.icongraphy.sizes.xs,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <View
-                style={[
-                  styles.statusDot,
-                  {
-                    backgroundColor: doctor.isOpen
-                      ? colors.openDot
-                      : colors.closedDot,
-                  },
-                ]}
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 9999,
+                  backgroundColor: doctor.isOpen
+                    ? colors.openDot
+                    : colors.closedDot,
+                }}
               />
             </View>
             <Text
-              style={[styles.doctorMeta, { color: colors.doctorMeta }]}
+              style={{
+                flex: 1,
+                ...theme.typography.body.sm,
+                lineHeight: theme.icongraphy.sizes.xs,
+                includeFontPadding: false,
+                textAlignVertical: "center",
+                color: colors.doctorMeta,
+              }}
               numberOfLines={1}
             >
               {doctor.openStatusLabel}
             </Text>
           </View>
-          <View style={styles.doctorMetaRow}>
-            <View style={styles.doctorMetaIconWrap}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: theme.spacing.sm,
+            }}
+          >
+            <View
+              style={{
+                width: 12,
+                height: theme.icongraphy.sizes.xs,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Phone size={12} color={colors.doctorName} fill={colors.doctorName} />
             </View>
             <Text
-              style={[styles.doctorMeta, { color: colors.doctorMeta }]}
+              style={{
+                flex: 1,
+                ...theme.typography.body.sm,
+                lineHeight: theme.icongraphy.sizes.xs,
+                includeFontPadding: false,
+                textAlignVertical: "center",
+                color: colors.doctorMeta,
+              }}
               numberOfLines={1}
             >
               {doctor.phone}
@@ -295,11 +446,17 @@ export function RecentRequestsSection({
   onRequestPress,
 }: RecentRequestsSectionProps) {
   const t = useAppTranslation()
+  const { theme } = useAzdTheme()
 
   return (
-    <View style={[styles.section, styles.sectionPadding]}>
+    <View
+      style={{
+        gap: theme.spacing.md + theme.spacing.sm,
+        paddingHorizontal: theme.spacing.lg,
+      }}
+    >
       <StartSectionHeader title={t("recentRequests")} onShowAll={onShowAll} />
-      <View style={styles.requestsList}>
+      <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
         {requests.map((request) => (
           <RequestTile
             key={request.id}
@@ -332,52 +489,76 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={[
-        styles.requestTile,
-        {
-          backgroundColor: colors.cardBackground,
-          ...azdLayout.shadow.pop,
-        },
-      ]}
+      style={{
+        borderRadius: theme.borderRadius.lg,
+        padding: theme.spacing.lg,
+        flexDirection: "row",
+        gap: theme.spacing.md + theme.spacing.sm,
+        alignItems: "flex-start",
+        backgroundColor: colors.cardBackground,
+        ...toShadowStyle(theme.shadow.container),
+      }}
     >
-      <View style={styles.requestBody}>
-        <View style={styles.requestText}>
-          <Text style={[styles.requestDoctor, { color: colors.requestDoctor }]}>
+      <View
+        style={{
+          flex: 1,
+          gap: theme.spacing.md,
+        }}
+      >
+        <View style={{ gap: theme.spacing.xs }}>
+          <Text
+            style={{
+              ...theme.typography.body.md,
+              fontWeight: theme.typography.fontWeights.medium,
+              color: colors.requestDoctor,
+            }}
+          >
             {request.doctorName}
           </Text>
-          <Text style={[styles.requestTitle, { color: colors.requestTitle }]}>
+          <Text
+            style={{
+              ...theme.typography.heading.md,
+              color: colors.requestTitle,
+            }}
+          >
             {request.title}
           </Text>
         </View>
         <View
-          style={[
-            styles.statusBadge,
-            {
-              backgroundColor: isWarning
-                ? colors.statusWarningBackground
-                : colors.statusSuccessBackground,
-            },
-          ]}
+          style={{
+            width: 132,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: theme.spacing.sm + theme.spacing.xs,
+            paddingVertical: theme.spacing.md - theme.spacing.xs,
+            paddingHorizontal: theme.spacing.md + theme.spacing.sm,
+            borderRadius: 9999,
+            overflow: "hidden",
+            backgroundColor: isWarning
+              ? colors.statusWarningBackground
+              : colors.statusSuccessBackground,
+          }}
         >
           <View
-            style={[
-              styles.statusBadgeDot,
-              {
-                backgroundColor: isWarning
-                  ? colors.statusWarningDot
-                  : colors.statusSuccessDot,
-              },
-            ]}
+            style={{
+              width: theme.spacing.md,
+              height: theme.spacing.md,
+              borderRadius: 9999,
+              flexShrink: 0,
+              backgroundColor: isWarning
+                ? colors.statusWarningDot
+                : colors.statusSuccessDot,
+            }}
           />
           <Text
-            style={[
-              styles.statusBadgeLabel,
-              {
-                color: isWarning
-                  ? colors.statusWarningText
-                  : colors.statusSuccessText,
-              },
-            ]}
+            style={{
+              flexShrink: 1,
+              ...theme.typography.body.sm,
+              fontWeight: theme.typography.fontWeights.medium,
+              color: isWarning
+                ? colors.statusWarningText
+                : colors.statusSuccessText,
+            }}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
@@ -386,14 +567,27 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         </View>
       </View>
       <View
-        style={[
-          styles.kindTag,
-          { backgroundColor: colors.kindTagBackground },
-        ]}
+        style={{
+          width: 132,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.md,
+          paddingVertical: theme.spacing.md,
+          paddingHorizontal: theme.spacing.md + theme.spacing.sm,
+          borderRadius: theme.borderRadius.lg,
+          overflow: "hidden",
+          flexShrink: 0,
+          backgroundColor: colors.kindTagBackground,
+        }}
       >
         <KindIcon size={15} color={colors.kindTagText} />
         <Text
-          style={[styles.kindTagLabel, { color: colors.kindTagText }]}
+          style={{
+            flexShrink: 1,
+            ...theme.typography.body.sm,
+            fontWeight: theme.typography.fontWeights.medium,
+            color: colors.kindTagText,
+          }}
           numberOfLines={1}
           ellipsizeMode="tail"
         >
@@ -403,231 +597,3 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
     </Pressable>
   )
 }
-
-const styles = StyleSheet.create({
-  hero: {
-    paddingHorizontal: azdLayout.space[4],
-    paddingBottom: azdLayout.space[5],
-    gap: 22,
-    overflow: "hidden",
-  },
-  heroDecor: {
-    position: "absolute",
-    left: -120,
-    top: 40,
-    width: 340,
-    height: 340,
-    borderRadius: 9999,
-    borderWidth: 22,
-    borderColor: "rgba(245,245,245,0.12)",
-  },
-  heroTitle: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 24,
-    textAlign: "center",
-    letterSpacing: -0.43,
-  },
-  searchField: {
-    height: 46,
-    borderRadius: azdLayout.radius.pill,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: azdLayout.space[2],
-    paddingHorizontal: azdLayout.space[4],
-  },
-  searchPlaceholder: {
-    flex: 1,
-    fontFamily: azdLayout.font.display,
-    fontSize: 15,
-  },
-  quickActions: {
-    flexDirection: "row",
-    gap: azdLayout.space[3],
-  },
-  quickAction: {
-    flex: 1,
-    borderRadius: azdLayout.radius.md,
-    padding: azdLayout.space[3],
-    gap: azdLayout.space[3],
-  },
-  quickActionLabel: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  section: {
-    gap: azdLayout.space[3],
-  },
-  sectionPadding: {
-    paddingHorizontal: azdLayout.space[4],
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  sectionTitle: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "700",
-    fontSize: 16,
-  },
-  showAllRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-  },
-  showAll: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 14,
-    lineHeight: 16,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-  },
-  showAllIconWrap: {
-    height: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  doctorsScroll: {
-    paddingHorizontal: azdLayout.space[4],
-    paddingVertical: azdLayout.space[2],
-    gap: azdLayout.space[3],
-  },
-  doctorCard: {
-    width: 306,
-    height: 155,
-    borderRadius: azdLayout.radius.sm,
-    flexDirection: "row",
-    gap: 10,
-    padding: 10,
-  },
-  doctorPhoto: {
-    width: 97,
-    borderRadius: 7,
-  },
-  doctorInitials: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  doctorInitialsText: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 28,
-  },
-  doctorBody: {
-    flex: 1,
-    justifyContent: "space-between",
-    paddingVertical: azdLayout.space[2],
-  },
-  doctorTop: {
-    gap: 2,
-  },
-  doctorName: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 18,
-    letterSpacing: -0.43,
-  },
-  doctorSpecialty: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 13,
-  },
-  doctorBottom: {
-    gap: 10,
-  },
-  doctorMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  doctorMetaIconWrap: {
-    width: 12,
-    height: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 9999,
-  },
-  doctorMeta: {
-    flex: 1,
-    fontFamily: azdLayout.font.display,
-    fontSize: 13,
-    lineHeight: 16,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-  },
-  requestsList: {
-    gap: 10,
-  },
-  requestTile: {
-    borderRadius: azdLayout.radius.md,
-    padding: azdLayout.space[4],
-    flexDirection: "row",
-    gap: azdLayout.space[3],
-    alignItems: "flex-start",
-  },
-  requestBody: {
-    flex: 1,
-    gap: azdLayout.space[2],
-  },
-  requestText: {
-    gap: 2,
-  },
-  requestDoctor: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 16,
-    letterSpacing: -0.43,
-  },
-  requestTitle: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 17,
-    letterSpacing: -0.43,
-  },
-  statusBadge: {
-    width: 132,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: azdLayout.radius.pill,
-    overflow: "hidden",
-  },
-  statusBadgeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 9999,
-    flexShrink: 0,
-  },
-  statusBadgeLabel: {
-    flexShrink: 1,
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 13,
-  },
-  kindTag: {
-    width: 132,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: azdLayout.space[2],
-    paddingVertical: azdLayout.space[2],
-    paddingHorizontal: azdLayout.space[3],
-    borderRadius: azdLayout.radius.md,
-    overflow: "hidden",
-    flexShrink: 0,
-  },
-  kindTagLabel: {
-    flexShrink: 1,
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 14,
-    letterSpacing: -0.43,
-  },
-})

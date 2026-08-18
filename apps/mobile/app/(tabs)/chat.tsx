@@ -11,7 +11,7 @@ import {
 import { useRouter } from "expo-router"
 import { MessageCircle } from "lucide-react-native"
 import { useState } from "react"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import { useAppTranslation } from "../hooks/useAppTranslation"
 
 export default function ChatListScreen() {
@@ -24,10 +24,10 @@ export default function ChatListScreen() {
 
   return (
     <View
-      style={[
-        styles.screen,
-        { backgroundColor: colors.background },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
       <ScreenHeader
         title={t("chatsTitle")}
@@ -74,9 +74,3 @@ export default function ChatListScreen() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-})

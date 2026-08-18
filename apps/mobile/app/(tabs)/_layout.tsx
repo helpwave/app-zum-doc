@@ -1,8 +1,7 @@
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import { Tabs } from "expo-router"
 import { Home, MessageCircle, UserRound } from "lucide-react-native"
-import { StyleSheet, Text, View } from "react-native"
+import { Text, View } from "react-native"
 import { useAppTranslation } from "../hooks/useAppTranslation"
 
 type TabIconProps = {
@@ -19,10 +18,14 @@ function TabItem({ focused, icon }: TabIconProps) {
 
   return (
     <View
-      style={[
-        styles.chip,
-        focused && { backgroundColor: colors.activeBackground },
-      ]}
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: theme.spacing.sm + theme.spacing.xs,
+        paddingHorizontal: theme.spacing.lg + theme.spacing.xs,
+        borderRadius: 9999,
+        backgroundColor: focused ? colors.activeBackground : undefined,
+      }}
     >
       <Icon size={theme.icongraphy.sizes.md} color={color} />
     </View>
@@ -44,21 +47,26 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: colors.inactive,
         tabBarLabel: ({ focused, color, children }) => (
           <Text
-            style={[
-              styles.label,
-              { color, fontWeight: focused ? "700" : "500" },
-            ]}
+            style={{
+              ...theme.typography.label.sm,
+              color,
+              fontWeight: focused
+                ? theme.typography.fontWeights.bold
+                : theme.typography.fontWeights.medium,
+            }}
           >
             {children}
           </Text>
         ),
-        tabBarStyle: [
-          styles.tabBar,
-          {
-            backgroundColor: colors.background,
-            borderTopColor: colors.border,
-          },
-        ],
+        tabBarStyle: {
+          height: theme.elements.control.xl.size + theme.spacing.md,
+          paddingTop: theme.spacing.md + theme.spacing.sm,
+          paddingBottom: 0,
+          paddingHorizontal: theme.spacing.lg + theme.spacing.sm,
+          borderTopWidth: theme.border.thin,
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+        },
       }}
     >
       <Tabs.Screen
@@ -91,24 +99,3 @@ export default function TabsLayout() {
     </Tabs>
   )
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    height: 82,
-    paddingTop: 12,
-    paddingBottom: 0,
-    paddingHorizontal: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  chip: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 18,
-    borderRadius: azdLayout.radius.pill,
-  },
-  label: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 11,
-  },
-})

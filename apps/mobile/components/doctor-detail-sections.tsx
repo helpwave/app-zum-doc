@@ -1,6 +1,6 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
+import { toShadowStyle } from "@/theme/azd-theme"
 import type { DoctorsOffice } from "@app-zum-doc/utils/api"
 import { Card, ListItem } from "@helpwave/hightide-native/components"
 import { Image } from "expo-image"
@@ -15,7 +15,6 @@ import {
   Linking,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native"
@@ -49,25 +48,52 @@ export function DoctorDetailHero({
       colors={[colors.heroStart, colors.heroEnd]}
       start={{ x: 0.05, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.hero, { paddingTop: insets.top + azdLayout.space[3] }]}
+      style={{
+        paddingHorizontal: theme.spacing.lg,
+        paddingTop: insets.top + theme.spacing.md + theme.spacing.sm,
+        paddingBottom: theme.spacing.lg + theme.spacing.sm,
+        gap: theme.spacing.lg,
+        overflow: "hidden",
+      }}
     >
-      <View style={styles.heroDecor} pointerEvents="none" />
-      <View style={styles.heroNav}>
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          left: -120,
+          top: 60,
+          width: 340,
+          height: 340,
+          borderRadius: 9999,
+          borderWidth: theme.spacing.xl - theme.spacing.xs,
+          borderColor: theme.semantics.withAppearance({
+            color: "#F5F5F5",
+            appearance: "faded",
+          }),
+        }}
+      />
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Pressable
           accessibilityLabel={t("back")}
           accessibilityRole="button"
-          hitSlop={8}
+          hitSlop={theme.spacing.md}
           onPress={onBack}
         >
-          <ChevronLeft size={24} color={colors.heroIcon} strokeWidth={2.2} />
+          <ChevronLeft size={theme.icongraphy.sizes.md} color={colors.heroIcon} strokeWidth={2.2} />
         </Pressable>
         <Pressable
           accessibilityLabel={t("moreOptions")}
           accessibilityRole="button"
-          hitSlop={8}
+          hitSlop={theme.spacing.md}
           onPress={onMore}
         >
-          <Ellipsis size={22} color={colors.heroIcon} />
+          <Ellipsis size={theme.icongraphy.sizes.sm} color={colors.heroIcon} />
         </Pressable>
       </View>
 
@@ -76,13 +102,24 @@ export function DoctorDetailHero({
       <Pressable
         accessibilityRole="button"
         onPress={onAddDoctor}
-        style={[
-          styles.addButton,
-          { backgroundColor: colors.ctaBackground },
-        ]}
+        style={{
+          height: theme.elements.control.md.size,
+          borderRadius: 9999,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: theme.spacing.md,
+          backgroundColor: colors.ctaBackground,
+        }}
       >
-        <Plus size={18} color={colors.ctaText} strokeWidth={2.2} />
-        <Text style={[styles.addButtonLabel, { color: colors.ctaText }]}>
+        <Plus size={theme.icongraphy.sizes.sm} color={colors.ctaText} strokeWidth={2.2} />
+        <Text
+          style={{
+            ...theme.typography.body.md,
+            fontWeight: theme.typography.fontWeights.medium,
+            color: colors.ctaText,
+          }}
+        >
           {t("addAsMyDoctor")}
         </Text>
       </Pressable>
@@ -110,51 +147,96 @@ export function DoctorSummaryCard({
 
   return (
     <View
-      style={[
-        styles.summaryCard,
-        {
-          backgroundColor: colors.cardBackground,
-          ...azdLayout.shadow.pop,
-        },
-      ]}
+      style={{
+        borderRadius: theme.borderRadius.md,
+        flexDirection: "row",
+        gap: theme.spacing.md + theme.spacing.xs,
+        padding: theme.spacing.md + theme.spacing.xs,
+        height: 137,
+        backgroundColor: colors.cardBackground,
+        ...toShadowStyle(theme.shadow.container),
+      }}
     >
       <Image
         source={imageSource}
-        style={[styles.portrait, { borderColor: colors.cardBorder }]}
+        style={{
+          width: 97,
+          flexGrow: 0,
+          flexShrink: 0,
+          borderRadius: theme.borderRadius.md,
+          borderWidth: theme.border.thin,
+          borderColor: colors.cardBorder,
+        }}
         contentFit="cover"
       />
-      <View style={styles.summaryBody}>
-        <View style={styles.summaryTop}>
-          <Text style={[styles.name, { color: colors.name }]}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "space-between",
+          paddingVertical: theme.spacing.md,
+        }}
+      >
+        <View style={{ gap: theme.spacing.xs }}>
+          <Text
+            style={{
+              ...theme.typography.heading.md,
+              color: colors.name,
+            }}
+          >
             {office.name}
           </Text>
-          <Text style={[styles.specialty, { color: colors.specialty }]}>
+          <Text
+            style={{
+              ...theme.typography.body.sm,
+              color: colors.specialty,
+            }}
+          >
             {office.specialty}
           </Text>
         </View>
-        <View style={styles.summaryBottom}>
-          <View style={styles.metaRow}>
+        <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: theme.spacing.sm,
+            }}
+          >
             <View
-              style={[
-                styles.statusDot,
-                {
-                  backgroundColor: office.isOpen
-                    ? colors.openDot
-                    : colors.closedDot,
-                },
-              ]}
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 9999,
+                backgroundColor: office.isOpen
+                  ? colors.openDot
+                  : colors.closedDot,
+              }}
             />
-            <Text style={[styles.metaText, { color: colors.specialty }]}>
+            <Text
+              style={{
+                ...theme.typography.body.sm,
+                color: colors.specialty,
+              }}
+            >
               {office.openStatusLabel}
             </Text>
           </View>
           <Pressable
             accessibilityRole="link"
             onPress={onCall}
-            style={styles.metaRow}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: theme.spacing.sm,
+            }}
           >
             <Phone size={12} color={colors.phoneText} fill={colors.phoneText} />
-            <Text style={[styles.metaText, { color: colors.specialty }]}>
+            <Text
+              style={{
+                ...theme.typography.body.sm,
+                color: colors.specialty,
+              }}
+            >
               {office.phone}
             </Text>
           </Pressable>
@@ -187,21 +269,34 @@ export function OpeningHoursSection({
               key={period.dayLabel}
               style={[
                 !isLast && {
-                  borderBottomWidth: StyleSheet.hairlineWidth,
+                  borderBottomWidth: theme.border.thin,
                   borderBottomColor: colors.rowDivider,
                 },
               ]}
               title={period.dayLabel}
               trailing={isClosed ? (
-                <Text style={[styles.hoursTime, { color: colors.rowMuted }]}>
+                <Text
+                  style={{
+                    ...theme.typography.body.md,
+                    color: colors.rowMuted,
+                  }}
+                >
                   {t("closed")}
                 </Text>
               ) : (
-                <View style={styles.hoursTimes}>
+                <View
+                  style={{
+                    alignItems: "flex-end",
+                    gap: theme.spacing.md,
+                  }}
+                >
                   {period.times.map((time) => (
                     <Text
                       key={time}
-                      style={[styles.hoursTime, { color: colors.rowValue }]}
+                      style={{
+                        ...theme.typography.body.md,
+                        color: colors.rowValue,
+                      }}
                     >
                       {time}
                     </Text>
@@ -240,137 +335,3 @@ export function openDoctorsOfficeNavigation(
 
   void Linking.openURL(url)
 }
-
-const styles = StyleSheet.create({
-  hero: {
-    paddingHorizontal: azdLayout.space[4],
-    paddingBottom: azdLayout.space[5],
-    gap: azdLayout.space[4],
-    overflow: "hidden",
-  },
-  heroDecor: {
-    position: "absolute",
-    left: -120,
-    top: 60,
-    width: 340,
-    height: 340,
-    borderRadius: 9999,
-    borderWidth: 22,
-    borderColor: "rgba(245,245,245,0.12)",
-  },
-  heroNav: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  summaryCard: {
-    borderRadius: azdLayout.radius.sm,
-    flexDirection: "row",
-    gap: 10,
-    padding: 10,
-    height: 137,
-  },
-  portrait: {
-    width: 97,
-    flexGrow: 0,
-    flexShrink: 0,
-    borderRadius: 7,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  summaryBody: {
-    flex: 1,
-    justifyContent: "space-between",
-    paddingVertical: azdLayout.space[2],
-  },
-  summaryTop: {
-    gap: 2,
-  },
-  name: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 18,
-    letterSpacing: -0.43,
-  },
-  specialty: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 13,
-  },
-  summaryBottom: {
-    gap: 10,
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 9999,
-  },
-  metaText: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 13,
-  },
-  addButton: {
-    height: 48,
-    borderRadius: azdLayout.radius.pill,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: azdLayout.space[2],
-  },
-  addButtonLabel: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 16,
-  },
-  section: {
-    gap: azdLayout.space[2],
-  },
-  sectionLabel: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 16,
-  },
-  hoursCard: {
-    borderRadius: azdLayout.radius.sm,
-    paddingVertical: azdLayout.space[2],
-  },
-  hoursRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: azdLayout.space[3],
-    paddingHorizontal: 18,
-  },
-  hoursDay: {
-    flex: 1,
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 15,
-  },
-  hoursTimes: {
-    alignItems: "flex-end",
-    gap: azdLayout.space[2],
-  },
-  hoursTime: {
-    fontFamily: azdLayout.font.display,
-    fontSize: 15,
-  },
-  infoRow: {
-    borderRadius: azdLayout.radius.sm,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: azdLayout.space[4],
-    paddingHorizontal: 18,
-  },
-  infoRowLabel: {
-    flex: 1,
-    fontFamily: azdLayout.font.display,
-    fontWeight: "500",
-    fontSize: 15,
-    lineHeight: 21,
-  },
-})

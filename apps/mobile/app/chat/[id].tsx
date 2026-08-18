@@ -21,7 +21,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { ChevronLeft, Phone } from "lucide-react-native"
 import { useEffect, useRef } from "react"
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native"
+import { KeyboardAvoidingView, Platform, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAppTranslation } from "../hooks/useAppTranslation"
 
@@ -62,21 +62,18 @@ export default function ChatThreadScreen() {
   const contact = conversationQuery.data?.contact
 
   return (
-    <KeyboardAvoidingView 
-      style={[
-        styles.screen,
-        { backgroundColor: colors.background },
-      ]}
+    <KeyboardAvoidingView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View
-        style={[
-          styles.headerShell,
-          {
-            paddingTop: insets.top,
-            backgroundColor: headerColors.background,
-          },
-        ]}
+        style={{
+          paddingTop: insets.top,
+          backgroundColor: headerColors.background,
+        }}
       >
         <ChatThreadHeader
           leftActions={
@@ -143,10 +140,3 @@ export default function ChatThreadScreen() {
     </KeyboardAvoidingView>
   )
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  headerShell: {},
-})
