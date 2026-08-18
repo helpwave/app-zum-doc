@@ -2,16 +2,15 @@ import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { azdLayout } from "@/theme/azd-tokens"
 import type { DoctorsOffice } from "@app-zum-doc/utils/api"
+import { Card, ListItem } from "@helpwave/hightide-native/components"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   ChevronLeft,
-  ChevronRight,
   Ellipsis,
   Phone,
-  Plus,
+  Plus
 } from "lucide-react-native"
-import type { ReactNode } from "react"
 import {
   Linking,
   Platform,
@@ -21,6 +20,7 @@ import {
   View,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { Section } from "./section"
 
 const doctorPortrait = require("../assets/images/doctor-portrait.png")
 
@@ -176,38 +176,23 @@ export function OpeningHoursSection({
   const colors = theme.components.doctorDetail
 
   return (
-    <View style={styles.section}>
-      <Text style={[styles.sectionLabel, { color: colors.sectionLabel }]}>
-        {t("openingHours")}
-      </Text>
-      <View
-        style={[
-          styles.hoursCard,
-          {
-            backgroundColor: colors.rowBackground,
-            ...azdLayout.shadow.pop,
-          },
-        ]}
-      >
+    <Section title={t("openingHours")}>
+      <Card>
         {openingHours.map((period, index) => {
           const isLast = index === openingHours.length - 1
           const isClosed = period.times.length === 0
 
           return (
-            <View
+            <ListItem
               key={period.dayLabel}
               style={[
-                styles.hoursRow,
                 !isLast && {
                   borderBottomWidth: StyleSheet.hairlineWidth,
                   borderBottomColor: colors.rowDivider,
                 },
               ]}
-            >
-              <Text style={[styles.hoursDay, { color: colors.rowLabel }]}>
-                {period.dayLabel}
-              </Text>
-              {isClosed ? (
+              title={period.dayLabel}
+              trailing={isClosed ? (
                 <Text style={[styles.hoursTime, { color: colors.rowMuted }]}>
                   {t("closed")}
                 </Text>
@@ -223,80 +208,11 @@ export function OpeningHoursSection({
                   ))}
                 </View>
               )}
-            </View>
+            />
           )
         })}
-      </View>
-    </View>
-  )
-}
-
-type DoctorInfoRowProps = {
-  label: string
-  value?: string
-  onPress?: () => void
-  children?: ReactNode
-}
-
-export function DoctorInfoRow({
-  label,
-  value,
-  onPress,
-  children,
-}: DoctorInfoRowProps) {
-  const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
-  const content = (
-    <View
-      style={[
-        styles.infoRow,
-        {
-          backgroundColor: colors.rowBackground,
-          ...azdLayout.shadow.pop,
-        },
-      ]}
-    >
-      {children ?? (
-        <Text style={[styles.infoRowLabel, { color: colors.rowLabel }]}>
-          {value ?? label}
-        </Text>
-      )}
-      {onPress ? (
-        <ChevronRight size={15} color={colors.chevron} strokeWidth={2.2} />
-      ) : null}
-    </View>
-  )
-
-  if (!onPress) {
-    return content
-  }
-
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress}>
-      {content}
-    </Pressable>
-  )
-}
-
-type DoctorLabeledSectionProps = {
-  label: string
-  children: ReactNode
-}
-
-export function DoctorLabeledSection({
-  label,
-  children,
-}: DoctorLabeledSectionProps) {
-  const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
-
-  return (
-    <View style={styles.section}>
-      <Text style={[styles.sectionLabel, { color: colors.sectionLabel }]}>
-        {label}
-      </Text>
-      {children}
-    </View>
+      </Card>
+    </Section>
   )
 }
 

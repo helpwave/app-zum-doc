@@ -1,7 +1,7 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { azdLayout } from "@/theme/azd-tokens"
-import { ThemedText } from "@helpwave/hightide-native/components"
+import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
@@ -75,30 +75,21 @@ export function SelectionSheet({
               const isSelected = value === option.id
 
               return (
-                <Pressable
+                <ListActionItem
                   key={option.id}
                   style={styles.option}
                   onPress={() => {
                     onChange(option.id)
                   }}
-                >
-                  <View style={styles.checkSlot}>
-                    {isSelected ? (
-                      <Check size={18} color={theme.colors.primary.color} />
-                    ) : null}
-                  </View>
-                  <ThemedText
-                    style={[
-                      styles.optionLabel,
-                      {
-                        fontWeight: isSelected ? "700" : "500",
-                      },
-                    ]}
-                    appearance="description"
-                  >
-                    {option.label}
-                  </ThemedText>
-                </Pressable>
+                  leading={(
+                    <View style={styles.checkSlot}>
+                      {isSelected ? (
+                        <Check size={theme.icongraphy.sizes.md} color={theme.colors.primary.color} />
+                      ) : null}
+                    </View>
+                  )}
+                  title={option.label}
+                />
               )
             })}
           </View>
@@ -109,23 +100,20 @@ export function SelectionSheet({
               { borderTopColor: theme.components.tabBar.border },
             ]}
           >
-            <Pressable style={styles.actionButton} onPress={revertAndCancel}>
-              <ThemedText
-                style={[
-                  styles.actionLabel,
-                ]}
-                appearance="description"
-              >
-                {t("cancel")}
-              </ThemedText>
-            </Pressable>
-            <Pressable style={styles.actionButton} onPress={onDone}>
-              <Text
-                style={[styles.actionLabel, { color: theme.colors.primary.onColor }]}
-              >
-                {t("done")}
-              </Text>
-            </Pressable>
+            <Button 
+              onPress={revertAndCancel}
+              variant="foreground"
+              color={{
+                color: theme.colors.surface.onColor, 
+                onColor: theme.colors.surface.color
+              }} 
+              style={{flex: 1}}
+            >
+              {t("cancel")}
+            </Button>
+            <Button onPress={onDone} variant="foreground" style={{flex: 1}}>
+              {t("done")}
+            </Button>
           </View>
         </Pressable>
       </Pressable>
@@ -178,12 +166,6 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  actionButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: azdLayout.space[4],
   },
   actionLabel: {
     fontFamily: azdLayout.font.display,
