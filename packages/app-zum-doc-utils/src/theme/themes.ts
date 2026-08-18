@@ -1,18 +1,25 @@
-import { constructThemeTokens } from "@helpwave/hightide-design/utils"
+import { createThemeTokens } from "@helpwave/hightide-design/theme-tokens"
 import { azdPrimitiveTokens } from "./primitives"
 import { toAzdComponents } from "./toComponents"
-import { toAzdSemantic } from "./toSemantic"
-import { toAzdTheme } from "./toTheme"
 import type { AzdThemeTokens } from "./types"
 
-function createAzdThemeTokens(themeName: string): AzdThemeTokens {
-  return constructThemeTokens({
-    themeName,
-    primitiveTokens: azdPrimitiveTokens,
-    toSemantic: toAzdSemantic,
-    toComponents: toAzdComponents,
-    toTheme: toAzdTheme,
+const { teal, white } = azdPrimitiveTokens.color.palettes
+
+function createAzdThemeTokens(themeMode: "light" | "dark"): AzdThemeTokens {
+  const themeTokens = createThemeTokens({
+    themeMode,
+    colors: {
+      primary: {
+        color: teal.value[600],
+        onColor: white.value,
+      },
+    },
   })
+
+  return {
+    ...themeTokens,
+    componentColors: toAzdComponents({ themeTokens }),
+  }
 }
 
 export const azdThemeTokens = {

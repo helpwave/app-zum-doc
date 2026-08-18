@@ -55,7 +55,8 @@ export type StructuredCardMessage = {
   primary: string
   detail: string
   status: StructuredCardStatus
-  statusLabel: string
+  statusLabel: string,
+  timeLabel: string,
   actions?: {
     id: string
     label: string

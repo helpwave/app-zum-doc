@@ -1,18 +1,18 @@
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { ConversationRow } from "@/components/conversation-row"
 import { QueryState } from "@/components/query-state"
 import { ScreenHeader } from "@/components/screen-header"
 import { SearchField } from "@/components/search-field"
-import { useAppTranslation } from "../hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useConversations } from "@app-zum-doc/utils/hooks"
 import {
   ChatConversationList,
   IconButton,
 } from "@helpwave/hightide-native/components"
-import { useConversations } from "@app-zum-doc/utils/hooks"
 import { useRouter } from "expo-router"
 import { MessageCircle } from "lucide-react-native"
 import { useState } from "react"
 import { StyleSheet, View } from "react-native"
+import { useAppTranslation } from "../hooks/useAppTranslation"
 
 export default function ChatListScreen() {
   const t = useAppTranslation()
@@ -36,8 +36,7 @@ export default function ChatListScreen() {
             accessibilityLabel={t("newMessage")}
             icon={MessageCircle}
             size="md"
-            color="primary"
-            coloringStyle="text"
+            variant="foreground"
           />
         }
       >

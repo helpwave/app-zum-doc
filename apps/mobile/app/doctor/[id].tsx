@@ -1,3 +1,5 @@
+import { useAppTranslation } from "@/app/hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
   DoctorDetailHero,
   DoctorInfoRow,
@@ -8,11 +10,9 @@ import {
   openDoctorsOfficeWebsite,
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { azdLayout } from "@/theme/azd-tokens"
 import { useDoctorsOffice } from "@app-zum-doc/utils/hooks"
-import { Menu, MenuActionItem } from "@helpwave/hightide-native/components"
+import { Card, ListActionItem, ThemedText } from "@helpwave/hightide-native/components"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -78,9 +78,12 @@ export default function DoctorDetailScreen() {
                 }}
               />
 
-              <Menu title={t("address")}>
-                <MenuActionItem
-                  label={`${office.addressLine1}\n${office.addressLine2}`}
+              <ThemedText style={{...theme.typography.body.md, fontSize: theme.typography.fontWeights.semibold}}>
+                {t("address")}
+              </ThemedText>
+              <Card>
+                <ListActionItem
+                  title={`${office.addressLine1}\n${office.addressLine2}`}
                   onPress={() => {
                     openDoctorsOfficeNavigation(
                       office.addressLine1,
@@ -88,7 +91,7 @@ export default function DoctorDetailScreen() {
                     )
                   }}
                 />
-              </Menu>
+              </Card>
 
               <DoctorLabeledSection label={t("website")}>
                 <DoctorInfoRow

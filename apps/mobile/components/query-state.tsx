@@ -69,12 +69,7 @@ export function QueryState({
           {error?.message ?? t("errorUnknown")}
         </Text>
         {onRetry ? (
-          <Button
-            color="primary"
-            coloringStyle="solid"
-            size="md"
-            onPress={onRetry}
-          >
+          <Button size="md" onPress={onRetry}>
             {t("retry")}
           </Button>
         ) : null}

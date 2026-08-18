@@ -2,14 +2,14 @@ import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
   LocaleSetting,
   ProfileHeader,
-  ProfileNavRow,
   ThemeModeSetting
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
 import { azdLayout } from "@/theme/azd-tokens"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
-import { Menu, MenuItem, Switch } from "@helpwave/hightide-native/components"
+import { Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon, ThemedText } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"
+import { Building2, LogOut, UserIcon } from "lucide-react-native"
 import { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -54,41 +54,55 @@ export default function ProfileScreen() {
           >
             <ProfileHeader profile={profileQuery.data} />
 
-            <Menu title={t("personalData")}>
-              <MenuItem label={t("name")} value={profileQuery.data.fullName} />
-              <MenuItem
-                label={t("dateOfBirth")}
-                value={profileQuery.data.dateOfBirth}
+            <ThemedText style={{...theme.typography.body.md, fontSize: theme.typography.fontWeights.semibold}}>
+              {t("personalData")}
+            </ThemedText>
+            <Card>
+              <ListItem 
+                title={profileQuery.data.fullName}
+                subtitle={t("name")} 
               />
-              <MenuItem label={t("email")} value={profileQuery.data.email} />
-              <MenuItem label={t("phone")} value={profileQuery.data.phone} />
-            </Menu>
+                <ListItem
+                subtitle={t("dateOfBirth")}
+                title={profileQuery.data.dateOfBirth}
+              />
+              <ListItem subtitle={t("email")} title={profileQuery.data.email} />
+              <ListItem subtitle={t("phone")} title={profileQuery.data.phone} />
+            </Card>
 
-            <Menu title={t("practiceSection")}>
-              <MenuItem
-                label={t("practice")}
-                value={profileQuery.data.practiceName}
+            <ThemedText style={{...theme.typography.body.md, fontSize: theme.typography.fontWeights.semibold}}>
+              {t("practiceSection")}
+            </ThemedText>
+            <Card>
+              <ListItem 
+                title={profileQuery.data.practiceName}
+                subtitle={t("practice")} 
               />
-              <MenuItem
-                label={t("address")}
-                value={profileQuery.data.practiceAddress}
+              <ListItem
+                title={profileQuery.data.practiceAddress}
+                subtitle={t("address")}
               />
-              <ProfileNavRow
-                icon="practice"
-                label={t("practiceDetails")}
+              <ListNavigationItem 
+                title={profileQuery.data.email}
+                subtitle={t("practiceDetails")}
                 onPress={() => {
                   router.push({
                     pathname: "/doctor/[id]",
                     params: { id: "office-moser" },
                   })
                 }}
+                leading={<ThemedIcon icon={Building2}/>}
               />
-            </Menu>
+            </Card>
 
-            <Menu title={t("settingsSection")}>
-              <ProfileNavRow
-                icon="bell"
-                label={t("notifications")}
+            <ThemedText style={{...theme.typography.body.md, fontSize: theme.typography.fontWeights.semibold}}>
+              {t("settingsSection")}
+            </ThemedText>
+            <Card>
+              <ListActionItem 
+                title={profileQuery.data.practiceName}
+                subtitle={t("notifications")}
+                onPress={() => setNotificationsEnabled(prev => !prev)}
                 trailing={
                   <Switch
                     value={notificationsEnabled}
@@ -98,22 +112,24 @@ export default function ProfileScreen() {
               />
               <ThemeModeSetting />
               <LocaleSetting />
-              <ProfileNavRow
-                icon="user"
-                label={t("editPersonalData")}
+              <ListNavigationItem 
+                title={t("editPersonalData")}
+                leading={<ThemedIcon icon={UserIcon}/>}
                 onPress={() => {
+                  // TODO replace this
                   Alert.alert(t("tabProfile"), "Bearbeiten ist hier noch nicht verfügbar.")
                 }}
               />
-              <ProfileNavRow
-                icon="logout"
-                label={t("signOut")}
-                danger
+              <ListNavigationItem 
+                title={t("signOut")}
+                leading={<ThemedIcon icon={LogOut}/>}
+                color={theme.colors.negative}
                 onPress={() => {
-                  Alert.alert(t("signOut"), "Sie sind in dieser Demo nicht angemeldet.")
+                  // TODO replace this
+                  Alert.alert(t("tabProfile"), "Bearbeiten ist hier noch nicht verfügbar.")
                 }}
               />
-            </Menu>
+            </Card>
           </ScrollView>
         ) : null}
       </QueryState>

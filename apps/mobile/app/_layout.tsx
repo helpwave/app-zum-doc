@@ -1,15 +1,14 @@
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { queryClient } from "@/lib/query-client"
 import { azdSupportedThemes } from "@/theme/azd-theme"
-import { HightideProvider, useHightide, useTheme } from "@helpwave/hightide-native/global-contexts"
-import { QueryClientProvider } from "@tanstack/react-query"
 import { appZumDocTranslation } from "@app-zum-doc/utils/i18n"
-import { tealPalette } from "@app-zum-doc/utils/theme"
+import { HightideProvider, useHightide, useTheme } from "@helpwave/hightide-native/global-contexts"
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
@@ -21,8 +20,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context"
 SplashScreen.preventAutoHideAsync().catch(() => undefined)
 
 function LoadingView() {
-  const { theme, isInitialized } = useTheme()
-  const color = isInitialized ? theme.semantic.primary : tealPalette.value[600]
+  const { theme } = useTheme()
+  const color = theme.colors.primary.color
 
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>

@@ -1,6 +1,7 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { azdLayout } from "@/theme/azd-tokens"
+import { ThemedText } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
@@ -19,7 +20,7 @@ export type SelectionSheetOption = {
 type SelectionSheetProps = {
   visible: boolean
   title: string
-  options: ReadonlyArray<SelectionSheetOption>
+  options: readonly SelectionSheetOption[]
   value: string
   onChange: (value: string) => void
   onCancel: () => void
@@ -43,7 +44,7 @@ export function SelectionSheet({
     if (visible) {
       originalValueRef.current = value
     }
-  }, [visible])
+  }, [value, visible])
 
   const revertAndCancel = () => {
     onChange(originalValueRef.current)
@@ -61,11 +62,11 @@ export function SelectionSheet({
         <Pressable
           style={[
             styles.sheet,
-            { backgroundColor: theme.semantic.surface },
+            { backgroundColor: theme.colors.surface.color },
           ]}
           onPress={(event) => event.stopPropagation()}
         >
-          <Text style={[styles.title, { color: theme.semantic.textPrimary }]}>
+          <Text style={[styles.title, { color: theme.colors.surface.onColor }]}>
             {title}
           </Text>
 
@@ -83,20 +84,20 @@ export function SelectionSheet({
                 >
                   <View style={styles.checkSlot}>
                     {isSelected ? (
-                      <Check size={18} color={theme.semantic.primary} />
+                      <Check size={18} color={theme.colors.primary.color} />
                     ) : null}
                   </View>
-                  <Text
+                  <ThemedText
                     style={[
                       styles.optionLabel,
                       {
-                        color: theme.semantic.textPrimary,
                         fontWeight: isSelected ? "700" : "500",
                       },
                     ]}
+                    appearance="description"
                   >
                     {option.label}
-                  </Text>
+                  </ThemedText>
                 </Pressable>
               )
             })}
@@ -109,18 +110,18 @@ export function SelectionSheet({
             ]}
           >
             <Pressable style={styles.actionButton} onPress={revertAndCancel}>
-              <Text
+              <ThemedText
                 style={[
                   styles.actionLabel,
-                  { color: theme.semantic.textSecondary },
                 ]}
+                appearance="description"
               >
                 {t("cancel")}
-              </Text>
+              </ThemedText>
             </Pressable>
             <Pressable style={styles.actionButton} onPress={onDone}>
               <Text
-                style={[styles.actionLabel, { color: theme.semantic.primary }]}
+                style={[styles.actionLabel, { color: theme.colors.primary.onColor }]}
               >
                 {t("done")}
               </Text>

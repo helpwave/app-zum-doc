@@ -49,8 +49,8 @@ export function Composer({
             accessibilityLabel="Anhang hinzufügen"
             icon={Plus}
             size="md"
-            color="primary"
-            coloringStyle="text"
+            color={theme.colors.neutral}
+            variant="foreground"
           />
         }
         trailing={
@@ -58,8 +58,8 @@ export function Composer({
             accessibilityLabel="Foto aufnehmen"
             icon={Camera}
             size="md"
-            color="neutral"
-            coloringStyle="text"
+            color={theme.colors.neutral}
+            variant="foreground"
           />
         }
       />

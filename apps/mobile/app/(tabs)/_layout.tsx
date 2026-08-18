@@ -24,7 +24,7 @@ function TabItem({ focused, icon }: TabIconProps) {
         focused && { backgroundColor: colors.activeBackground },
       ]}
     >
-      <Icon size={22} color={color} />
+      <Icon size={theme.icongraphy.sizes.md} color={color} />
     </View>
   )
 }
@@ -40,7 +40,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor },
-        tabBarActiveTintColor: theme.semantic.primary,
+        tabBarActiveTintColor: theme.colors.primary.color,
         tabBarInactiveTintColor: colors.inactive,
         tabBarLabel: ({ focused, color, children }) => (
           <Text

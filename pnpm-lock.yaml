@@ -216,11 +216,11 @@ importers:
         specifier: ^15.0.3
         version: 15.1.1(expo-font@14.0.12(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@helpwave/hightide-design':
-        specifier: 0.0.5
-        version: 0.0.5
+        specifier: 0.2.0
+        version: 0.2.0
       '@helpwave/hightide-native':
-        specifier: 0.0.7
-        version: 0.0.7(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)))(react-native-svg@15.15.5(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+        specifier: 0.2.0
+        version: 0.2.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)))(react-native-svg@15.15.5(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@helpwave/internationalization':
         specifier: 0.4.0
         version: 0.4.0
@@ -331,11 +331,11 @@ importers:
   packages/app-zum-doc-utils:
     dependencies:
       '@helpwave/hightide-design':
-        specifier: 0.0.5
-        version: 0.0.5
+        specifier: 0.2.0
+        version: 0.2.0
       '@helpwave/hightide-utils':
-        specifier: 0.0.5
-        version: 0.0.5(react@19.1.0)
+        specifier: 0.1.0
+        version: 0.1.0(react@19.1.0)
       '@helpwave/internationalization':
         specifier: 0.4.0
         version: 0.4.0
@@ -1062,19 +1062,19 @@ packages:
     resolution: {integrity: sha512-4aQzz9vgxcNXFfo/iyNgDDYfsU5XGKKxWxZopw0cVotHiW+U8IJbIxMaxsINs6bHhtkG3StKNPcOrn3eBuxKPw==}
     hasBin: true
 
-  '@helpwave/hightide-design@0.0.5':
-    resolution: {integrity: sha512-9Zl8R8GVUhY3xt9MW3D3xXSgTU1k5BYLW5KYUasTeGeQzrtR52d3S0yAaI8Nqjwnb68pGWZhJ1l69AjPU82ieQ==}
+  '@helpwave/hightide-design@0.2.0':
+    resolution: {integrity: sha512-1PoYjlbW94GQOcACkuYOSxZWzWgDygetfUzFyP1JXXNlHwGquWzV3WJ8p3siGG8g9KbBDmKDagKd3uoCBFPLbA==}
 
-  '@helpwave/hightide-native@0.0.7':
-    resolution: {integrity: sha512-kqOGfgll3TOwx3gDa0gH/OB2TeCF6u3KuBrhEJdLNjftqej+IbQg3mZykciXnXDHPBOrHSZ/RF0kcao5TrFn7A==}
+  '@helpwave/hightide-native@0.2.0':
+    resolution: {integrity: sha512-PIYAmi/kfnYe9l96D9npRJMtUDMlRwMUvYBQPec30PYNPVark9m6k1d+5bSDNCb45k1ac6vx+WQMGRM2QFPKRw==}
     peerDependencies:
       '@react-native-async-storage/async-storage': '>=2.0.0'
       react: ^19.0.0
       react-native: '>=0.76.0'
       react-native-svg: '>=15.0.0'
 
-  '@helpwave/hightide-utils@0.0.5':
-    resolution: {integrity: sha512-+HUyr3MQakd5VEYw2+9ILJeelh8ypFKnhu7n123UUUahi6147G8IvjyZ2tLdQ2i4PX6HRpqP74vjmNpXZLfwuA==}
+  '@helpwave/hightide-utils@0.1.0':
+    resolution: {integrity: sha512-F51+kA/Eb4JyRP8vxoPIsFBSvt23zPXeMaX+lqZ5u3gjnuOVxW8bVJeupfh00Pbd5LtoRx6/bjACOmBplLalrA==}
     hasBin: true
     peerDependencies:
       react: ^19.0.0
@@ -1790,10 +1790,12 @@ packages:
   '@xmldom/xmldom@0.8.13':
     resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
     engines: {node: '>=10.0.0'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xmldom/xmldom@0.9.10':
     resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==}
     engines: {node: '>=14.6'}
+    deprecated: this version has critical issues, please update to the latest version
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -5678,19 +5680,19 @@ snapshots:
       chalk: 4.1.2
       js-yaml: 4.3.0
 
-  '@helpwave/hightide-design@0.0.5': {}
+  '@helpwave/hightide-design@0.2.0': {}
 
-  '@helpwave/hightide-native@0.0.7(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)))(react-native-svg@15.15.5(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
+  '@helpwave/hightide-native@0.2.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)))(react-native-svg@15.15.5(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@helpwave/hightide-design': 0.0.5
-      '@helpwave/hightide-utils': 0.0.5(react@19.1.0)
+      '@helpwave/hightide-design': 0.2.0
+      '@helpwave/hightide-utils': 0.1.0(react@19.1.0)
       '@react-native-async-storage/async-storage': 2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))
       lucide-react-native: 0.561.0(react-native-svg@15.15.5(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)
       react-native-svg: 15.15.5(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
-  '@helpwave/hightide-utils@0.0.5(react@19.1.0)':
+  '@helpwave/hightide-utils@0.1.0(react@19.1.0)':
     dependencies:
       '@helpwave/internationalization': 0.4.0
       react: 19.1.0

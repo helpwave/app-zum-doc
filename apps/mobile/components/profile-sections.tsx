@@ -5,19 +5,12 @@ import { azdLayout } from "@/theme/azd-tokens"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
   Avatar,
-  MenuActionItem,
-  MenuNavigationItem
+  ListActionItem,
+  ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
-import {
-  Bell,
-  Building2,
-  Languages,
-  LogOut,
-  Moon,
-  UserRound,
-} from "lucide-react-native"
-import { useMemo, useState, type ReactNode } from "react"
+import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
+import { useMemo, useState } from "react"
 import { StyleSheet, Text, View } from "react-native"
 
 type ProfileHeaderProps = {
@@ -42,74 +35,6 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         {profile.insuranceType}
       </Text>
     </View>
-  )
-}
-
-type ProfileNavIcon = "user" | "practice" | "bell" | "logout" | "theme" | "language"
-
-type ProfileNavRowProps = {
-  icon: ProfileNavIcon
-  label: string
-  onPress?: () => void
-  danger?: boolean
-  trailing?: ReactNode
-}
-
-function NavIcon({
-  icon,
-  danger = false,
-}: {
-  icon: ProfileNavIcon
-  danger?: boolean
-}) {
-  const { theme } = useAzdTheme()
-  const colors = theme.components.profileSections
-  const Icon =
-    icon === "user"
-      ? UserRound
-      : icon === "practice"
-        ? Building2
-        : icon === "bell"
-          ? Bell
-          : icon === "theme"
-            ? Moon
-            : icon === "language"
-              ? Languages
-              : LogOut
-
-  return (
-    <Icon
-      size={18}
-      color={danger ? colors.iconDanger : colors.icon}
-    />
-  )
-}
-
-export function ProfileNavRow({
-  icon,
-  label,
-  onPress,
-  danger = false,
-  trailing,
-}: ProfileNavRowProps) {
-  if (trailing != null || danger) {
-    return (
-      <MenuActionItem
-        label={label}
-        leading={<NavIcon icon={icon} danger={danger} />}
-        trailing={trailing}
-        danger={danger}
-        onPress={onPress}
-      />
-    )
-  }
-
-  return (
-    <MenuNavigationItem
-      label={label}
-      leading={<NavIcon icon={icon} />}
-      onPress={onPress}
-    />
   )
 }
 
@@ -147,9 +72,9 @@ export function ThemeModeSetting() {
 
   return (
     <>
-      <ProfileNavRow
-        icon="theme"
-        label={t("themeMode")}
+      <ListActionItem
+        title={t("themeMode")}
+        leading={<ThemedIcon icon={SunMoonIcon}/>}
         onPress={() => {
           setIsOpen(true)
         }}
@@ -197,9 +122,9 @@ export function LocaleSetting() {
 
   return (
     <>
-      <ProfileNavRow
-        icon="language"
-        label={t("language")}
+      <ListActionItem
+        title={t("language")}
+        leading={<ThemedIcon icon={GlobeIcon}/>}
         onPress={() => {
           setIsOpen(true)
         }}

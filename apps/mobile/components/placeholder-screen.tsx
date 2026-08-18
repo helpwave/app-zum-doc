@@ -1,6 +1,7 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { azdLayout } from "@/theme/azd-tokens"
+import { ThemedText } from "@helpwave/hightide-native/components"
 import { ChevronLeft } from "lucide-react-native"
 import type { ReactNode } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
@@ -50,9 +51,8 @@ export function PlaceholderScreen({
           style={styles.side}
         >
           <ChevronLeft
-            size={24}
-            color={theme.semantic.primary}
-            strokeWidth={2.2}
+            size={theme.icongraphy.sizes.md}
+            color={theme.colors.primary.color}
           />
         </Pressable>
         <Text style={[styles.title, { color: headerColors.title }]}>
@@ -62,14 +62,9 @@ export function PlaceholderScreen({
       </View>
       <View style={styles.body}>
         {children ?? (
-          <Text
-            style={[
-              styles.description,
-              { color: theme.semantic.textSecondary },
-            ]}
-          >
+          <ThemedText style={[styles.description]} appearance="description">
             {description ?? t("placeholderComingSoon")}
-          </Text>
+          </ThemedText>
         )}
       </View>
     </View>
