@@ -58,22 +58,9 @@ async function withMockLatency<T>(
   return work()
 }
 
-export async function fetchConversations(
-  search?: string,
-): Promise<Conversation[]> {
-  return withMockLatency(
-    () => {
-      const query = search?.trim().toLowerCase() ?? ""
-      if (!query || query === "fehler") {
-        return conversationsState.map((conversation) => ({ ...conversation }))
-      }
-
-      return conversationsState.filter((conversation) => {
-        const haystack = `${conversation.contact.name} ${conversation.lastMessage}`.toLowerCase()
-        return haystack.includes(query)
-      })
-    },
-    { failKey: search },
+export async function fetchConversations(): Promise<Conversation[]> {
+  return withMockLatency(() =>
+    conversationsState.map((conversation) => ({ ...conversation })),
   )
 }
 

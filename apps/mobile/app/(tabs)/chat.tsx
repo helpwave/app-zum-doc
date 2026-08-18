@@ -2,17 +2,32 @@ import { ConversationRow } from "@/components/conversation-row"
 import { QueryState } from "@/components/query-state"
 import { ScreenHeader } from "@/components/screen-header"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import type { Conversation } from "@app-zum-doc/utils/api"
 import { useConversations } from "@app-zum-doc/utils/hooks"
 import {
   ChatConversationList,
-  IconButton,
   SearchBar,
 } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"
-import { MessageCircle } from "lucide-react-native"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { View } from "react-native"
 import { useAppTranslation } from "../../hooks/useAppTranslation"
+
+function conversationMatchesSearch(conversation: Conversation, query: string) {
+  if (query.length === 0) {
+    return true
+  }
+
+  const haystack = [
+    conversation.contact.name,
+    conversation.contact.subtitle ?? "",
+    conversation.lastMessage,
+  ]
+    .join(" ")
+    .toLowerCase()
+
+  return haystack.includes(query)
+}
 
 export default function ChatListScreen() {
   const t = useAppTranslation()
@@ -20,7 +35,13 @@ export default function ChatListScreen() {
   const colors = theme.components.screen
   const router = useRouter()
   const [search, setSearch] = useState("")
-  const conversationsQuery = useConversations(search)
+  const conversationsQuery = useConversations()
+  const conversations = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return (conversationsQuery.data ?? []).filter((conversation) =>
+      conversationMatchesSearch(conversation, query),
+    )
+  }, [conversationsQuery.data, search])
 
   return (
     <View
@@ -31,14 +52,6 @@ export default function ChatListScreen() {
     >
       <ScreenHeader
         title={t("chatsTitle")}
-        trailing={
-          <IconButton
-            accessibilityLabel={t("newMessage")}
-            icon={MessageCircle}
-            size="md"
-            variant="foreground"
-          />
-        }
       >
         <SearchBar
           value={search}
@@ -60,7 +73,7 @@ export default function ChatListScreen() {
         loadingLabel={t("loadingChats")}
       >
         <ChatConversationList>
-          {(conversationsQuery.data ?? []).map((item) => (
+          {conversations.map((item) => (
             <ConversationRow
               key={item.id}
               conversation={item}

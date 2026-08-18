@@ -1,6 +1,6 @@
 export const conversationKeys = {
   all: ["conversations"] as const,
-  list: (search?: string) => ["conversations", "list", search ?? ""] as const,
+  list: ["conversations", "list"] as const,
   detail: (id: string) => ["conversations", "detail", id] as const,
   messages: (id: string) => ["conversations", "messages", id] as const,
 }
