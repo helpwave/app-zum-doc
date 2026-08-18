@@ -4,10 +4,10 @@ import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
-    Modal,
-    Pressable,
-    Text,
-    View,
+  Modal,
+  Pressable,
+  Text,
+  View,
 } from "react-native"
 
 export type SelectionSheetOption = {
@@ -146,11 +146,27 @@ export function SelectionSheet({
                 color: theme.colors.surface.onColor,
                 onColor: theme.colors.surface.color
               }}
-              style={{flex: 1}}
+              style={{
+                flex: 1,
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+              }}
             >
               {t("cancel")}
             </Button>
-            <Button onPress={onDone} variant="foreground" style={{flex: 1}}>
+            <Button 
+              onPress={onDone}
+              variant="foreground"
+              style={{
+                flex: 1,
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+              }}
+            >
               {t("done")}
             </Button>
           </View>
