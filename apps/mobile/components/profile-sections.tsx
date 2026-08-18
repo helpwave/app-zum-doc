@@ -1,24 +1,16 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { SelectionSheet } from "@/components/selection-sheet"
-import { azdLayout } from "@/theme/azd-tokens"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
   Avatar,
-  MenuActionItem,
-  MenuNavigationItem
+  ListActionItem,
+  ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
-import {
-  Bell,
-  Building2,
-  Languages,
-  LogOut,
-  Moon,
-  UserRound,
-} from "lucide-react-native"
-import { useMemo, useState, type ReactNode } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
+import { useMemo, useState } from "react"
+import { Text, View } from "react-native"
 
 type ProfileHeaderProps = {
   profile: PatientProfile
@@ -29,87 +21,40 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const colors = theme.components.profileSections
 
   return (
-    <View style={styles.header}>
+    <View
+      style={{
+        alignItems: "center",
+        gap: theme.spacing.md,
+        paddingVertical: theme.spacing.lg + theme.spacing.sm,
+      }}
+    >
       <Avatar
         name={profile.fullName}
         size="lg"
       />
-      <Text style={[styles.name, { color: colors.name }]}>
+      <Text
+        style={{
+          ...theme.typography.heading.lg,
+          fontWeight: theme.typography.fontWeights.bold,
+          color: colors.name,
+          marginTop: theme.spacing.md,
+        }}
+      >
         {profile.fullName}
       </Text>
-      <Text style={[styles.meta, { color: colors.meta }]}>
+      <Text
+        style={{
+          ...theme.typography.body.sm,
+          fontFamily: theme.typography.fontFamilies.default,
+          textAlign: "center",
+          paddingHorizontal: theme.spacing.lg,
+          color: colors.meta,
+        }}
+      >
         geb. {profile.dateOfBirth} · Vers.-Nr. {profile.insuranceNumber} ·{" "}
         {profile.insuranceType}
       </Text>
     </View>
-  )
-}
-
-type ProfileNavIcon = "user" | "practice" | "bell" | "logout" | "theme" | "language"
-
-type ProfileNavRowProps = {
-  icon: ProfileNavIcon
-  label: string
-  onPress?: () => void
-  danger?: boolean
-  trailing?: ReactNode
-}
-
-function NavIcon({
-  icon,
-  danger = false,
-}: {
-  icon: ProfileNavIcon
-  danger?: boolean
-}) {
-  const { theme } = useAzdTheme()
-  const colors = theme.components.profileSections
-  const Icon =
-    icon === "user"
-      ? UserRound
-      : icon === "practice"
-        ? Building2
-        : icon === "bell"
-          ? Bell
-          : icon === "theme"
-            ? Moon
-            : icon === "language"
-              ? Languages
-              : LogOut
-
-  return (
-    <Icon
-      size={18}
-      color={danger ? colors.iconDanger : colors.icon}
-    />
-  )
-}
-
-export function ProfileNavRow({
-  icon,
-  label,
-  onPress,
-  danger = false,
-  trailing,
-}: ProfileNavRowProps) {
-  if (trailing != null || danger) {
-    return (
-      <MenuActionItem
-        label={label}
-        leading={<NavIcon icon={icon} danger={danger} />}
-        trailing={trailing}
-        danger={danger}
-        onPress={onPress}
-      />
-    )
-  }
-
-  return (
-    <MenuNavigationItem
-      label={label}
-      leading={<NavIcon icon={icon} />}
-      onPress={onPress}
-    />
   )
 }
 
@@ -147,14 +92,20 @@ export function ThemeModeSetting() {
 
   return (
     <>
-      <ProfileNavRow
-        icon="theme"
-        label={t("themeMode")}
+      <ListActionItem
+        title={t("themeMode")}
+        leading={<ThemedIcon icon={SunMoonIcon}/>}
         onPress={() => {
           setIsOpen(true)
         }}
         trailing={
-          <Text style={[styles.settingValue, { color: colors.meta }]}>
+          <Text
+            style={{
+              ...theme.typography.body.sm,
+              fontFamily: theme.typography.fontFamilies.default,
+              color: colors.meta,
+            }}
+          >
             {currentName}
           </Text>
         }
@@ -197,14 +148,20 @@ export function LocaleSetting() {
 
   return (
     <>
-      <ProfileNavRow
-        icon="language"
-        label={t("language")}
+      <ListActionItem
+        title={t("language")}
+        leading={<ThemedIcon icon={GlobeIcon}/>}
         onPress={() => {
           setIsOpen(true)
         }}
         trailing={
-          <Text style={[styles.settingValue, { color: colors.meta }]}>
+          <Text
+            style={{
+              ...theme.typography.body.sm,
+              fontFamily: theme.typography.fontFamilies.default,
+              color: colors.meta,
+            }}
+          >
             {currentName}
           </Text>
         }
@@ -225,27 +182,3 @@ export function LocaleSetting() {
     </>
   )
 }
-
-const styles = StyleSheet.create({
-  header: {
-    alignItems: "center",
-    gap: azdLayout.space[2],
-    paddingVertical: azdLayout.space[5],
-  },
-  name: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "700",
-    fontSize: 22,
-    marginTop: azdLayout.space[2],
-  },
-  meta: {
-    fontFamily: azdLayout.font.tabular,
-    fontSize: 13,
-    textAlign: "center",
-    paddingHorizontal: azdLayout.space[4],
-  },
-  settingValue: {
-    fontFamily: azdLayout.font.tabular,
-    fontSize: 14,
-  },
-})

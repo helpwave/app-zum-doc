@@ -2,14 +2,28 @@ import {
   azdThemeTokens,
   type AzdThemeTokens,
 } from "@app-zum-doc/utils/theme"
-import type { HightideThemeTokens } from "@helpwave/hightide-design/types"
 import { HightideConfigUtils } from "@helpwave/hightide-native/global-contexts"
 import { createHightideTheme } from "@helpwave/hightide-native/theme"
 
 export type AzdTheme = ReturnType<typeof createAzdTheme>
 
+type ThemeShadow = ReturnType<typeof createHightideTheme>["shadow"]["raised"]
+
+export function toShadowStyle(shadow: ThemeShadow) {
+  return {
+    shadowColor: shadow.color,
+    shadowOffset: {
+      width: shadow.x,
+      height: shadow.y,
+    },
+    shadowRadius: shadow.blur,
+    shadowOpacity: 1,
+    elevation: Math.max(shadow.y, 1),
+  }
+}
+
 export function createAzdTheme(tokens: AzdThemeTokens) {
-  const base = createHightideTheme(tokens as HightideThemeTokens)
+  const base = createHightideTheme(tokens)
 
   return {
     ...base,

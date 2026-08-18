@@ -1,5 +1,7 @@
+import type { ColorPaletteBasicToken } from "@helpwave/hightide-design/primitive-tokens"
+
 export const tealPalette = {
-  type: "basic" as const,
+  type: "basic",
   value: {
     50: "#E8F5F4",
     100: "#C0DBD6",
@@ -12,5 +14,5 @@ export const tealPalette = {
     800: "#0A5F55",
     900: "#095763",
     950: "#05353C",
-  } as const satisfies Record<number, `#${string}`>,
-}
+  },
+} as const satisfies ColorPaletteBasicToken

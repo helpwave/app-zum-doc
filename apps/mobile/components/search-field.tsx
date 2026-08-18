@@ -1,7 +1,6 @@
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import { Search } from "lucide-react-native"
-import { StyleSheet, TextInput, View } from "react-native"
+import { TextInput, View } from "react-native"
 
 type SearchFieldProps = {
   value: string
@@ -18,14 +17,29 @@ export function SearchField({
   const colors = theme.components.searchField
 
   return (
-    <View style={[styles.shell, { backgroundColor: colors.background }]}>
-      <Search size={16} color={colors.icon} />
+    <View
+      style={{
+        height: theme.elements.control.sm.size,
+        borderRadius: 9999,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: theme.spacing.md + theme.spacing.xs,
+        paddingHorizontal: theme.spacing.lg,
+        backgroundColor: colors.background,
+      }}
+    >
+      <Search size={theme.icongraphy.sizes.xs} color={colors.icon} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.placeholder}
-        style={[styles.input, { color: colors.text }]}
+        style={{
+          flex: 1,
+          ...theme.typography.body.md,
+          color: colors.text,
+          paddingVertical: 0,
+        }}
         autoCorrect={false}
         autoCapitalize="none"
         clearButtonMode="while-editing"
@@ -33,20 +47,3 @@ export function SearchField({
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  shell: {
-    height: 40,
-    borderRadius: azdLayout.radius.pill,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 16,
-  },
-  input: {
-    flex: 1,
-    fontFamily: azdLayout.font.display,
-    fontSize: 15,
-    paddingVertical: 0,
-  },
-})

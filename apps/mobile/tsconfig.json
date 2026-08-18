@@ -3,10 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "preserveSymlinks": true,
+    "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -16,7 +15,5 @@
     "expo-env.d.ts",
     "../../packages/app-zum-doc-utils/src/**/*.d.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

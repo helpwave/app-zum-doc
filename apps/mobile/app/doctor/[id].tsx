@@ -1,20 +1,18 @@
+import { useAppTranslation } from "@/app/hooks/useAppTranslation"
+import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
   DoctorDetailHero,
-  DoctorInfoRow,
-  DoctorLabeledSection,
   OpeningHoursSection,
   openDoctorsOfficeNavigation,
   openDoctorsOfficePhone,
-  openDoctorsOfficeWebsite,
+  openDoctorsOfficeWebsite
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
+import { Section } from "@/components/section"
 import { useDoctorsOffice } from "@app-zum-doc/utils/hooks"
-import { Menu, MenuActionItem } from "@helpwave/hightide-native/components"
+import { Card, ListNavigationItem } from "@helpwave/hightide-native/components"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { Alert, ScrollView, StyleSheet, View } from "react-native"
+import { Alert, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export default function DoctorDetailScreen() {
@@ -31,7 +29,7 @@ export default function DoctorDetailScreen() {
   return (
     <View
       style={[
-        styles.screen,
+        { flex: 1 },
         { backgroundColor: colors.screenBackground },
       ]}
     >
@@ -48,8 +46,8 @@ export default function DoctorDetailScreen() {
         {office ? (
           <ScrollView
             contentContainerStyle={[
-              styles.content,
-              { paddingBottom: insets.bottom + azdLayout.space[6] },
+              { flexGrow: 1 },
+              { paddingBottom: insets.bottom + theme.spacing.xl },
             ]}
             showsVerticalScrollIndicator={false}
           >
@@ -67,48 +65,58 @@ export default function DoctorDetailScreen() {
               }}
             />
 
-            <View style={styles.body}>
+            <View 
+              style={{
+                padding: theme.spacing.lg,
+                gap: theme.spacing.lg,
+              }}
+            >
               <OpeningHoursSection openingHours={office.openingHours} />
 
-              <DoctorInfoRow
-                label={t("ourServices")}
-                value={t("ourServices")}
-                onPress={() => {
+              <Card>
+                <ListNavigationItem
+                  title={t("ourServices")}
+                  onPress={() => {
                   Alert.alert(t("ourServices"), t("servicesSoon"))
                 }}
-              />
-
-              <Menu title={t("address")}>
-                <MenuActionItem
-                  label={`${office.addressLine1}\n${office.addressLine2}`}
-                  onPress={() => {
-                    openDoctorsOfficeNavigation(
-                      office.addressLine1,
-                      office.addressLine2,
-                    )
-                  }}
                 />
-              </Menu>
+              </Card>
 
-              <DoctorLabeledSection label={t("website")}>
-                <DoctorInfoRow
-                  label={t("website")}
-                  value={office.websiteLabel}
-                  onPress={() => {
-                    openDoctorsOfficeWebsite(office.websiteUrl)
-                  }}
-                />
-              </DoctorLabeledSection>
+              <Section title={t("address")}>
+                <Card>
+                  <ListNavigationItem
+                    title={`${office.addressLine1}\n${office.addressLine2}`}
+                    onPress={() => {
+                      openDoctorsOfficeNavigation(
+                        office.addressLine1,
+                        office.addressLine2,
+                      )
+                    }}
+                  />
+                </Card>
+              </Section>
+              
+              <Section title={t("website")}>
+                <Card>
+                  <ListNavigationItem
+                    title={office.websiteLabel}
+                    onPress={() => {
+                      openDoctorsOfficeWebsite(office.websiteUrl)
+                    }}
+                  />
+                </Card>
+              </Section>
 
-              <DoctorLabeledSection label={t("furtherOffers")}>
-                <DoctorInfoRow
-                  label={t("furtherOffers")}
-                  value={office.additionalOfferLabel}
-                  onPress={() => {
-                    Alert.alert(t("furtherOffers"), t("offersSoon"))
-                  }}
-                />
-              </DoctorLabeledSection>
+              <Section title={t("furtherOffers")}>
+                <Card>
+                  <ListNavigationItem
+                    title={office.additionalOfferLabel}
+                    onPress={() => {
+                      Alert.alert(t("furtherOffers"), t("offersSoon"))
+                    }}
+                  />
+                </Card>
+              </Section>
             </View>
           </ScrollView>
         ) : null}
@@ -116,17 +124,3 @@ export default function DoctorDetailScreen() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  content: {
-    flexGrow: 1,
-  },
-  body: {
-    paddingHorizontal: azdLayout.space[4],
-    paddingTop: azdLayout.space[6],
-    gap: azdLayout.space[6],
-  },
-})

@@ -1,12 +1,11 @@
 import { useAppTranslation } from "@/app/hooks/useAppTranslation"
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
+import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
   Modal,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native"
@@ -19,7 +18,7 @@ export type SelectionSheetOption = {
 type SelectionSheetProps = {
   visible: boolean
   title: string
-  options: ReadonlyArray<SelectionSheetOption>
+  options: readonly SelectionSheetOption[]
   value: string
   onChange: (value: string) => void
   onCancel: () => void
@@ -43,7 +42,7 @@ export function SelectionSheet({
     if (visible) {
       originalValueRef.current = value
     }
-  }, [visible])
+  }, [value, visible])
 
   const revertAndCancel = () => {
     onChange(originalValueRef.current)
@@ -57,136 +56,106 @@ export function SelectionSheet({
       animationType="fade"
       onRequestClose={revertAndCancel}
     >
-      <Pressable style={styles.overlay} onPress={revertAndCancel}>
+      <Pressable
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          paddingHorizontal: theme.spacing.lg + theme.spacing.sm,
+          backgroundColor: theme.semantics.withAppearance({
+            color: "#000000",
+            appearance: "faded",
+          }),
+        }}
+        onPress={revertAndCancel}
+      >
         <Pressable
-          style={[
-            styles.sheet,
-            { backgroundColor: theme.semantic.surface },
-          ]}
+          style={{
+            borderRadius: theme.borderRadius.xl,
+            overflow: "hidden",
+            paddingTop: theme.spacing.lg,
+            backgroundColor: theme.colors.surface.color,
+          }}
           onPress={(event) => event.stopPropagation()}
         >
-          <Text style={[styles.title, { color: theme.semantic.textPrimary }]}>
+          <Text
+            style={{
+              ...theme.typography.heading.md,
+              fontWeight: theme.typography.fontWeights.bold,
+              textAlign: "center",
+              marginBottom: theme.spacing.md + theme.spacing.sm,
+              paddingHorizontal: theme.spacing.lg,
+              color: theme.colors.surface.onColor,
+            }}
+          >
             {title}
           </Text>
 
-          <View style={styles.options}>
+          <View
+            style={{
+              paddingHorizontal: theme.spacing.md,
+              paddingBottom: theme.spacing.md,
+            }}
+          >
             {options.map((option) => {
               const isSelected = value === option.id
 
               return (
-                <Pressable
+                <ListActionItem
                   key={option.id}
-                  style={styles.option}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: theme.spacing.md,
+                    minHeight: theme.elements.control.md.size,
+                    paddingHorizontal: theme.spacing.md + theme.spacing.sm,
+                    borderRadius: theme.borderRadius.md,
+                  }}
                   onPress={() => {
                     onChange(option.id)
                   }}
-                >
-                  <View style={styles.checkSlot}>
-                    {isSelected ? (
-                      <Check size={18} color={theme.semantic.primary} />
-                    ) : null}
-                  </View>
-                  <Text
-                    style={[
-                      styles.optionLabel,
-                      {
-                        color: theme.semantic.textPrimary,
-                        fontWeight: isSelected ? "700" : "500",
-                      },
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
+                  leading={(
+                    <View
+                      style={{
+                        width: theme.icongraphy.sizes.md,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {isSelected ? (
+                        <Check size={theme.icongraphy.sizes.md} color={theme.colors.primary.color} />
+                      ) : null}
+                    </View>
+                  )}
+                  title={option.label}
+                />
               )
             })}
           </View>
 
           <View
-            style={[
-              styles.actions,
-              { borderTopColor: theme.components.tabBar.border },
-            ]}
+            style={{
+              flexDirection: "row",
+              borderTopWidth: theme.border.thin,
+              borderTopColor: theme.components.tabBar.border,
+            }}
           >
-            <Pressable style={styles.actionButton} onPress={revertAndCancel}>
-              <Text
-                style={[
-                  styles.actionLabel,
-                  { color: theme.semantic.textSecondary },
-                ]}
-              >
-                {t("cancel")}
-              </Text>
-            </Pressable>
-            <Pressable style={styles.actionButton} onPress={onDone}>
-              <Text
-                style={[styles.actionLabel, { color: theme.semantic.primary }]}
-              >
-                {t("done")}
-              </Text>
-            </Pressable>
+            <Button
+              onPress={revertAndCancel}
+              variant="foreground"
+              color={{
+                color: theme.colors.surface.onColor,
+                onColor: theme.colors.surface.color
+              }}
+              style={{flex: 1}}
+            >
+              {t("cancel")}
+            </Button>
+            <Button onPress={onDone} variant="foreground" style={{flex: 1}}>
+              {t("done")}
+            </Button>
           </View>
         </Pressable>
       </Pressable>
     </Modal>
   )
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: azdLayout.space[5],
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  sheet: {
-    borderRadius: azdLayout.radius.lg,
-    overflow: "hidden",
-    paddingTop: azdLayout.space[4],
-  },
-  title: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "700",
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: azdLayout.space[3],
-    paddingHorizontal: azdLayout.space[4],
-  },
-  options: {
-    paddingHorizontal: azdLayout.space[2],
-    paddingBottom: azdLayout.space[2],
-  },
-  option: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: azdLayout.space[2],
-    minHeight: 48,
-    paddingHorizontal: azdLayout.space[3],
-    borderRadius: azdLayout.radius.sm,
-  },
-  checkSlot: {
-    width: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  optionLabel: {
-    flex: 1,
-    fontFamily: azdLayout.font.display,
-    fontSize: 16,
-  },
-  actions: {
-    flexDirection: "row",
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  actionButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: azdLayout.space[4],
-  },
-  actionLabel: {
-    fontFamily: azdLayout.font.display,
-    fontWeight: "600",
-    fontSize: 16,
-  },
-})

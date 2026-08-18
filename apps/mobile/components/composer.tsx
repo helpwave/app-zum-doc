@@ -1,5 +1,4 @@
 import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { azdLayout } from "@/theme/azd-tokens"
 import {
   ChatMessageComposer,
   IconButton,
@@ -28,11 +27,10 @@ export function Composer({
       {errorMessage ? (
         <Text
           style={{
-            fontFamily: azdLayout.font.display,
-            fontSize: 12,
+            ...theme.typography.body.sm,
             color: colors.errorText,
-            paddingHorizontal: 14,
-            paddingTop: 8,
+            paddingHorizontal: theme.spacing.lg - theme.spacing.xs,
+            paddingTop: theme.spacing.md,
             backgroundColor: colors.errorBackground,
           }}
         >
@@ -48,18 +46,18 @@ export function Composer({
           <IconButton
             accessibilityLabel="Anhang hinzufügen"
             icon={Plus}
-            size="md"
-            color="primary"
-            coloringStyle="text"
+            size="sm"
+            color={theme.colors.neutral}
+            style={{ borderRadius: 9999 }}
           />
         }
         trailing={
           <IconButton
             accessibilityLabel="Foto aufnehmen"
             icon={Camera}
-            size="md"
-            color="neutral"
-            coloringStyle="text"
+            size="sm"
+            color={theme.colors.neutral}
+            style={{marginInlineEnd: theme.spacing.sm, borderRadius: 9999 }}
           />
         }
       />

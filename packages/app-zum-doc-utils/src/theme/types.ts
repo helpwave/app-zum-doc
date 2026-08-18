@@ -1,17 +1,17 @@
 import type {
   ColorPaletteBasicToken,
   ColorToken,
-  ComponentColorTokens,
-  HightideColorPalleteTokens,
-  HightideSemanticColorTokens,
-  HightideThemeTokens,
-} from "@helpwave/hightide-design/types"
+  HightidePrimitiveTokens,
+} from "@helpwave/hightide-design/primitive-tokens"
+import type { ThemeTokens } from "@helpwave/hightide-design/theme-tokens"
 
-export type AzdPrimitiveTokens = HightideColorPalleteTokens & {
-  teal: ColorPaletteBasicToken
+export type AzdPrimitiveTokens = Omit<HightidePrimitiveTokens, "color"> & {
+  color: HightidePrimitiveTokens["color"] & {
+    palettes: HightidePrimitiveTokens["color"]["palettes"] & {
+      teal: ColorPaletteBasicToken
+    }
+  }
 }
-
-export type AzdSemanticTokens = HightideSemanticColorTokens
 
 export type AzdScreenComponentTokens = {
   background: ColorToken
@@ -121,7 +121,7 @@ export type AzdDoctorDetailComponentTokens = {
   screenBackground: ColorToken
 }
 
-export type AzdComponentTokens = ComponentColorTokens & {
+export type AzdComponentTokens = {
   screen: AzdScreenComponentTokens
   tabBar: AzdTabBarComponentTokens
   homeSections: AzdHomeSectionsComponentTokens
@@ -134,11 +134,6 @@ export type AzdComponentTokens = ComponentColorTokens & {
   doctorDetail: AzdDoctorDetailComponentTokens
 }
 
-export type AzdThemeTokens = Omit<
-  HightideThemeTokens,
-  "colors" | "semanticColors" | "componentColors"
-> & {
-  colors: AzdPrimitiveTokens
-  semanticColors: AzdSemanticTokens
+export type AzdThemeTokens = ThemeTokens & {
   componentColors: AzdComponentTokens
 }
