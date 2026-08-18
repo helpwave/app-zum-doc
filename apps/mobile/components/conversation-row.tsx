@@ -2,11 +2,11 @@ import {
   AzdAvatarImage,
   contactAvatarImage,
 } from "@/components/azd-avatar-image"
+import type { Conversation } from "@app-zum-doc/utils/api"
 import {
   AvatarWithStatus,
   ChatConversationRow,
 } from "@helpwave/hightide-native/components"
-import type { Conversation } from "@app-zum-doc/utils/api"
 
 type ConversationRowProps = {
   conversation: Conversation
@@ -26,7 +26,7 @@ export function ConversationRow({ conversation, onPress }: ConversationRowProps)
           image={contactAvatarImage(contact.imageUri, contact.name)}
           ImageComponent={AzdAvatarImage}
           status={contact.presence ?? "unknown"}
-          size="md"
+          size={40}
         />
       }
       title={contact.name}

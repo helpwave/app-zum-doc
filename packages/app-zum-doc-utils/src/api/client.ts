@@ -1,10 +1,13 @@
 export {
+  fetchCities,
   fetchConversation,
   fetchConversations,
+  fetchDoctors,
   fetchDoctorsOffice,
   fetchHomeSummary,
   fetchMessages,
   fetchPatientProfile,
+  fetchSpecializations,
   markConversationRead,
   mockApiConfig,
   resetMockStore,

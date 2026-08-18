@@ -1,5 +1,5 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { ThemedText } from "@helpwave/hightide-native/components"
 import { ChevronLeft } from "lucide-react-native"
 import type { ReactNode } from "react"

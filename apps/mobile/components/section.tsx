@@ -1,4 +1,4 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme";
+import { useAzdTheme } from "@/hooks/useAzdTheme";
 import { ThemedText } from "@helpwave/hightide-native/components";
 import { View, ViewProps } from "react-native";
 

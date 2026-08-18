@@ -6,6 +6,48 @@ import type {
   PatientProfile,
 } from "../types"
 
+export type LocalizedLabel = {
+  "de-DE": string
+  "en-US": string
+}
+
+export type DoctorsOfficeSeed = DoctorsOffice & {
+  cityId: string
+  specializationId: string
+}
+
+export const citiesSeed: {
+  id: string
+  labels: LocalizedLabel
+}[] = [
+  { id: "berlin", labels: { "de-DE": "Berlin", "en-US": "Berlin" } },
+  { id: "bielefeld", labels: { "de-DE": "Bielefeld", "en-US": "Bielefeld" } },
+  { id: "bochum", labels: { "de-DE": "Bochum", "en-US": "Bochum" } },
+  { id: "aachen", labels: { "de-DE": "Aachen", "en-US": "Aachen" } },
+  { id: "nordberg", labels: { "de-DE": "Nordberg", "en-US": "Nordberg" } },
+  { id: "hamburg", labels: { "de-DE": "Hamburg", "en-US": "Hamburg" } },
+  { id: "koeln", labels: { "de-DE": "Köln", "en-US": "Cologne" } },
+]
+
+export const specializationsSeed: {
+  id: string
+  labels: LocalizedLabel
+}[] = [
+  { id: "general-medicine", labels: { "de-DE": "Allgemeinmedizin", "en-US": "General medicine" } },
+  { id: "internal-medicine", labels: { "de-DE": "Innere Medizin", "en-US": "Internal medicine" } },
+  { id: "cardiology", labels: { "de-DE": "Kardiologie", "en-US": "Cardiology" } },
+  { id: "dentistry", labels: { "de-DE": "Zahnmedizin", "en-US": "Dentistry" } },
+  { id: "radiology", labels: { "de-DE": "Radiologie", "en-US": "Radiology" } },
+]
+
+export const openStatusLabels: {
+  open: LocalizedLabel
+  closed: LocalizedLabel
+} = {
+  open: { "de-DE": "Praxis ist geöffnet", "en-US": "Practice is open" },
+  closed: { "de-DE": "Praxis ist geschlossen", "en-US": "Practice is closed" },
+}
+
 export const conversationsSeed: Conversation[] = [
   {
     id: "conv-sophie",
@@ -175,7 +217,7 @@ export const patientProfileSeed: PatientProfile = {
   notificationsEnabled: true,
 }
 
-export const doctorsOfficesSeed: Record<string, DoctorsOffice> = {
+export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   "office-moser": {
     id: "office-moser",
     name: "Dr. Moser",
@@ -198,6 +240,8 @@ export const doctorsOfficesSeed: Record<string, DoctorsOffice> = {
     websiteLabel: "www.dr-moser.de",
     websiteUrl: "https://www.dr-moser.de",
     additionalOfferLabel: "Online-Termin für Impfungen",
+    cityId: "nordberg",
+    specializationId: "internal-medicine",
   },
   "office-haumann": {
     id: "office-haumann",
@@ -222,6 +266,112 @@ export const doctorsOfficesSeed: Record<string, DoctorsOffice> = {
     websiteLabel: "www.dr-haumann.de",
     websiteUrl: "https://www.dr-haumann.de",
     additionalOfferLabel: "Videosprechstunde",
+    cityId: "aachen",
+    specializationId: "general-medicine",
+  },
+  "office-vogt": {
+    id: "office-vogt",
+    name: "Dr. med. Sophie Vogt",
+    specialty: "Kardiologie",
+    phone: "030 88776611",
+    imageUri: "doctor-portrait",
+    initials: "SV",
+    isOpen: true,
+    openStatusLabel: "Praxis ist geöffnet",
+    openingHours: [
+      { dayLabel: "Montag", times: ["8:00 - 16:00"] },
+      { dayLabel: "Dienstag", times: ["8:00 - 16:00"] },
+      { dayLabel: "Mittwoch", times: ["8:00 - 12:00"] },
+      { dayLabel: "Donnerstag", times: ["8:00 - 16:00"] },
+      { dayLabel: "Freitag", times: ["8:00 - 12:00"] },
+      { dayLabel: "Samstag", times: [] },
+      { dayLabel: "Sonntag", times: [] },
+    ],
+    addressLine1: "Friedrichstraße 88",
+    addressLine2: "10117 Berlin",
+    websiteLabel: "www.kardiologie-vogt.de",
+    websiteUrl: "https://www.kardiologie-vogt.de",
+    additionalOfferLabel: "Belastungs-EKG",
+    cityId: "berlin",
+    specializationId: "cardiology",
+  },
+  "office-klein": {
+    id: "office-klein",
+    name: "Zahnarztpraxis Dr. Klein",
+    specialty: "Zahnmedizin",
+    phone: "0521 334455",
+    imageUri: "practice-logo",
+    initials: "KL",
+    isOpen: true,
+    openStatusLabel: "Praxis ist geöffnet",
+    openingHours: [
+      { dayLabel: "Montag", times: ["9:00 - 17:00"] },
+      { dayLabel: "Dienstag", times: ["9:00 - 17:00"] },
+      { dayLabel: "Mittwoch", times: ["9:00 - 13:00"] },
+      { dayLabel: "Donnerstag", times: ["9:00 - 17:00"] },
+      { dayLabel: "Freitag", times: ["9:00 - 13:00"] },
+      { dayLabel: "Samstag", times: [] },
+      { dayLabel: "Sonntag", times: [] },
+    ],
+    addressLine1: "Jahnplatz 4",
+    addressLine2: "33602 Bielefeld",
+    websiteLabel: "www.zahnarzt-klein.de",
+    websiteUrl: "https://www.zahnarzt-klein.de",
+    additionalOfferLabel: "Professionelle Zahnreinigung",
+    cityId: "bielefeld",
+    specializationId: "dentistry",
+  },
+  "office-kern": {
+    id: "office-kern",
+    name: "Radiologie Dr. Kern",
+    specialty: "Radiologie",
+    phone: "0234 998877",
+    imageUri: "practice-logo",
+    initials: "RK",
+    isOpen: false,
+    openStatusLabel: "Praxis ist geschlossen",
+    openingHours: [
+      { dayLabel: "Montag", times: ["7:30 - 15:30"] },
+      { dayLabel: "Dienstag", times: ["7:30 - 15:30"] },
+      { dayLabel: "Mittwoch", times: ["7:30 - 15:30"] },
+      { dayLabel: "Donnerstag", times: ["7:30 - 15:30"] },
+      { dayLabel: "Freitag", times: ["7:30 - 12:00"] },
+      { dayLabel: "Samstag", times: [] },
+      { dayLabel: "Sonntag", times: [] },
+    ],
+    addressLine1: "Kortumstraße 19",
+    addressLine2: "44787 Bochum",
+    websiteLabel: "www.radiologie-kern.de",
+    websiteUrl: "https://www.radiologie-kern.de",
+    additionalOfferLabel: "MRT ohne Wartezeit",
+    cityId: "bochum",
+    specializationId: "radiology",
+  },
+  "office-altstadt": {
+    id: "office-altstadt",
+    name: "Hausarztpraxis Altstadt",
+    specialty: "Allgemeinmedizin",
+    phone: "0241 112233",
+    imageUri: "practice-logo",
+    initials: "HA",
+    isOpen: true,
+    openStatusLabel: "Praxis ist geöffnet",
+    openingHours: [
+      { dayLabel: "Montag", times: ["8:00 - 18:00"] },
+      { dayLabel: "Dienstag", times: ["8:00 - 18:00"] },
+      { dayLabel: "Mittwoch", times: ["8:00 - 13:00"] },
+      { dayLabel: "Donnerstag", times: ["8:00 - 18:00"] },
+      { dayLabel: "Freitag", times: ["8:00 - 13:00"] },
+      { dayLabel: "Samstag", times: [] },
+      { dayLabel: "Sonntag", times: [] },
+    ],
+    addressLine1: "Markt 12",
+    addressLine2: "52062 Aachen",
+    websiteLabel: "www.hausarzt-altstadt.de",
+    websiteUrl: "https://www.hausarzt-altstadt.de",
+    additionalOfferLabel: "Hausbesuche",
+    cityId: "aachen",
+    specializationId: "general-medicine",
   },
 }
 

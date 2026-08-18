@@ -1,7 +1,7 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-  ChatMessageComposer,
-  IconButton,
+    ChatMessageComposer,
+    IconButton,
 } from "@helpwave/hightide-native/components"
 import { Camera, Plus } from "lucide-react-native"
 import { Text } from "react-native"

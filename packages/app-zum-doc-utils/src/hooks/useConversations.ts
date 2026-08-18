@@ -9,10 +9,10 @@ import {
 } from "../api/client"
 import { conversationKeys, homeKeys } from "./queryKeys"
 
-export function useConversations(search?: string) {
+export function useConversations() {
   return useQuery({
-    queryKey: conversationKeys.list(search),
-    queryFn: () => fetchConversations(search),
+    queryKey: conversationKeys.list,
+    queryFn: fetchConversations,
   })
 }
 

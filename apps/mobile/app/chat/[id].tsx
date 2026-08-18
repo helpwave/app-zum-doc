@@ -1,29 +1,29 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
-  AzdAvatarImage,
-  contactAvatarImage,
+    AzdAvatarImage,
+    contactAvatarImage,
 } from "@/components/azd-avatar-image"
 import { ChatMessageItem } from "@/components/chat-message-item"
 import { Composer } from "@/components/composer"
 import { QueryState } from "@/components/query-state"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-  useConversation,
-  useMarkConversationRead,
-  useMessages,
-  useResolveCardAction,
-  useSendMessage,
+    useConversation,
+    useMarkConversationRead,
+    useMessages,
+    useResolveCardAction,
+    useSendMessage,
 } from "@app-zum-doc/utils/hooks"
 import {
-  ChatMessageList,
-  ChatThreadHeader,
-  IconButton
+    ChatMessageList,
+    ChatThreadHeader,
+    IconButton
 } from "@helpwave/hightide-native/components"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { ChevronLeft, Phone } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import { KeyboardAvoidingView, Platform, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useAppTranslation } from "../hooks/useAppTranslation"
+import { useAppTranslation } from "../../hooks/useAppTranslation"
 
 export default function ChatThreadScreen() {
   const t = useAppTranslation()

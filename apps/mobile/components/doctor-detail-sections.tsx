@@ -1,22 +1,22 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { toShadowStyle } from "@/theme/azd-theme"
 import type { DoctorsOffice } from "@app-zum-doc/utils/api"
 import { Card, ListItem } from "@helpwave/hightide-native/components"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import {
-  ChevronLeft,
-  Ellipsis,
-  Phone,
-  Plus
+    ChevronLeft,
+    Ellipsis,
+    Phone,
+    Plus
 } from "lucide-react-native"
 import {
-  Linking,
-  Platform,
-  Pressable,
-  Text,
-  View,
+    Linking,
+    Platform,
+    Pressable,
+    Text,
+    View,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Section } from "./section"
