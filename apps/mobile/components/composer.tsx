@@ -46,18 +46,18 @@ export function Composer({
           <IconButton
             accessibilityLabel="Anhang hinzufügen"
             icon={Plus}
-            size="md"
+            size="sm"
             color={theme.colors.neutral}
-            variant="foreground"
+            style={{ borderRadius: 9999 }}
           />
         }
         trailing={
           <IconButton
             accessibilityLabel="Foto aufnehmen"
             icon={Camera}
-            size="md"
+            size="sm"
             color={theme.colors.neutral}
-            variant="foreground"
+            style={{marginInlineEnd: theme.spacing.sm, borderRadius: 9999 }}
           />
         }
       />
