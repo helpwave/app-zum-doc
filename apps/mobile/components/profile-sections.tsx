@@ -1,11 +1,11 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { SelectionSheet } from "@/components/selection-sheet"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
-  Avatar,
-  ListActionItem,
-  ThemedIcon
+    Avatar,
+    ListActionItem,
+    ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { GlobeIcon, SunMoonIcon } from "lucide-react-native"

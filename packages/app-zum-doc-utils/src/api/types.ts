@@ -159,3 +159,22 @@ export type DoctorsOffice = {
   websiteUrl: string
   additionalOfferLabel: string
 }
+
+export type AppLocale = "de-DE" | "en-US"
+
+export type SearchCity = {
+  id: string
+  label: string
+}
+
+export type SearchSpecialization = {
+  id: string
+  label: string
+}
+
+export type DoctorSearchFilters = {
+  query?: string
+  cityId?: string
+  specializationId?: string
+  locale: AppLocale
+}

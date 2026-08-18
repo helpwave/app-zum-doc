@@ -1,10 +1,10 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { StructuredCardMessage } from "@app-zum-doc/utils/api"
 import {
-  Button,
-  ChatMessageBubble,
-  ThemedIcon,
-  ThemedText,
+    Button,
+    ChatMessageBubble,
+    ThemedIcon,
+    ThemedText,
 } from "@helpwave/hightide-native/components"
 import { CalendarDays } from "lucide-react-native"
 import { Text, View } from "react-native"

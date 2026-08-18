@@ -1,18 +1,18 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import { ConversationRow } from "@/components/conversation-row"
 import { QueryState } from "@/components/query-state"
 import { ScreenHeader } from "@/components/screen-header"
-import { SearchField } from "@/components/search-field"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { useConversations } from "@app-zum-doc/utils/hooks"
 import {
   ChatConversationList,
   IconButton,
+  SearchBar,
 } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"
 import { MessageCircle } from "lucide-react-native"
 import { useState } from "react"
 import { View } from "react-native"
-import { useAppTranslation } from "../hooks/useAppTranslation"
+import { useAppTranslation } from "../../hooks/useAppTranslation"
 
 export default function ChatListScreen() {
   const t = useAppTranslation()
@@ -40,10 +40,13 @@ export default function ChatListScreen() {
           />
         }
       >
-        <SearchField
+        <SearchBar
           value={search}
-          onChangeText={setSearch}
           placeholder={t("searchPracticeOrMessage")}
+          onValueChange={(value) => {
+            setSearch(value ?? "")
+          }}
+          onSearch={setSearch}
         />
       </ScreenHeader>
 

@@ -4,11 +4,11 @@ import {
   StartHero,
 } from "@/components/home-sections"
 import { QueryState } from "@/components/query-state"
-import { useAppTranslation } from "../hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { useRouter, type Href } from "expo-router"
 import { ScrollView, View } from "react-native"
+import { useAppTranslation } from "../../hooks/useAppTranslation"
 
 export default function HomeScreen() {
   const t = useAppTranslation()
@@ -44,7 +44,7 @@ export default function HomeScreen() {
             <StartHero
               quickActions={homeQuery.data.quickActions}
               onSearchPress={() => {
-                router.push("/search")
+                router.push("/doctor-search" as Href)
               }}
               onQuickActionPress={(action) => {
                 router.push(action.href as Href)

@@ -66,5 +66,18 @@
   "moreOptions": "Weitere Optionen",
   "addDoctorSoon": "„Als mein Arzt hinzufügen“ folgt in einem späteren Release.",
   "servicesSoon": "Leistungen folgen in einem späteren Release.",
-  "offersSoon": "Weitere Angebote folgen in einem späteren Release."
+  "offersSoon": "Weitere Angebote folgen in einem späteren Release.",
+  "searchDoctorPlaceholder": "Name, Fachrichtung oder Stadt",
+  "filter": "Filter",
+  "filterCity": "Stadt",
+  "filterSpecialization": "Fachrichtung",
+  "selectCity": "Stadt wählen",
+  "searchCity": "Nach Stadt suchen",
+  "selectSpecialization": "Fachrichtung wählen",
+  "searchSpecialization": "Nach Fachrichtung suchen",
+  "noSearchResults": "Keine Treffer gefunden.",
+  "loadingDoctorSearch": "Suche wird geladen…",
+  "loadingCities": "Städte werden geladen…",
+  "loadingSpecializations": "Fachrichtungen werden geladen…",
+  "clearSelection": "Auswahl entfernen"
 }

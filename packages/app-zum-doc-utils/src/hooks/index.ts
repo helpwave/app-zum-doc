@@ -1,5 +1,6 @@
 export * from './queryKeys'
 export * from './useConversations'
+export * from './useDoctorSearch'
 export * from './useDoctorsOffice'
 export * from './useHomeSummary'
 export * from './usePatientProfile'

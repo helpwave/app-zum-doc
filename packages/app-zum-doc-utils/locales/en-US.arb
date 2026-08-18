@@ -66,5 +66,18 @@
   "moreOptions": "More options",
   "addDoctorSoon": "“Add as my doctor” will follow in a later release.",
   "servicesSoon": "Services will follow in a later release.",
-  "offersSoon": "Further offers will follow in a later release."
+  "offersSoon": "Further offers will follow in a later release.",
+  "searchDoctorPlaceholder": "Name, specialty or city",
+  "filter": "Filter",
+  "filterCity": "City",
+  "filterSpecialization": "Specialty",
+  "selectCity": "Select city",
+  "searchCity": "Search for city",
+  "selectSpecialization": "Select specialty",
+  "searchSpecialization": "Search for specialty",
+  "noSearchResults": "No results found.",
+  "loadingDoctorSearch": "Loading search…",
+  "loadingCities": "Loading cities…",
+  "loadingSpecializations": "Loading specialties…",
+  "clearSelection": "Clear selection"
 }

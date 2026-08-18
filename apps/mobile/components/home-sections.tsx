@@ -1,5 +1,6 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { DoctorCard } from "@/components/doctor-card"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { toShadowStyle } from "@/theme/azd-theme"
 import type {
   HomeDoctorCard,
@@ -7,13 +8,12 @@ import type {
   HomeRequest,
   HomeSummary,
 } from "@app-zum-doc/utils/api"
-import { Image } from "expo-image"
+import { Button, ThemedPressable } from "@helpwave/hightide-native/components"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   Calendar,
   ChevronRight,
   FileText,
-  Phone,
   Pill,
   Search,
 } from "lucide-react-native"
@@ -24,8 +24,6 @@ import {
   View,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-
-const doctorPortrait = require("../assets/images/doctor-portrait.png")
 
 type StartHeroProps = {
   onSearchPress: () => void
@@ -200,37 +198,16 @@ export function StartSectionHeader({ title, onShowAll }: SectionHeaderProps) {
       >
         {title}
       </Text>
-      <Pressable
+      <Button
         accessibilityRole="button"
         onPress={onShowAll}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: theme.spacing.sm,
-        }}
+        size="xs"
+        color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color}}
+        trailingIcon={ChevronRight}
+        variant="foreground"
       >
-        <Text
-          style={{
-            ...theme.typography.body.sm,
-            lineHeight: theme.icongraphy.sizes.xs,
-            includeFontPadding: false,
-            textAlignVertical: "center",
-            color: colors.showAll,
-          }}
-        >
           {t("showAll")}
-        </Text>
-        <View
-          style={{
-            height: theme.icongraphy.sizes.xs,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ChevronRight size={12} color={colors.showAll} strokeWidth={2.4} />
-        </View>
-      </Pressable>
+      </Button>
     </View>
   )
 }
@@ -281,157 +258,7 @@ type StartDoctorCardProps = {
 }
 
 export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
-  const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
-  const hasPortrait = doctor.imageUri === "doctor-portrait"
-  const photoStyle = {
-    width: 97,
-    borderRadius: theme.borderRadius.md,
-  }
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={{
-        width: 306,
-        height: 155,
-        borderRadius: theme.borderRadius.md,
-        flexDirection: "row",
-        gap: theme.spacing.md + theme.spacing.xs,
-        padding: theme.spacing.md + theme.spacing.xs,
-        backgroundColor: colors.cardBackground,
-        ...toShadowStyle(theme.shadow.container),
-      }}
-    >
-      {hasPortrait ? (
-        <Image
-          source={doctorPortrait}
-          style={photoStyle}
-          contentFit="cover"
-        />
-      ) : (
-        <View
-          style={{
-            ...photoStyle,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.avatarBackground,
-          }}
-        >
-          <Text
-            style={{
-              ...theme.typography.heading.lg,
-              fontWeight: theme.typography.fontWeights.semibold,
-              color: colors.avatarText,
-            }}
-          >
-            {doctor.initials ?? doctor.name.slice(0, 2).toUpperCase()}
-          </Text>
-        </View>
-      )}
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "space-between",
-          paddingVertical: theme.spacing.md,
-        }}
-      >
-        <View style={{ gap: theme.spacing.xs }}>
-          <Text
-            style={{
-              ...theme.typography.heading.md,
-              color: colors.doctorName,
-            }}
-          >
-            {doctor.name}
-          </Text>
-          <Text
-            style={{
-              ...theme.typography.body.sm,
-              color: colors.doctorSpecialty,
-            }}
-            numberOfLines={2}
-          >
-            {doctor.specialty}
-          </Text>
-        </View>
-        <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: theme.spacing.sm,
-            }}
-          >
-            <View
-              style={{
-                width: 12,
-                height: theme.icongraphy.sizes.xs,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <View
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 9999,
-                  backgroundColor: doctor.isOpen
-                    ? colors.openDot
-                    : colors.closedDot,
-                }}
-              />
-            </View>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.typography.body.sm,
-                lineHeight: theme.icongraphy.sizes.xs,
-                includeFontPadding: false,
-                textAlignVertical: "center",
-                color: colors.doctorMeta,
-              }}
-              numberOfLines={1}
-            >
-              {doctor.openStatusLabel}
-            </Text>
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: theme.spacing.sm,
-            }}
-          >
-            <View
-              style={{
-                width: 12,
-                height: theme.icongraphy.sizes.xs,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Phone size={12} color={colors.doctorName} fill={colors.doctorName} />
-            </View>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.typography.body.sm,
-                lineHeight: theme.icongraphy.sizes.xs,
-                includeFontPadding: false,
-                textAlignVertical: "center",
-                color: colors.doctorMeta,
-              }}
-              numberOfLines={1}
-            >
-              {doctor.phone}
-            </Text>
-          </View>
-        </View>
-      </View>
-    </Pressable>
-  )
+  return <DoctorCard doctor={doctor} onPress={onPress} width={306} />
 }
 
 type RecentRequestsSectionProps = {
@@ -486,13 +313,18 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         : FileText
 
   return (
-    <Pressable
+    <ThemedPressable
       accessibilityRole="button"
       onPress={onPress}
+      color={theme.colors.surface}
+      coloringStyle="filled"
       style={{
-        borderRadius: theme.borderRadius.lg,
-        padding: theme.spacing.lg,
         flexDirection: "row",
+        borderRadius: theme.borderRadius.lg,
+        paddingLeft: theme.spacing.lg,
+        paddingRight: theme.spacing.lg,
+        paddingTop: theme.spacing.lg,
+        paddingBottom: theme.spacing.lg,
         gap: theme.spacing.md + theme.spacing.sm,
         alignItems: "flex-start",
         backgroundColor: colors.cardBackground,
@@ -594,6 +426,6 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           {request.kindLabel}
         </Text>
       </View>
-    </Pressable>
+    </ThemedPressable>
   )
 }

@@ -1,6 +1,6 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
-import { Button } from "@helpwave/hightide-native/components"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { Button, Card } from "@helpwave/hightide-native/components"
 import type { ReactNode } from "react"
 import {
   ActivityIndicator,
@@ -39,22 +39,31 @@ export function QueryState({
     justifyContent: "center" as const,
     paddingHorizontal: theme.spacing.xl,
     gap: theme.spacing.md + theme.spacing.sm,
-    backgroundColor: colors.background,
   }
 
   if (isPending) {
     return (
       <View style={[centerStyle, style]}>
-        <ActivityIndicator size="large" color={colors.spinner} />
-        <Text
+        <Card 
           style={{
-            ...theme.typography.body.sm,
-            color: colors.loadingText,
-            marginTop: theme.spacing.md,
+            alignItems: "center",
+            justifyContent: "center",
+            // TODO use padding tokens here
+            padding: theme.spacing.xl,
+            gap: theme.spacing.md
           }}
         >
-          {resolvedLoadingLabel}
-        </Text>
+          <ActivityIndicator size="large" color={colors.spinner} />
+          <Text
+            style={{
+              ...theme.typography.body.sm,
+              color: colors.loadingText,
+              marginTop: theme.spacing.md,
+            }}
+          >
+            {resolvedLoadingLabel}
+          </Text>
+        </Card>
       </View>
     )
   }

@@ -1,8 +1,8 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { Tabs } from "expo-router"
 import { Home, MessageCircle, UserRound } from "lucide-react-native"
 import { Text, View } from "react-native"
-import { useAppTranslation } from "../hooks/useAppTranslation"
+import { useAppTranslation } from "../../hooks/useAppTranslation"
 
 type TabIconProps = {
   focused: boolean

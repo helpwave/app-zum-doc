@@ -1,4 +1,4 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { ReactNode } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"

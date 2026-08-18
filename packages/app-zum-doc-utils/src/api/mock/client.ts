@@ -1,16 +1,24 @@
 import {
   buildHomeSummary,
+  citiesSeed,
   conversationsSeed,
   doctorsOfficesSeed,
   messagesByConversation,
+  openStatusLabels,
   patientProfileSeed,
+  specializationsSeed,
 } from "./data"
 import type {
+  AppLocale,
   ChatMessage,
   Conversation,
+  DoctorSearchFilters,
   DoctorsOffice,
+  HomeDoctorCard,
   HomeSummary,
   PatientProfile,
+  SearchCity,
+  SearchSpecialization,
   StructuredCardMessage,
   TextMessage,
 } from "../types"
@@ -209,13 +217,112 @@ export async function fetchDoctorsOffice(
       throw new Error("Arztpraxis nicht gefunden.")
     }
     return {
-      ...office,
+      id: office.id,
+      name: office.name,
+      specialty: office.specialty,
+      phone: office.phone,
+      imageUri: office.imageUri,
+      initials: office.initials,
+      isOpen: office.isOpen,
+      openStatusLabel: office.openStatusLabel,
+      addressLine1: office.addressLine1,
+      addressLine2: office.addressLine2,
+      websiteLabel: office.websiteLabel,
+      websiteUrl: office.websiteUrl,
+      additionalOfferLabel: office.additionalOfferLabel,
       openingHours: office.openingHours.map((period) => ({
         ...period,
         times: [...period.times],
       })),
     }
   })
+}
+
+function matchesQuery(haystack: string, query: string): boolean {
+  return haystack.toLowerCase().includes(query)
+}
+
+export async function fetchCities(params: {
+  search?: string
+  locale: AppLocale
+}): Promise<SearchCity[]> {
+  return withMockLatency(() => {
+    const query = params.search?.trim().toLowerCase() ?? ""
+    return citiesSeed
+      .map((city) => ({
+        id: city.id,
+        label: city.labels[params.locale],
+      }))
+      .filter((city) => !query || matchesQuery(city.label, query))
+  }, { failKey: params.search })
+}
+
+export async function fetchSpecializations(params: {
+  search?: string
+  locale: AppLocale
+}): Promise<SearchSpecialization[]> {
+  return withMockLatency(() => {
+    const query = params.search?.trim().toLowerCase() ?? ""
+    return specializationsSeed
+      .map((specialization) => ({
+        id: specialization.id,
+        label: specialization.labels[params.locale],
+      }))
+      .filter((specialization) => !query || matchesQuery(specialization.label, query))
+  }, { failKey: params.search })
+}
+
+export async function fetchDoctors(
+  filters: DoctorSearchFilters,
+): Promise<HomeDoctorCard[]> {
+  return withMockLatency(() => {
+    const query = filters.query?.trim().toLowerCase() ?? ""
+    const cityById = new Map(citiesSeed.map((city) => [city.id, city]))
+    const specializationById = new Map(
+      specializationsSeed.map((specialization) => [specialization.id, specialization]),
+    )
+
+    return Object.values(doctorsOfficesSeed)
+      .filter((office) => {
+        if (filters.cityId && office.cityId !== filters.cityId) {
+          return false
+        }
+        if (
+          filters.specializationId
+          && office.specializationId !== filters.specializationId
+        ) {
+          return false
+        }
+
+        if (!query) {
+          return true
+        }
+
+        const cityLabel = cityById.get(office.cityId)?.labels[filters.locale] ?? ""
+        const specializationLabel =
+          specializationById.get(office.specializationId)?.labels[filters.locale]
+          ?? office.specialty
+        const haystack = `${office.name} ${specializationLabel} ${cityLabel}`
+        return matchesQuery(haystack, query)
+      })
+      .map((office) => {
+        const specializationLabel =
+          specializationById.get(office.specializationId)?.labels[filters.locale]
+          ?? office.specialty
+        return {
+          id: office.id,
+          name: office.name,
+          specialty: specializationLabel,
+          phone: office.phone,
+          imageUri: office.imageUri,
+          initials: office.initials,
+          isOpen: office.isOpen,
+          openStatusLabel: office.isOpen
+            ? openStatusLabels.open[filters.locale]
+            : openStatusLabels.closed[filters.locale],
+        }
+      })
+  }, { failKey: filters.query })
 }
 
 export function resetMockStore(): void {

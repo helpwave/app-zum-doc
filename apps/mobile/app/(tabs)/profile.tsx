@@ -1,11 +1,11 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
-  LocaleSetting,
-  ProfileHeader,
-  ThemeModeSetting
+    LocaleSetting,
+    ProfileHeader,
+    ThemeModeSetting
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import { Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"
@@ -13,7 +13,7 @@ import { Building2, LogOut, UserIcon } from "lucide-react-native"
 import { useEffect, useState } from "react"
 import { Alert, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useAppTranslation } from "../hooks/useAppTranslation"
+import { useAppTranslation } from "../../hooks/useAppTranslation"
 
 export default function ProfileScreen() {
   const t = useAppTranslation()

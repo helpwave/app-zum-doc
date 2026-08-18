@@ -1,13 +1,13 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
-  Modal,
-  Pressable,
-  Text,
-  View,
+    Modal,
+    Pressable,
+    Text,
+    View,
 } from "react-native"
 
 export type SelectionSheetOption = {

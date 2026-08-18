@@ -1,14 +1,14 @@
-import { useAppTranslation } from "@/app/hooks/useAppTranslation"
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
 import {
-  DoctorDetailHero,
-  OpeningHoursSection,
-  openDoctorsOfficeNavigation,
-  openDoctorsOfficePhone,
-  openDoctorsOfficeWebsite
+    DoctorDetailHero,
+    OpeningHoursSection,
+    openDoctorsOfficeNavigation,
+    openDoctorsOfficePhone,
+    openDoctorsOfficeWebsite
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { useDoctorsOffice } from "@app-zum-doc/utils/hooks"
 import { Card, ListNavigationItem } from "@helpwave/hightide-native/components"
 import { useLocalSearchParams, useRouter } from "expo-router"

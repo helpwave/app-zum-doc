@@ -1,17 +1,13 @@
-import { useAzdTheme } from "@/app/hooks/useAzdTheme"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { queryClient } from "@/lib/query-client"
 import { azdSupportedThemes } from "@/theme/azd-theme"
 import { appZumDocTranslation } from "@app-zum-doc/utils/i18n"
 import { HightideProvider, useHightide, useTheme } from "@helpwave/hightide-native/global-contexts"
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
+import { StatusBar } from "expo-status-bar"
 import * as SystemUI from "expo-system-ui"
 import { useEffect, type ReactNode } from "react"
 import { ActivityIndicator, Text, View } from "react-native"
@@ -34,23 +30,14 @@ function LoadingView() {
 function AppStack() {
   const { theme, themeMode } = useAzdTheme()
   const backgroundColor = theme.components.screen.background
-  const baseTheme = themeMode === "dark" ? DarkTheme : DefaultTheme
 
   useEffect(() => {
     void SystemUI.setBackgroundColorAsync(backgroundColor)
   }, [backgroundColor])
 
   return (
-    <ThemeProvider
-      value={{
-        ...baseTheme,
-        colors: {
-          ...baseTheme.colors,
-          background: backgroundColor,
-          card: backgroundColor,
-        },
-      }}
-    >
+    <>
+      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -73,7 +60,7 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="search"
+          name="doctor-search"
           options={{
             animation: "slide_from_right",
             headerShown: false,
@@ -122,7 +109,7 @@ function AppStack() {
           }}
         />
       </Stack>
-    </ThemeProvider>
+    </>
   )
 }
 
