@@ -7,6 +7,7 @@ import { QueryState } from "@/components/query-state"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { useRouter, type Href } from "expo-router"
+import { StatusBar } from "expo-status-bar"
 import { ScrollView, View } from "react-native"
 import { useAppTranslation } from "../../hooks/useAppTranslation"
 
@@ -24,6 +25,7 @@ export default function HomeScreen() {
         backgroundColor: colors.screenBackground,
       }}
     >
+      <StatusBar style="light" />
       <QueryState
         isPending={homeQuery.isPending}
         isError={homeQuery.isError}

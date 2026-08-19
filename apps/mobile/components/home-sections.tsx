@@ -73,6 +73,8 @@ export function StartHero({
       <Text
         style={{
           ...theme.typography.heading.lg,
+          fontFamily: "SpaceGrotesk",
+          fontWeight: theme.typography.fontWeights.semibold,
           textAlign: "center",
           color: colors.heroTitle,
         }}

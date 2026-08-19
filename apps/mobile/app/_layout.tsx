@@ -4,7 +4,6 @@ import { azdSupportedThemes } from "@/theme/azd-theme"
 import { appZumDocTranslation } from "@app-zum-doc/utils/i18n"
 import { HightideProvider, useHightide, useTheme } from "@helpwave/hightide-native/global-contexts"
 import { QueryClientProvider } from "@tanstack/react-query"
-import { useFonts } from "expo-font"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
@@ -116,7 +115,16 @@ function AppStack() {
 function HightideGate({ children }: { children: ReactNode }) {
   const { isLocalizationInitialized, isThemeInitialized } = useHightide()
 
-  if (!isLocalizationInitialized || !isThemeInitialized) {
+  const initialized =
+    isLocalizationInitialized && isThemeInitialized
+
+  useEffect(() => {
+    if (initialized) {
+      void SplashScreen.hideAsync()
+    }
+  }, [initialized])
+
+  if (!initialized) {
     return <LoadingView />
   }
 
@@ -124,19 +132,6 @@ function HightideGate({ children }: { children: ReactNode }) {
 }
 
 export default function RootLayout() {
-  // TODO fix this
-  const [fontsLoaded, fontError] = useFonts({
-    SpaceGrotesk: require("../assets/fonts/SpaceGrotesk-Regular.ttf"),
-    "Space Grotesk": require("../assets/fonts/SpaceGrotesk-Regular.ttf"),
-    Inter: require("../assets/fonts/Inter_28pt-Regular.ttf"),
-  })
-
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync().catch(() => undefined)
-    }
-  }, [fontsLoaded, fontError])
-
   return (
     <QueryClientProvider client={queryClient}>
       <HightideProvider
@@ -147,12 +142,8 @@ export default function RootLayout() {
         translation={{ translation: appZumDocTranslation }}
       >
         <SafeAreaProvider>
-          <HightideGate>
-             {!fontsLoaded && !fontError ? (
-              <LoadingView />
-            ) : (
-              <AppStack />
-            )}
+          <HightideGate>            
+            <AppStack />
           </HightideGate>
         </SafeAreaProvider>
       </HightideProvider>

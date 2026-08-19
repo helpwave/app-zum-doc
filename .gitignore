@@ -2,3 +2,5 @@
 .idea/
 .pnpm-store/
 node_modules/
+ios/
+android/
