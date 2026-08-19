@@ -8,7 +8,9 @@ import type {
   HomeRequest,
   HomeSummary,
 } from "@app-zum-doc/utils/api"
-import { Button, ThemedPressable } from "@helpwave/hightide-native/components"
+import { OKLCHUtils } from "@helpwave/hightide-design/utils"
+import { Button, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
+import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   Calendar,
@@ -18,7 +20,6 @@ import {
   Search,
 } from "lucide-react-native"
 import {
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -43,7 +44,10 @@ export function StartHero({
 
   return (
     <LinearGradient
-      colors={[colors.heroStart, colors.heroEnd]}
+      colors={[
+        OKLCHUtils.changeLightness(theme.colors.primary.color, 0.4), 
+        OKLCHUtils.changeLightness(theme.colors.primary.color, 0.6)
+      ]}
       start={{ x: 0.05, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
@@ -82,32 +86,40 @@ export function StartHero({
         {t("appName")}
       </Text>
 
-      <Pressable
+      <ThemedPressable
         accessibilityRole="button"
         accessibilityLabel={t("searchDoctor")}
         onPress={onSearchPress}
+        color={theme.colors.surface}
+        coloringStyle="filled"
+        stateLayerStyle={{
+          borderRadius: 999,
+        }}
         style={{
           height: theme.elements.control.md.size - theme.spacing.xs,
           borderRadius: 9999,
           flexDirection: "row",
           alignItems: "center",
           gap: theme.spacing.md,
-          paddingHorizontal: theme.spacing.lg,
-          backgroundColor: colors.searchBackground,
+          paddingLeft: theme.spacing.lg,
+          paddingRight: theme.spacing.lg,
           ...toShadowStyle(theme.shadow.dialog),
         }}
       >
-        <Search size={theme.icongraphy.sizes.xs} color={colors.searchIcon} />
+        <Search 
+          size={theme.icongraphy.sizes.xs} 
+          color={theme.semantics.withAppearance({color: theme.colors.surface.onColor, appearance: "subtle"})}
+        />
         <Text
           style={{
             flex: 1,
             ...theme.typography.body.md,
-            color: colors.searchPlaceholder,
+            color: theme.semantics.asDescription({color: theme.colors.surface.onColor}),
           }}
         >
           {t("searchDoctor")}
         </Text>
-      </Pressable>
+      </ThemedPressable>
 
       <View
         style={{
@@ -143,33 +155,42 @@ function StartQuickActionCard({
   onPress,
 }: StartQuickActionCardProps) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
+  const color = theme.colors[action.id]
   const Icon = quickActionIcons[action.id]
 
   return (
-    <Pressable
+    <ThemedPressable
       accessibilityRole="button"
       onPress={onPress}
+      // TODO fix typing
+      color={{color: theme.colors.surface.color, onColor: color.color}}
+      coloringStyle="filled"
       style={{
         flex: 1,
-        borderRadius: theme.borderRadius.lg,
-        padding: theme.spacing.md + theme.spacing.sm,
-        gap: theme.spacing.md + theme.spacing.sm,
-        backgroundColor: colors.actionBackground,
+        flexDirection: "column",
+        alignItems: "flex-start",
+        borderTopLeftRadius: theme.borderRadius.lg,
+        borderTopRightRadius: theme.borderRadius.lg,
+        borderBottomLeftRadius: theme.borderRadius.lg,
+        borderBottomRightRadius: theme.borderRadius.lg,
+        paddingTop: theme.spacing.md + theme.spacing.sm,
+        paddingRight: theme.spacing.md + theme.spacing.sm,
+        paddingBottom: theme.spacing.md + theme.spacing.sm,
+        paddingLeft: theme.spacing.md + theme.spacing.sm,
+        gap: theme.spacing.lg,
         ...toShadowStyle(theme.shadow.popover),
       }}
     >
-      <Icon size={theme.icongraphy.sizes.md} color={colors.actionIcon} />
-      <Text
+      <ThemedIcon size={theme.icongraphy.sizes.md} icon={Icon}/>
+      <ThemedText
         style={{
           ...theme.typography.body.sm,
           fontWeight: theme.typography.fontWeights.semibold,
-          color: colors.actionText,
         }}
       >
         {action.label}
-      </Text>
-    </Pressable>
+      </ThemedText>
+    </ThemedPressable>
   )
 }
 
@@ -360,9 +381,9 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         </View>
         <View
           style={{
-            width: 132,
             flexDirection: "row",
             alignItems: "center",
+            alignSelf: "flex-start",
             gap: theme.spacing.sm + theme.spacing.xs,
             paddingVertical: theme.spacing.md - theme.spacing.xs,
             paddingHorizontal: theme.spacing.md + theme.spacing.sm,
@@ -402,31 +423,34 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
       </View>
       <View
         style={{
-          width: 132,
+          maxWidth: theme.elements.container.md.size * 3,
           flexDirection: "row",
           alignItems: "center",
+          alignContent: "center",
+          alignSelf: "flex-start",
           gap: theme.spacing.md,
           paddingVertical: theme.spacing.md,
           paddingHorizontal: theme.spacing.md + theme.spacing.sm,
           borderRadius: theme.borderRadius.lg,
           overflow: "hidden",
           flexShrink: 0,
-          backgroundColor: colors.kindTagBackground,
+          backgroundColor: theme.colors[request.kind].color,
         }}
       >
-        <KindIcon size={15} color={colors.kindTagText} />
-        <Text
-          style={{
-            flexShrink: 1,
-            ...theme.typography.body.sm,
-            fontWeight: theme.typography.fontWeights.medium,
-            color: colors.kindTagText,
-          }}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {request.kindLabel}
-        </Text>
+        <ContentThemeOverrideProvider foreground={theme.colors[request.kind].onColor}>
+          <ThemedIcon size={theme.icongraphy.sizes.xs} icon={KindIcon} />
+          <ThemedText
+            style={{
+              flexShrink: 1,
+              ...theme.typography.body.sm,
+              fontWeight: theme.typography.fontWeights.medium,
+            }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {request.kindLabel}
+          </ThemedText>
+        </ContentThemeOverrideProvider>
       </View>
     </ThemedPressable>
   )

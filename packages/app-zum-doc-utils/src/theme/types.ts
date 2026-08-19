@@ -3,7 +3,7 @@ import type {
   ColorToken,
   HightidePrimitiveTokens,
 } from "@helpwave/hightide-design/primitive-tokens"
-import type { ThemeTokens } from "@helpwave/hightide-design/theme-tokens"
+import type { ColorPairToken, ThemeTokens } from "@helpwave/hightide-design/theme-tokens"
 
 export type AzdPrimitiveTokens = Omit<HightidePrimitiveTokens, "color"> & {
   color: HightidePrimitiveTokens["color"] & {
@@ -135,5 +135,10 @@ export type AzdComponentTokens = {
 }
 
 export type AzdThemeTokens = ThemeTokens & {
+  color: ThemeTokens["color"] & {
+    prescription: ColorPairToken,
+    referral: ColorPairToken,
+    appointment: ColorPairToken,
+  },
   componentColors: AzdComponentTokens
 }
