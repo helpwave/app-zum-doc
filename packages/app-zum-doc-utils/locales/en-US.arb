@@ -33,6 +33,11 @@
   "myDoctors": "My doctors",
   "myRequests": "My requests",
   "recentRequests": "Current requests",
+  "allRequests": "All requests",
+  "filterAppointments": "Appointments",
+  "filterPrescriptions": "Prescriptions",
+  "filterReferrals": "Referrals",
+  "loadingRequests": "Loading requests…",
   "showAll": "Show all",
   "actionPrescription": "Prescription",
   "actionAppointment": "Appointment",
@@ -108,5 +113,35 @@
   "notificationsEnableMessage": "To receive notifications, allow them in the system settings.",
   "notificationsDisableTitle": "Disable notifications",
   "notificationsDisableMessage": "Notifications can only be turned off in the system settings.",
-  "edit": "Edit"
+  "edit": "Edit",
+  "personalInformation": "Personal information",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "phoneNumber": "Phone number",
+  "insuranceType": "Insurance type",
+  "insuranceStatutory": "Statutory",
+  "insurancePrivate": "Private",
+  "insuranceProvider": "Insurance provider",
+  "federalState": "State",
+  "insuranceNumberOptional": "Insurance number (optional)",
+  "selectDateOfBirth": "Select date of birth",
+  "medicationList": "Medication list",
+  "addMedication": "Add medication",
+  "goodToKnow": "Good to know",
+  "medicationListHint": "Add medications you use regularly so you can select them directly when ordering a prescription.",
+  "understood": "Understood",
+  "scanMedication": "Scan medication",
+  "searchMedicationPlaceholder": "Search medication",
+  "selectMedicationSize": "Select pack size",
+  "deleteMedication": "Remove medication",
+  "loadingMedications": "Loading medications…",
+  "next": "Next",
+  "medicationSize": "{size, select, n1{N1 - small} n2{N2 - medium} n3{N3 - large} other{}}",
+  "@medicationSize": {
+    "placeholders": {
+      "size": {
+        "type": "string"
+      }
+    }
+  }
 }

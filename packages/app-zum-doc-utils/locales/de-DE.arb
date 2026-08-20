@@ -33,6 +33,11 @@
   "myDoctors": "Meine Ärzte",
   "myRequests": "Meine Anfragen",
   "recentRequests": "Aktuelle Anfragen",
+  "allRequests": "Alle Anfragen",
+  "filterAppointments": "Termine",
+  "filterPrescriptions": "Rezepte",
+  "filterReferrals": "Überweisungen",
+  "loadingRequests": "Anfragen werden geladen…",
   "showAll": "Alle anzeigen",
   "actionPrescription": "Rezept",
   "actionAppointment": "Termin",
@@ -108,5 +113,35 @@
   "notificationsEnableMessage": "Um Benachrichtigungen zu erhalten, erlauben Sie diese in den Systemeinstellungen.",
   "notificationsDisableTitle": "Benachrichtigungen deaktivieren",
   "notificationsDisableMessage": "Benachrichtigungen können nur in den Systemeinstellungen ausgeschaltet werden.",
-  "edit": "Bearbeiten"
+  "edit": "Bearbeiten",
+  "personalInformation": "Persönliche Angaben",
+  "firstName": "Vorname",
+  "lastName": "Nachname",
+  "phoneNumber": "Telefonnummer",
+  "insuranceType": "Versicherungsart",
+  "insuranceStatutory": "Gesetzlich",
+  "insurancePrivate": "Privat",
+  "insuranceProvider": "Versicherung",
+  "federalState": "Bundesland",
+  "insuranceNumberOptional": "Versichertennummer (optional)",
+  "selectDateOfBirth": "Geburtsdatum wählen",
+  "medicationList": "Medikamentenliste",
+  "addMedication": "Medikament hinzufügen",
+  "goodToKnow": "Gut zu wissen",
+  "medicationListHint": "Fügen Sie Medikamente hinzu, die Sie regelmäßig verwenden, um sie beim Bestellen eines Rezeptes direkt auswählen zu können.",
+  "understood": "Verstanden",
+  "scanMedication": "Medikament scannen",
+  "searchMedicationPlaceholder": "Medikament suchen",
+  "selectMedicationSize": "Packungsgröße wählen",
+  "deleteMedication": "Medikament entfernen",
+  "loadingMedications": "Medikamente werden geladen…",
+  "next": "Weiter",
+  "medicationSize": "{size, select, n1{N1 - klein} n2{N2 - mittel} n3{N3 - groß} other{}}",
+  "@medicationSize": {
+    "placeholders": {
+      "size": {
+        "type": "string"
+      }
+    }
+  }
 }

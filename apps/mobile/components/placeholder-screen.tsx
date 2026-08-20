@@ -1,10 +1,9 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
+import { NavigationHeader } from "@/components/navigation-header"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { ThemedText } from "@helpwave/hightide-native/components"
-import { ChevronLeft } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Pressable, Text, View } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { View } from "react-native"
 
 type PlaceholderScreenProps = {
   title: string
@@ -22,8 +21,6 @@ export function PlaceholderScreen({
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.screen
-  const headerColors = theme.components.screenHeader
-  const insets = useSafeAreaInsets()
 
   return (
     <View
@@ -32,48 +29,7 @@ export function PlaceholderScreen({
         backgroundColor: colors.background,
       }}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.lg - theme.spacing.xs,
-          paddingBottom: theme.spacing.lg - theme.spacing.xs,
-          borderBottomWidth: theme.borderWidth.thin,
-          borderBottomColor: headerColors.border,
-          backgroundColor: headerColors.background,
-        }}
-      >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("back")}
-          onPress={onBack}
-          hitSlop={theme.spacing.md}
-          style={{
-            width: theme.semantics.control.xs.size,
-            alignItems: "flex-start",
-          }}
-        >
-          <ChevronLeft
-            size={theme.icongraphy.sizes.md}
-            color={theme.colors.primary.color}
-          />
-        </Pressable>
-        <Text
-          style={{
-            ...theme.typography.heading.md,
-            color: headerColors.title,
-          }}
-        >
-          {title}
-        </Text>
-        <View
-          style={{
-            width: theme.semantics.control.xs.size,
-          }}
-        />
-      </View>
+      <NavigationHeader title={title} onBack={onBack} />
       <View
         style={{
           flex: 1,

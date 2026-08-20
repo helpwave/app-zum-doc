@@ -14,7 +14,6 @@ import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { useCallback, useState } from "react"
 import { Alert, ScrollView, View } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export default function DoctorDetailScreen() {
   const t = useAppTranslation()
@@ -24,7 +23,6 @@ export default function DoctorDetailScreen() {
   const doctorsOfficeId = typeof id === "string" ? id : ""
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
-  const insets = useSafeAreaInsets()
   const router = useRouter()
   const officeQuery = useDoctorsOffice(doctorsOfficeId, locale)
   const homeQuery = useHomeSummary(locale)
@@ -59,7 +57,7 @@ export default function DoctorDetailScreen() {
           <ScrollView
             contentContainerStyle={[
               { flexGrow: 1 },
-              { paddingBottom: insets.bottom + theme.spacing.xl },
+              { paddingBottom: theme.spacing.xl },
             ]}
             showsVerticalScrollIndicator={false}
           >
@@ -102,7 +100,10 @@ export default function DoctorDetailScreen() {
                 <DoctorRequestsSection
                   requests={doctorRequests.slice(0, 3)}
                   onShowAll={() => {
-                    router.push("/requests" as Href)
+                    router.push({
+                      pathname: "/requests",
+                      params: { doctorId: office.id },
+                    })
                   }}
                   onRequestPress={(requestId) => {
                     router.push({

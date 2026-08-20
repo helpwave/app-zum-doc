@@ -4,6 +4,8 @@ import type {
   DoctorsOffice,
   DoctorsOfficeOpeningHours,
   HomeSummary,
+  Medication,
+  MedicationCatalogItem,
   PatientProfile,
 } from "../types"
 
@@ -217,13 +219,40 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
   ],
 }
 
+export const medicationCatalogSeed: MedicationCatalogItem[] = [
+  { id: "catalog-paracetamol", name: "Paracetamol" },
+  { id: "catalog-ibuprofen", name: "Ibuprofen" },
+  { id: "catalog-aspirin", name: "Aspirin" },
+  { id: "catalog-amoxicillin", name: "Amoxicillin" },
+  { id: "catalog-cetirizine", name: "Cetirizine" },
+  { id: "catalog-zip-kompresse", name: "1-KAM Zip-Kompresse" },
+  { id: "catalog-metformin", name: "Metformin" },
+  { id: "catalog-omeprazole", name: "Omeprazole" },
+  { id: "catalog-ramipril", name: "Ramipril" },
+  { id: "catalog-simvastatin", name: "Simvastatin" },
+  { id: "catalog-levothyroxine", name: "Levothyroxine" },
+  { id: "catalog-salbutamol", name: "Salbutamol" },
+]
+
+export const patientMedicationsSeed: Medication[] = [
+  { id: "med-paracetamol", name: "Paracetamol", size: "n1" },
+  { id: "med-zip-kompresse", name: "1-KAM Zip-Kompresse", size: "n2" },
+  { id: "med-ibuprofen", name: "Ibuprofen", size: "n2" },
+  { id: "med-aspirin", name: "Aspirin", size: "n1" },
+  { id: "med-amoxicillin", name: "Amoxicillin", size: "n2" },
+  { id: "med-cetirizine", name: "Cetirizine", size: "n3" },
+]
+
 export const patientProfileSeed: PatientProfile = {
   id: "patient-wellermann",
   fullName: "Jonas Wellermann",
   firstName: "Jonas",
+  lastName: "Wellermann",
   dateOfBirth: "14.03.1989",
   insuranceNumber: "A123456789",
   insuranceType: "GKV",
+  insuranceProviderId: "tk",
+  federalStateId: "nordrhein-westfalen",
   email: "jonas.wellermann@mail.de",
   phone: "+49 170 1234567",
   practiceName: "Hausarztpraxis Altstadt",
@@ -438,6 +467,16 @@ export function buildHomeSummary(): HomeSummary {
     ],
     recentRequests: [
       {
+        id: "req-limptar",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Limptar N Filmtabletten, 80 St",
+        kind: "prescription",
+        kindLabel: "Rezept",
+        status: "in_progress",
+        statusLabel: "In Bearbeitung",
+      },
+      {
         id: "req-aciclovir",
         doctorsOfficeId: moser.id,
         doctorName: moser.name,
@@ -446,6 +485,16 @@ export function buildHomeSummary(): HomeSummary {
         kindLabel: "Rezept",
         status: "in_progress",
         statusLabel: "In Bearbeitung",
+      },
+      {
+        id: "req-floxal",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Floxal EDO 3 mg/ml Augentropfen",
+        kind: "prescription",
+        kindLabel: "Rezept",
+        status: "ready_for_pickup",
+        statusLabel: "Abholbereit",
       },
       {
         id: "req-radiologie",
@@ -462,6 +511,16 @@ export function buildHomeSummary(): HomeSummary {
         doctorsOfficeId: moser.id,
         doctorName: moser.name,
         title: "Vorsorgeuntersuchung",
+        kind: "appointment",
+        kindLabel: "Termin",
+        status: "confirmed",
+        statusLabel: "Bestätigt",
+      },
+      {
+        id: "req-haumann-vaccine",
+        doctorsOfficeId: haumann.id,
+        doctorName: haumann.name,
+        title: "Grippeimpfung",
         kind: "appointment",
         kindLabel: "Termin",
         status: "confirmed",

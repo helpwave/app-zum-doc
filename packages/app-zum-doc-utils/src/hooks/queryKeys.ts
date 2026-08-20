@@ -50,3 +50,9 @@ export const specializationKeys = {
   list: (search: string, locale: string) =>
     ["specializations", "list", locale, search] as const,
 }
+
+export const medicationKeys = {
+  all: ["medications"] as const,
+  patient: ["medications", "patient"] as const,
+  search: (search: string) => ["medications", "search", search] as const,
+}

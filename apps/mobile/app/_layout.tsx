@@ -52,13 +52,6 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="doctor/[id]"
-          options={{
-            animation: "slide_from_right",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
           name="doctor-search"
           options={{
             animation: "slide_from_right",
@@ -67,13 +60,6 @@ function AppStack() {
         />
         <Stack.Screen
           name="doctors"
-          options={{
-            animation: "slide_from_right",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="requests/index"
           options={{
             animation: "slide_from_right",
             headerShown: false,
@@ -102,13 +88,6 @@ function AppStack() {
         />
         <Stack.Screen
           name="requests/referral"
-          options={{
-            animation: "slide_from_right",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="personal-information"
           options={{
             animation: "slide_from_right",
             headerShown: false,

@@ -12,6 +12,21 @@ const tabIcons = {
   profile: UserRound,
 } as const
 
+type VisibleTab = keyof typeof tabIcons
+
+function highlightedTab(routeName: string): VisibleTab | null {
+  if (routeName === "index" || routeName === "doctor/[id]" || routeName === "requests") {
+    return "index"
+  }
+  if (routeName === "chat") {
+    return "chat"
+  }
+  if (routeName === "profile" || routeName === "personal-information" || routeName === "medications") {
+    return "profile"
+  }
+  return null
+}
+
 export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
@@ -22,6 +37,11 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
     chat: t("tabChats"),
     profile: t("tabProfile"),
   } as const
+  const activeTab = highlightedTab(state.routes[state.index]?.name ?? "")
+  const visibleRoutes = state.routes.filter(
+    (route): route is typeof route & { name: VisibleTab } =>
+      route.name in tabIcons,
+  )
 
   return (
     <View
@@ -38,10 +58,10 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         borderTopColor: colors.border,
       }}
     >
-      {state.routes.map((route, index) => {
-        const selected = state.index === index
-        const Icon = tabIcons[route.name as keyof typeof tabIcons]
-        const label = labels[route.name as keyof typeof labels]
+      {visibleRoutes.map((route) => {
+        const selected = activeTab === route.name
+        const Icon = tabIcons[route.name]
+        const label = labels[route.name]
           ?? descriptors[route.key]?.options.title
           ?? route.name
 

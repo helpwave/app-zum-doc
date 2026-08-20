@@ -11,6 +11,7 @@ import { useRouter, type Href } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { ChevronRight } from "lucide-react-native"
 import { ScrollView, View } from "react-native"
+import { useIsFocused } from "@react-navigation/native"
 
 function ShowAllButton({ onPress }: { onPress: () => void }) {
   const t = useAppTranslation()
@@ -38,6 +39,7 @@ export default function HomeScreen() {
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
   const homeQuery = useHomeSummary(locale)
+  const isFocused = useIsFocused()
   const sectionTitleStyle = {
     ...theme.typography.heading.sm,
     fontWeight: theme.fontWeights.bold,
@@ -51,7 +53,7 @@ export default function HomeScreen() {
         backgroundColor: colors.screenBackground,
       }}
     >
-      <StatusBar style="light" />
+      {isFocused ? <StatusBar style="light" /> : null}
       <QueryState
         isPending={homeQuery.isPending}
         isError={homeQuery.isError}

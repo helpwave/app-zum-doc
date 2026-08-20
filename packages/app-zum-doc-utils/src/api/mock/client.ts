@@ -3,7 +3,9 @@ import {
   citiesSeed,
   conversationsSeed,
   doctorsOfficesSeed,
+  medicationCatalogSeed,
   messagesByConversation,
+  patientMedicationsSeed,
   patientProfileSeed,
   specializationsSeed,
   type DoctorsOfficeSeed,
@@ -18,6 +20,9 @@ import {
   type DoctorsOfficeOpeningHours,
   type HomeDoctorCard,
   type HomeSummary,
+  type Medication,
+  type MedicationCatalogItem,
+  type MedicationSize,
   type PatientProfile,
   type SearchCity,
   type SearchSpecialization,
@@ -34,6 +39,7 @@ let messagesState: Record<string, ChatMessage[]> = structuredClone(
 let myDoctorIds = new Set(
   buildHomeSummary().myDoctors.map((doctor) => doctor.id),
 )
+let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
 
 export const mockApiConfig = {
   forceFail: false,
@@ -209,6 +215,65 @@ export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
 }
 
+export async function fetchPatientMedications(): Promise<Medication[]> {
+  return withMockLatency(() =>
+    patientMedicationsState.map((medication) => ({ ...medication })),
+  )
+}
+
+export async function searchMedications(params: {
+  search?: string
+}): Promise<MedicationCatalogItem[]> {
+  return withMockLatency(() => {
+    const query = params.search?.trim().toLowerCase() ?? ""
+    return medicationCatalogSeed
+      .filter((item) => !query || matchesQuery(item.name, query))
+      .map((item) => ({ ...item }))
+  }, { failKey: params.search })
+}
+
+export async function addPatientMedication(params: {
+  catalogId: string
+  size: MedicationSize
+}): Promise<Medication[]> {
+  return withMockLatency(() => {
+    const catalogItem = medicationCatalogSeed.find(
+      (item) => item.id === params.catalogId,
+    )
+    if (!catalogItem) {
+      throw new Error("Medikament nicht gefunden.")
+    }
+
+    const alreadyAdded = patientMedicationsState.some(
+      (medication) =>
+        medication.name === catalogItem.name && medication.size === params.size,
+    )
+    if (!alreadyAdded) {
+      patientMedicationsState = [
+        ...patientMedicationsState,
+        {
+          id: `med-${catalogItem.id}-${params.size}-${Date.now()}`,
+          name: catalogItem.name,
+          size: params.size,
+        },
+      ]
+    }
+
+    return patientMedicationsState.map((medication) => ({ ...medication }))
+  })
+}
+
+export async function removePatientMedication(
+  medicationId: string,
+): Promise<Medication[]> {
+  return withMockLatency(() => {
+    patientMedicationsState = patientMedicationsState.filter(
+      (medication) => medication.id !== medicationId,
+    )
+    return patientMedicationsState.map((medication) => ({ ...medication }))
+  })
+}
+
 function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): string {
   return (
     office.specialty?.[locale]
@@ -379,4 +444,5 @@ export function resetMockStore(): void {
   myDoctorIds = new Set(
     buildHomeSummary().myDoctors.map((doctor) => doctor.id),
   )
+  patientMedicationsState = structuredClone(patientMedicationsSeed)
 }
