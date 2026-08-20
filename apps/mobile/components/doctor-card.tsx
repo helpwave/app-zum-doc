@@ -4,18 +4,18 @@ import { ThemedPressable } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image, ImageStyle } from "expo-image"
 import { Phone } from "lucide-react-native"
-import { Text, View, ViewStyle, type DimensionValue } from "react-native"
+import { Text, View, ViewStyle } from "react-native"
 
 const doctorPortrait = require("../assets/images/doctor-portrait.png")
 const practiceLogo = require("../assets/images/practice-logo.png")
 
 type DoctorCardProps = {
   doctor: HomeDoctorCard
-  onPress: () => void
-  width?: DimensionValue
+  onPress: () => void,
+  style?: ViewStyle,
 }
 
-export function DoctorCard({ doctor, onPress, width = 306 }: DoctorCardProps) {
+export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
   const imageSource =
@@ -37,15 +37,17 @@ export function DoctorCard({ doctor, onPress, width = 306 }: DoctorCardProps) {
       color={theme.colors.surface}
       coloringStyle="filled"
       style={{
-        width,
-        height: 155,
+        height: theme.semantics.container.md.size * 3,
         borderRadius: theme.borderRadius.md,
         flexDirection: "row",
         alignContent: "stretch",
-        gap: theme.spacing.md + theme.spacing.xs,
-        padding: theme.spacing.md + theme.spacing.xs,
+        alignSelf: "stretch",
+        gap: theme.spacing.md,
+        padding: theme.padding.xl,
+        paddingInlineEnd: theme.padding.xl + theme.spacing.md,
         backgroundColor: colors.cardBackground,
         boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+        ...style,
       }}
     >
       {imageSource ? (

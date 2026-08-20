@@ -2,11 +2,14 @@ import {
   AzdAvatarImage,
   contactAvatarImage,
 } from "@/components/azd-avatar-image"
+import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { Conversation } from "@app-zum-doc/utils/api"
 import {
   AvatarWithStatus,
   ChatConversationRow,
 } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type ConversationRowProps = {
   conversation: Conversation
@@ -16,6 +19,8 @@ type ConversationRowProps = {
 export function ConversationRow({ conversation, onPress }: ConversationRowProps) {
   const unread = conversation.unreadCount > 0
   const contact = conversation.contact
+  const {theme} = useAzdTheme()
+  const safeAreaInsets = useSafeAreaInsets()
 
   return (
     <ChatConversationRow
@@ -36,6 +41,13 @@ export function ConversationRow({ conversation, onPress }: ConversationRowProps)
       sentIndicator={
         conversation.sentByMe && !unread ? "sentAndReceived" : undefined
       }
+      style={{
+        ...StyleAdapterUtils.padding({
+          type: "physicalSide",
+          left: safeAreaInsets.left + theme.padding.xl,
+          right: safeAreaInsets.right + theme.padding.xl,
+        })
+      }}
     />
   )
 }

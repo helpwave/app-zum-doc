@@ -124,8 +124,8 @@ export default function DoctorSearchScreen() {
         style={{
           paddingHorizontal: theme.spacing.lg,
           paddingTop: theme.spacing.md,
+          paddingBottom: theme.spacing.lg,
           gap: theme.spacing.lg,
-          flex: 1,
         }}
       >
         <SearchBar
@@ -176,7 +176,9 @@ export default function DoctorSearchScreen() {
             />
           </View>
         </View>
+      </View>
 
+      <View style={{flex: 1}}>
         <QueryState
           isPending={doctorsQuery.isPending}
           isError={doctorsQuery.isError}
@@ -204,12 +206,13 @@ export default function DoctorSearchScreen() {
               style={{ flex: 1 }}
               contentContainerStyle={{
                 gap: theme.spacing.md,
-                paddingBottom: theme.spacing.xl,
+                paddingHorizontal: theme.spacing.lg,
+                paddingBottom: theme.spacing.md + insets.bottom,
+                alignItems: "stretch"
               }}
               renderItem={({ item }) => (
                 <DoctorCard
                   doctor={item}
-                  width="100%"
                   onPress={() => {
                     router.push({
                       pathname: "/doctor/[id]",

@@ -10,7 +10,7 @@ import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import { Button, Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon } from "@helpwave/hightide-native/components"
 import { useRouter, type Href } from "expo-router"
-import { ChevronRight, LogOut, Scale, Shield } from "lucide-react-native"
+import { Bell, ChevronRight, LogOut, Scale, Shield } from "lucide-react-native"
 import { Alert, Linking, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAppTranslation } from "../../hooks/useAppTranslation"
@@ -101,6 +101,7 @@ export default function ProfileScreen() {
                   onPress={() => {
                     setNotificationsEnabled(!notificationsEnabled)
                   }}
+                  leading={<ThemedIcon icon={Bell}/>}
                   trailing={
                     <Switch
                       value={notificationsEnabled}

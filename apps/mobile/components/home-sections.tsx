@@ -21,6 +21,7 @@ import {
 import {
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -38,7 +39,6 @@ export function StartHero({
 }: StartHeroProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
   const insets = useSafeAreaInsets()
 
   return (
@@ -73,17 +73,32 @@ export function StartHero({
           }),
         }}
       />
-      <Text
+      <Chip 
+        color={theme.colors.primary}
         style={{
-          ...theme.typography.heading.lg,
-          fontFamily: theme.fontFamilies.accent,
-          fontWeight: theme.fontWeights.semibold,
-          textAlign: "center",
-          color: colors.heroTitle,
+          alignSelf: "center",
+          ...StyleAdapterUtils.padding({
+            type: "logicalAxis",
+            inline: theme.padding.xl,
+          }),
+          ...StyleAdapterUtils.borderRadius({
+            type: "all",
+            value: 999
+          }),
+          boxShadow: StyleAdapterUtils.shadow(theme.shadow.popover)
         }}
       >
-        {t("appName")}
-      </Text>
+        <ThemedText
+          style={{
+            ...theme.typography.heading.lg,
+            fontFamily: theme.fontFamilies.accent,
+            fontWeight: theme.fontWeights.semibold,
+          }}
+        >
+          {t("appName")}
+        </ThemedText>
+      </Chip>
+      
 
       <ThemedPressable
         accessibilityRole="button"
@@ -281,7 +296,11 @@ type StartDoctorCardProps = {
 }
 
 export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
-  return <DoctorCard doctor={doctor} onPress={onPress} width={306} />
+  const {theme} = useAzdTheme()
+  const { width: windowWidth } = useWindowDimensions();
+  const width = Math.min(windowWidth * 0.8, theme.semantics.container.md.size * 6)
+
+  return <DoctorCard doctor={doctor} onPress={onPress} style={{ width}} />
 }
 
 type RecentRequestsSectionProps = {
