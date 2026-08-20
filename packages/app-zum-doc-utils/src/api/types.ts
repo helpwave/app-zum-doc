@@ -89,6 +89,23 @@ export type HomeQuickAction = {
   href: string
 }
 
+const doctorsOfficeStatusValues = ["open", "closed"] as const
+export type DoctorsOfficeStatus = (typeof doctorsOfficeStatusValues)[number]
+const allowedDoctorsOfficeStatusValues: ReadonlySet<string> = new Set(
+  doctorsOfficeStatusValues,
+)
+function isDoctorsOfficeStatusValue(value: unknown): value is DoctorsOfficeStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedDoctorsOfficeStatusValues.has(value)
+}
+export const DoctorsOfficeStatusUtils = {
+  array: doctorsOfficeStatusValues,
+  set: allowedDoctorsOfficeStatusValues,
+  typeCheck: isDoctorsOfficeStatusValue,
+}
+
 export type HomeDoctorCard = {
   id: string
   name: string
@@ -96,8 +113,7 @@ export type HomeDoctorCard = {
   phone: string
   imageUri: string | null
   initials?: string
-  isOpen: boolean
-  openStatusLabel: string
+  status: DoctorsOfficeStatus
 }
 
 export type RequestKind = "prescription" | "appointment" | "referral"
@@ -138,10 +154,30 @@ export type PatientProfile = {
   notificationsEnabled: boolean
 }
 
-export type DoctorsOfficeOpeningPeriod = {
-  dayLabel: string
-  times: string[]
+const weekdayValues = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const
+export type Weekday = (typeof weekdayValues)[number]
+const allowedWeekdayValues: ReadonlySet<string> = new Set(weekdayValues)
+function isWeekdayValue(value: unknown): value is Weekday {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedWeekdayValues.has(value)
 }
+export const WeekdayUtils = {
+  array: weekdayValues,
+  set: allowedWeekdayValues,
+  typeCheck: isWeekdayValue,
+}
+
+export type DoctorsOfficeOpeningHours = Record<Weekday, string[]>
 
 export type DoctorsOffice = {
   id: string
@@ -150,10 +186,9 @@ export type DoctorsOffice = {
   phone: string
   imageUri: string | null
   initials?: string
-  isOpen: boolean
-  openStatusLabel: string
+  status: DoctorsOfficeStatus
   isMyDoctor: boolean
-  openingHours: DoctorsOfficeOpeningPeriod[]
+  openingHours: DoctorsOfficeOpeningHours
   services: string[]
   addressLine1: string
   addressLine2: string
@@ -163,6 +198,10 @@ export type DoctorsOffice = {
 }
 
 export type AppLocale = "de-DE" | "en-US"
+
+export function toAppLocale(locale: string): AppLocale {
+  return locale === "en-US" ? "en-US" : "de-DE"
+}
 
 export type SearchCity = {
   id: string

@@ -2,6 +2,7 @@ import type {
   ChatMessage,
   Conversation,
   DoctorsOffice,
+  DoctorsOfficeOpeningHours,
   HomeSummary,
   PatientProfile,
 } from "../types"
@@ -11,10 +12,29 @@ export type LocalizedLabel = {
   "en-US": string
 }
 
-export type DoctorsOfficeSeed = Omit<DoctorsOffice, "isMyDoctor" | "services"> & {
+export type DoctorsOfficeSeed = Omit<
+  DoctorsOffice,
+  "isMyDoctor" | "specialty" | "services" | "additionalOfferLabel"
+> & {
   cityId: string
   specializationId: string
-  services?: string[]
+  specialty?: LocalizedLabel
+  services?: LocalizedLabel[]
+  additionalOffer?: LocalizedLabel
+}
+
+function openingHours(
+  hours: Partial<DoctorsOfficeOpeningHours>,
+): DoctorsOfficeOpeningHours {
+  return {
+    monday: hours.monday ?? [],
+    tuesday: hours.tuesday ?? [],
+    wednesday: hours.wednesday ?? [],
+    thursday: hours.thursday ?? [],
+    friday: hours.friday ?? [],
+    saturday: hours.saturday ?? [],
+    sunday: hours.sunday ?? [],
+  }
 }
 
 export const citiesSeed: {
@@ -40,14 +60,6 @@ export const specializationsSeed: {
   { id: "dentistry", labels: { "de-DE": "Zahnmedizin", "en-US": "Dentistry" } },
   { id: "radiology", labels: { "de-DE": "Radiologie", "en-US": "Radiology" } },
 ]
-
-export const openStatusLabels: {
-  open: LocalizedLabel
-  closed: LocalizedLabel
-} = {
-  open: { "de-DE": "Praxis ist geöffnet", "en-US": "Practice is open" },
-  closed: { "de-DE": "Praxis ist geschlossen", "en-US": "Practice is closed" },
-}
 
 export const conversationsSeed: Conversation[] = [
   {
@@ -131,6 +143,7 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
       status: "pending",
       statusLabel: "AUSSTEHEND",
+      timeLabel: "09:15",
       actions: [
         { id: "accept", label: "Zusagen", variant: "primary" },
         { id: "decline", label: "Ablehnen", variant: "secondary" },
@@ -222,157 +235,161 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   "office-moser": {
     id: "office-moser",
     name: "Dr. Moser",
-    specialty: "Allgemeinmedizin - Innere Medizin",
     phone: "040 3187612001",
     imageUri: "doctor-portrait",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["7:00 - 16:00"] },
-      { dayLabel: "Dienstag", times: ["7:00 - 12:00", "14:00 - 16:00"] },
-      { dayLabel: "Mittwoch", times: ["7:00 - 12:00"] },
-      { dayLabel: "Donnerstag", times: ["7:00 - 16:00"] },
-      { dayLabel: "Freitag", times: ["7:00 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["7:00 - 16:00"],
+      tuesday: ["7:00 - 12:00", "14:00 - 16:00"],
+      wednesday: ["7:00 - 12:00"],
+      thursday: ["7:00 - 16:00"],
+      friday: ["7:00 - 12:00"],
+    }),
     addressLine1: "Teichweg 12",
     addressLine2: "22637 Nordberg",
     websiteLabel: "www.dr-moser.de",
     websiteUrl: "https://www.dr-moser.de",
-    additionalOfferLabel: "Online-Termin für Impfungen",
-    services: ["Impfungen", "Vorsorgeuntersuchung", "DMP"],
+    specialty: {
+      "de-DE": "Allgemeinmedizin - Innere Medizin",
+      "en-US": "General medicine - Internal medicine",
+    },
+    additionalOffer: {
+      "de-DE": "Online-Termin für Impfungen",
+      "en-US": "Online appointment for vaccinations",
+    },
+    services: [
+      { "de-DE": "Impfungen", "en-US": "Vaccinations" },
+      { "de-DE": "Vorsorgeuntersuchung", "en-US": "Preventive checkup" },
+      { "de-DE": "DMP", "en-US": "DMP" },
+    ],
     cityId: "nordberg",
     specializationId: "internal-medicine",
   },
   "office-haumann": {
     id: "office-haumann",
     name: "Dr. Haumann",
-    specialty: "Allgemeinmedizin",
     phone: "0241 5566 730",
     imageUri: null,
     initials: "HM",
-    isOpen: false,
-    openStatusLabel: "Praxis ist geschlossen",
-    openingHours: [
-      { dayLabel: "Montag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Dienstag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Mittwoch", times: [] },
-      { dayLabel: "Donnerstag", times: ["8:00 - 12:00", "14:00 - 17:00"] },
-      { dayLabel: "Freitag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "closed",
+    openingHours: openingHours({
+      monday: ["8:00 - 12:00"],
+      tuesday: ["8:00 - 12:00"],
+      thursday: ["8:00 - 12:00", "14:00 - 17:00"],
+      friday: ["8:00 - 12:00"],
+    }),
     addressLine1: "Pontstraße 55",
     addressLine2: "52062 Aachen",
     websiteLabel: "www.dr-haumann.de",
     websiteUrl: "https://www.dr-haumann.de",
-    additionalOfferLabel: "Videosprechstunde",
-    services: ["Hausbesuche", "Videosprechstunde"],
+    additionalOffer: {
+      "de-DE": "Videosprechstunde",
+      "en-US": "Video consultation",
+    },
+    services: [
+      { "de-DE": "Hausbesuche", "en-US": "Home visits" },
+      { "de-DE": "Videosprechstunde", "en-US": "Video consultation" },
+    ],
     cityId: "aachen",
     specializationId: "general-medicine",
   },
   "office-vogt": {
     id: "office-vogt",
     name: "Dr. med. Sophie Vogt",
-    specialty: "Kardiologie",
     phone: "030 88776611",
     imageUri: "doctor-portrait",
     initials: "SV",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["8:00 - 16:00"] },
-      { dayLabel: "Dienstag", times: ["8:00 - 16:00"] },
-      { dayLabel: "Mittwoch", times: ["8:00 - 12:00"] },
-      { dayLabel: "Donnerstag", times: ["8:00 - 16:00"] },
-      { dayLabel: "Freitag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["8:00 - 16:00"],
+      tuesday: ["8:00 - 16:00"],
+      wednesday: ["8:00 - 12:00"],
+      thursday: ["8:00 - 16:00"],
+      friday: ["8:00 - 12:00"],
+    }),
     addressLine1: "Friedrichstraße 88",
     addressLine2: "10117 Berlin",
     websiteLabel: "www.kardiologie-vogt.de",
     websiteUrl: "https://www.kardiologie-vogt.de",
-    additionalOfferLabel: "Belastungs-EKG",
+    additionalOffer: {
+      "de-DE": "Belastungs-EKG",
+      "en-US": "Stress ECG",
+    },
     cityId: "berlin",
     specializationId: "cardiology",
   },
   "office-klein": {
     id: "office-klein",
     name: "Zahnarztpraxis Dr. Klein",
-    specialty: "Zahnmedizin",
     phone: "0521 334455",
     imageUri: "practice-logo",
     initials: "KL",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["9:00 - 17:00"] },
-      { dayLabel: "Dienstag", times: ["9:00 - 17:00"] },
-      { dayLabel: "Mittwoch", times: ["9:00 - 13:00"] },
-      { dayLabel: "Donnerstag", times: ["9:00 - 17:00"] },
-      { dayLabel: "Freitag", times: ["9:00 - 13:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["9:00 - 17:00"],
+      tuesday: ["9:00 - 17:00"],
+      wednesday: ["9:00 - 13:00"],
+      thursday: ["9:00 - 17:00"],
+      friday: ["9:00 - 13:00"],
+    }),
     addressLine1: "Jahnplatz 4",
     addressLine2: "33602 Bielefeld",
     websiteLabel: "www.zahnarzt-klein.de",
     websiteUrl: "https://www.zahnarzt-klein.de",
-    additionalOfferLabel: "Professionelle Zahnreinigung",
+    additionalOffer: {
+      "de-DE": "Professionelle Zahnreinigung",
+      "en-US": "Professional dental cleaning",
+    },
     cityId: "bielefeld",
     specializationId: "dentistry",
   },
   "office-kern": {
     id: "office-kern",
     name: "Radiologie Dr. Kern",
-    specialty: "Radiologie",
     phone: "0234 998877",
     imageUri: "practice-logo",
     initials: "RK",
-    isOpen: false,
-    openStatusLabel: "Praxis ist geschlossen",
-    openingHours: [
-      { dayLabel: "Montag", times: ["7:30 - 15:30"] },
-      { dayLabel: "Dienstag", times: ["7:30 - 15:30"] },
-      { dayLabel: "Mittwoch", times: ["7:30 - 15:30"] },
-      { dayLabel: "Donnerstag", times: ["7:30 - 15:30"] },
-      { dayLabel: "Freitag", times: ["7:30 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "closed",
+    openingHours: openingHours({
+      monday: ["7:30 - 15:30"],
+      tuesday: ["7:30 - 15:30"],
+      wednesday: ["7:30 - 15:30"],
+      thursday: ["7:30 - 15:30"],
+      friday: ["7:30 - 12:00"],
+    }),
     addressLine1: "Kortumstraße 19",
     addressLine2: "44787 Bochum",
     websiteLabel: "www.radiologie-kern.de",
     websiteUrl: "https://www.radiologie-kern.de",
-    additionalOfferLabel: "MRT ohne Wartezeit",
+    additionalOffer: {
+      "de-DE": "MRT ohne Wartezeit",
+      "en-US": "MRI without waiting",
+    },
     cityId: "bochum",
     specializationId: "radiology",
   },
   "office-altstadt": {
     id: "office-altstadt",
     name: "Hausarztpraxis Altstadt",
-    specialty: "Allgemeinmedizin",
     phone: "0241 112233",
     imageUri: "practice-logo",
     initials: "HA",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["8:00 - 18:00"] },
-      { dayLabel: "Dienstag", times: ["8:00 - 18:00"] },
-      { dayLabel: "Mittwoch", times: ["8:00 - 13:00"] },
-      { dayLabel: "Donnerstag", times: ["8:00 - 18:00"] },
-      { dayLabel: "Freitag", times: ["8:00 - 13:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["8:00 - 18:00"],
+      tuesday: ["8:00 - 18:00"],
+      wednesday: ["8:00 - 13:00"],
+      thursday: ["8:00 - 18:00"],
+      friday: ["8:00 - 13:00"],
+    }),
     addressLine1: "Markt 12",
     addressLine2: "52062 Aachen",
     websiteLabel: "www.hausarzt-altstadt.de",
     websiteUrl: "https://www.hausarzt-altstadt.de",
-    additionalOfferLabel: "Hausbesuche",
+    additionalOffer: {
+      "de-DE": "Hausbesuche",
+      "en-US": "Home visits",
+    },
     cityId: "aachen",
     specializationId: "general-medicine",
   },
@@ -404,21 +421,19 @@ export function buildHomeSummary(): HomeSummary {
       {
         id: moser.id,
         name: moser.name,
-        specialty: moser.specialty,
+        specialty: moser.specialty?.["de-DE"] ?? "",
         phone: moser.phone,
         imageUri: moser.imageUri,
-        isOpen: moser.isOpen,
-        openStatusLabel: moser.openStatusLabel,
+        status: moser.status,
       },
       {
         id: haumann.id,
         name: haumann.name,
-        specialty: haumann.specialty,
+        specialty: haumann.specialty?.["de-DE"] ?? "",
         phone: haumann.phone,
         imageUri: haumann.imageUri,
         initials: haumann.initials,
-        isOpen: haumann.isOpen,
-        openStatusLabel: haumann.openStatusLabel,
+        status: haumann.status,
       },
     ],
     recentRequests: [

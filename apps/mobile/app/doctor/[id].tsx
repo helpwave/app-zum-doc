@@ -1,13 +1,15 @@
 import {
-    DoctorDetailHero,
-    DoctorOfficeContactSections,
-    OpeningHoursSection,
+  DoctorDetailHero,
+  DoctorOfficeContactSections,
+  OpeningHoursSection,
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
 import { Snackbar } from "@/components/snackbar"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { useAddMyDoctor, useDoctorsOffice, useRemoveMyDoctor } from "@app-zum-doc/utils/hooks"
+import { toAppLocale } from "@app-zum-doc/utils/api"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { useCallback, useState } from "react"
 import { Alert, ScrollView, View } from "react-native"
@@ -19,9 +21,11 @@ export default function DoctorDetailScreen() {
   const colors = theme.components.doctorDetail
   const { id } = useLocalSearchParams<{ id: string }>()
   const doctorsOfficeId = typeof id === "string" ? id : ""
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
   const insets = useSafeAreaInsets()
   const router = useRouter()
-  const officeQuery = useDoctorsOffice(doctorsOfficeId)
+  const officeQuery = useDoctorsOffice(doctorsOfficeId, locale)
   const addMyDoctor = useAddMyDoctor()
   const removeMyDoctor = useRemoveMyDoctor()
   const office = officeQuery.data
@@ -34,7 +38,6 @@ export default function DoctorDetailScreen() {
     <View
       style={[
         { flex: 1 },
-        { backgroundColor: colors.screenBackground },
       ]}
     >
       <QueryState
@@ -42,7 +45,7 @@ export default function DoctorDetailScreen() {
         isError={officeQuery.isError}
         error={officeQuery.error}
         onRetry={() => {
-          void officeQuery.refetch()
+          officeQuery.refetch()
         }}
         loadingLabel={t("loadingDoctor")}
         style={{ backgroundColor: colors.screenBackground }}
@@ -59,12 +62,11 @@ export default function DoctorDetailScreen() {
               office={office}
               isAddingDoctor={addMyDoctor.isPending}
               isRemovingDoctor={removeMyDoctor.isPending}
-              onBack={() => router.back()}
               onRemoveDoctor={() => {
                 if (removeMyDoctor.isPending) {
                   return
                 }
-                removeMyDoctor.mutate(office.id, {
+                removeMyDoctor.mutate({ doctorsOfficeId: office.id, locale }, {
                   onError: () => {
                     setSnackbarMessage(t("errorTitle"))
                   },
@@ -74,7 +76,7 @@ export default function DoctorDetailScreen() {
                 if (addMyDoctor.isPending) {
                   return
                 }
-                addMyDoctor.mutate(office.id, {
+                addMyDoctor.mutate({ doctorsOfficeId: office.id, locale }, {
                   onError: () => {
                     setSnackbarMessage(t("errorTitle"))
                   },

@@ -7,7 +7,7 @@ export const conversationKeys = {
 
 export const homeKeys = {
   all: ["home"] as const,
-  summary: ["home", "summary"] as const,
+  summary: (locale: string) => ["home", "summary", locale] as const,
 }
 
 export const profileKeys = {
@@ -17,7 +17,8 @@ export const profileKeys = {
 
 export const doctorsOfficeKeys = {
   all: ["doctorsOffice"] as const,
-  detail: (id: string) => ["doctorsOffice", "detail", id] as const,
+  detail: (id: string, locale: string) =>
+    ["doctorsOffice", "detail", id, locale] as const,
 }
 
 export const doctorSearchKeys = {

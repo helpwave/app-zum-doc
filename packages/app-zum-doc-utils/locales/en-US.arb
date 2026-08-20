@@ -26,7 +26,7 @@
   "@unreadCount": {
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "number"
       }
     }
   },
@@ -62,7 +62,23 @@
   "ourServices": "Our services",
   "website": "Website",
   "furtherOffers": "Further offers",
-  "closed": "closed",
+  "closed": "Closed",
+  "officeStatus": "{status, select, open{Practice is open} closed{Practice is closed} other{}}",
+  "@officeStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "weekday": "{day, select, monday{Monday} tuesday{Tuesday} wednesday{Wednesday} thursday{Thursday} friday{Friday} saturday{Saturday} sunday{Sunday} other{}}",
+  "@weekday": {
+    "placeholders": {
+      "day": {
+        "type": "string"
+      }
+    }
+  },
   "moreOptions": "More options",
   "addDoctorSoon": "“Add as my doctor” will follow in a later release.",
   "servicesSoon": "Services will follow in a later release.",

@@ -5,7 +5,9 @@ import {
 } from "@/components/home-sections"
 import { QueryState } from "@/components/query-state"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { toAppLocale } from "@app-zum-doc/utils/api"
 import { useHomeSummary } from "@app-zum-doc/utils/hooks"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { ScrollView, View } from "react-native"
@@ -16,7 +18,9 @@ export default function HomeScreen() {
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
   const router = useRouter()
-  const homeQuery = useHomeSummary()
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
+  const homeQuery = useHomeSummary(locale)
 
   return (
     <View

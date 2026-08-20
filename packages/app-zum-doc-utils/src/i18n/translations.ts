@@ -58,6 +58,7 @@ export type AppZumDocTranslationEntries = {
   'notificationsEnableMessage': string,
   'notificationsEnableTitle': string,
   'offersSoon': string,
+  'officeStatus': (values: { status: string }) => string,
   'openingHours': string,
   'openSettings': string,
   'ourServices': string,
@@ -93,8 +94,9 @@ export type AppZumDocTranslationEntries = {
   'tabStart': string,
   'themeMode': string,
   'themeSystem': string,
-  'unreadCount': (values: { count: int }) => string,
+  'unreadCount': (values: { count: number }) => string,
   'website': string,
+  'weekday': (values: { day: string }) => string,
 }
 
 export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Partial<AppZumDocTranslationEntries>> = {
@@ -112,7 +114,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'cancel': `Abbrechen`,
     'chatsTitle': `Chats`,
     'clearSelection': `Auswahl entfernen`,
-    'closed': `geschlossen`,
+    'closed': `Geschlossen`,
     'dateOfBirth': `Geburtsdatum`,
     'done': `Fertig`,
     'downloadAttachment': `Anhang herunterladen`,
@@ -147,6 +149,12 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'notificationsEnableMessage': `Um Benachrichtigungen zu erhalten, erlauben Sie diese in den Systemeinstellungen.`,
     'notificationsEnableTitle': `Benachrichtigungen aktivieren`,
     'offersSoon': `Weitere Angebote folgen in einem späteren Release.`,
+    'officeStatus': ({ status }): string => {
+      return TranslationGen.resolveSelect(status, {
+        'open': `Praxis ist geöffnet`,
+        'closed': `Praxis ist geschlossen`,
+      })
+    },
     'openingHours': `Öffnungszeiten`,
     'openSettings': `Einstellungen öffnen`,
     'ourServices': `Unsere Leistungen`,
@@ -185,7 +193,18 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'unreadCount': ({ count }): string => {
       return `${count} ungelesen`
     },
-    'website': `Website`
+    'website': `Website`,
+    'weekday': ({ day }): string => {
+      return TranslationGen.resolveSelect(day, {
+        'monday': `Montag`,
+        'tuesday': `Dienstag`,
+        'wednesday': `Mittwoch`,
+        'thursday': `Donnerstag`,
+        'friday': `Freitag`,
+        'saturday': `Samstag`,
+        'sunday': `Sonntag`,
+      })
+    }
   },
   'en-US': {
     'actionAppointment': `Appointment`,
@@ -201,7 +220,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'cancel': `Cancel`,
     'chatsTitle': `Chats`,
     'clearSelection': `Clear selection`,
-    'closed': `closed`,
+    'closed': `Closed`,
     'dateOfBirth': `Date of birth`,
     'done': `Done`,
     'downloadAttachment': `Download attachment`,
@@ -236,6 +255,12 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'notificationsEnableMessage': `To receive notifications, allow them in the system settings.`,
     'notificationsEnableTitle': `Enable notifications`,
     'offersSoon': `Further offers will follow in a later release.`,
+    'officeStatus': ({ status }): string => {
+      return TranslationGen.resolveSelect(status, {
+        'open': `Practice is open`,
+        'closed': `Practice is closed`,
+      })
+    },
     'openingHours': `Opening hours`,
     'openSettings': `Open settings`,
     'ourServices': `Our services`,
@@ -274,7 +299,18 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'unreadCount': ({ count }): string => {
       return `${count} unread`
     },
-    'website': `Website`
+    'website': `Website`,
+    'weekday': ({ day }): string => {
+      return TranslationGen.resolveSelect(day, {
+        'monday': `Monday`,
+        'tuesday': `Tuesday`,
+        'wednesday': `Wednesday`,
+        'thursday': `Thursday`,
+        'friday': `Friday`,
+        'saturday': `Saturday`,
+        'sunday': `Sunday`,
+      })
+    }
   }
 }
 

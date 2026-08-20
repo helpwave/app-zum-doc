@@ -5,7 +5,7 @@ import { QueryState } from "@/components/query-state"
 import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { AppLocale } from "@app-zum-doc/utils/api"
+import { toAppLocale } from "@app-zum-doc/utils/api"
 import {
   useCities,
   useDoctorSearch,
@@ -19,10 +19,6 @@ import { BriefcaseMedical, ChevronLeft, MapPin } from "lucide-react-native"
 import { useMemo, useState } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-
-function toAppLocale(locale: string): AppLocale {
-  return locale === "en-US" ? "en-US" : "de-DE"
-}
 
 export default function DoctorSearchScreen() {
   const t = useAppTranslation()

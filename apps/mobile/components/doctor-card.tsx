@@ -1,3 +1,4 @@
+import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { HomeDoctorCard } from "@app-zum-doc/utils/api"
 import { ThemedPressable } from "@helpwave/hightide-native/components"
@@ -16,6 +17,7 @@ type DoctorCardProps = {
 }
 
 export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
+  const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
   const imageSource =
@@ -124,7 +126,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
                   width: 12,
                   height: 12,
                   borderRadius: 9999,
-                  backgroundColor: doctor.isOpen
+                  backgroundColor: doctor.status === "open"
                     ? colors.openDot
                     : colors.closedDot,
                 }}
@@ -141,7 +143,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
               }}
               numberOfLines={1}
             >
-              {doctor.openStatusLabel}
+              {t("officeStatus", { status: doctor.status })}
             </Text>
           </View>
           <View

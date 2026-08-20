@@ -26,7 +26,7 @@
   "@unreadCount": {
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "number"
       }
     }
   },
@@ -62,7 +62,23 @@
   "ourServices": "Unsere Leistungen",
   "website": "Website",
   "furtherOffers": "Weitere Angebote",
-  "closed": "geschlossen",
+  "closed": "Geschlossen",
+  "officeStatus": "{status, select, open{Praxis ist geöffnet} closed{Praxis ist geschlossen} other{}}",
+  "@officeStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "weekday": "{day, select, monday{Montag} tuesday{Dienstag} wednesday{Mittwoch} thursday{Donnerstag} friday{Freitag} saturday{Samstag} sunday{Sonntag} other{}}",
+  "@weekday": {
+    "placeholders": {
+      "day": {
+        "type": "string"
+      }
+    }
+  },
   "moreOptions": "Weitere Optionen",
   "addDoctorSoon": "„Als mein Arzt hinzufügen“ folgt in einem späteren Release.",
   "servicesSoon": "Leistungen folgen in einem späteren Release.",

@@ -1,14 +1,15 @@
+import { AppBar } from "@/components/app-bar"
 import { StartQuickActionCard } from "@/components/home-sections"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { DoctorsOffice, HomeQuickAction } from "@app-zum-doc/utils/api"
+import { WeekdayUtils, type DoctorsOffice, type HomeQuickAction } from "@app-zum-doc/utils/api"
 import { Card, Divider, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
+import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   BriefcaseMedical,
-  ChevronLeft,
   Ellipsis,
   Globe,
   MapPin,
@@ -40,7 +41,6 @@ function hasText(value?: string): boolean {
 
 type DoctorDetailHeroProps = {
   office: DoctorsOffice
-  onBack: () => void
   onAddDoctor: () => void
   onRemoveDoctor: () => void
   isAddingDoctor?: boolean
@@ -50,7 +50,6 @@ type DoctorDetailHeroProps = {
 
 export function DoctorDetailHero({
   office,
-  onBack,
   onAddDoctor,
   onRemoveDoctor,
   isAddingDoctor = false,
@@ -135,42 +134,30 @@ export function DoctorDetailHero({
           }),
         }}
       />
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Pressable
-          accessibilityLabel={t("back")}
-          accessibilityRole="button"
-          hitSlop={theme.spacing.md}
-          onPress={onBack}
-        >
-          <ChevronLeft size={theme.icongraphy.sizes.md} color={colors.heroIcon} strokeWidth={2.2} />
-        </Pressable>
-        {office.isMyDoctor ? (
-          <View ref={moreButtonRef} collapsable={false}>
-            <Pressable
-              accessibilityLabel={t("moreOptions")}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
-              disabled={isRemovingDoctor}
-              hitSlop={theme.spacing.md}
-              onPress={openMenu}
-            >
-              {isRemovingDoctor ? (
-                <ActivityIndicator size="small" color={colors.heroIcon} />
-              ) : (
-                <Ellipsis size={theme.icongraphy.sizes.sm} color={colors.heroIcon} />
-              )}
-            </Pressable>
-          </View>
-        ) : (
-          <View style={{ width: theme.icongraphy.sizes.md }} />
-        )}
-      </View>
+      <ContentThemeOverrideProvider foreground={colors.heroIcon}>
+        <AppBar
+          trailing={
+            office.isMyDoctor ? (
+              <View ref={moreButtonRef} collapsable={false}>
+                <Pressable
+                  accessibilityLabel={t("moreOptions")}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
+                  disabled={isRemovingDoctor}
+                  hitSlop={theme.spacing.md}
+                  onPress={openMenu}
+                >
+                  {isRemovingDoctor ? (
+                    <ActivityIndicator size="small" color={colors.heroIcon} />
+                  ) : (
+                    <Ellipsis size={theme.icongraphy.sizes.sm} color={colors.heroIcon} />
+                  )}
+                </Pressable>
+              </View>
+            ) : null
+          }
+        />
+      </ContentThemeOverrideProvider>
 
       <DoctorSummaryCard office={office} />
 
@@ -267,6 +254,7 @@ type DoctorSummaryCardProps = {
 export function DoctorSummaryCard({
   office,
 }: DoctorSummaryCardProps) {
+  const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.doctorDetail
   const imageSource =
@@ -304,7 +292,7 @@ export function DoctorSummaryCard({
       <View
         style={{
           flex: 1,
-          justifyContent: "space-between",
+          justifyContent: "space-around",
           paddingVertical: theme.spacing.md,
         }}
       >
@@ -338,7 +326,7 @@ export function DoctorSummaryCard({
               width: 12,
               height: 12,
               borderRadius: 9999,
-              backgroundColor: office.isOpen
+              backgroundColor: office.status === "open"
                 ? colors.openDot
                 : colors.closedDot,
             }}
@@ -349,7 +337,7 @@ export function DoctorSummaryCard({
               color: colors.specialty,
             }}
           >
-            {office.openStatusLabel}
+            {t("officeStatus", { status: office.status })}
           </Text>
         </View>
       </View>
@@ -368,27 +356,24 @@ export function OpeningHoursSection({
   const { theme } = useAzdTheme()
   const colors = theme.components.doctorDetail
 
-  if (openingHours.length === 0) {
-    return null
-  }
-
   return (
     <Section title={t("openingHours")}>
       <Card>
-        {openingHours.map((period, index) => {
-          const isLast = index === openingHours.length - 1
-          const isClosed = period.times.length === 0
+        {WeekdayUtils.array.map((day, index) => {
+          const isLast = index === WeekdayUtils.array.length - 1
+          const times = openingHours[day] ?? []
+          const isClosed = times.length === 0
 
           return (
             <ListItem
-              key={period.dayLabel}
+              key={day}
               style={[
                 !isLast && {
                   borderBottomWidth: theme.borderWidth.thin,
                   borderBottomColor: colors.rowDivider,
                 },
               ]}
-              title={period.dayLabel}
+              title={t("weekday", { day })}
               trailing={isClosed ? (
                 <Text
                   style={{
@@ -405,7 +390,7 @@ export function OpeningHoursSection({
                     gap: theme.spacing.md,
                   }}
                 >
-                  {period.times.map((time) => (
+                  {times.map((time) => (
                     <Text
                       key={time}
                       style={{

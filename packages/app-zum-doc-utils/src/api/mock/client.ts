@@ -4,24 +4,25 @@ import {
   conversationsSeed,
   doctorsOfficesSeed,
   messagesByConversation,
-  openStatusLabels,
   patientProfileSeed,
   specializationsSeed,
   type DoctorsOfficeSeed,
 } from "./data"
-import type {
-  AppLocale,
-  ChatMessage,
-  Conversation,
-  DoctorSearchFilters,
-  DoctorsOffice,
-  HomeDoctorCard,
-  HomeSummary,
-  PatientProfile,
-  SearchCity,
-  SearchSpecialization,
-  StructuredCardMessage,
-  TextMessage,
+import {
+  WeekdayUtils,
+  type AppLocale,
+  type ChatMessage,
+  type Conversation,
+  type DoctorSearchFilters,
+  type DoctorsOffice,
+  type DoctorsOfficeOpeningHours,
+  type HomeDoctorCard,
+  type HomeSummary,
+  type PatientProfile,
+  type SearchCity,
+  type SearchSpecialization,
+  type StructuredCardMessage,
+  type TextMessage,
 } from "../types"
 
 const delayMs = 550
@@ -191,14 +192,14 @@ export async function resolveCardAction(
   })
 }
 
-export async function fetchHomeSummary(): Promise<HomeSummary> {
+export async function fetchHomeSummary(locale: AppLocale): Promise<HomeSummary> {
   return withMockLatency(() => {
     const summary = buildHomeSummary()
     return {
       ...summary,
       myDoctors: [...myDoctorIds].flatMap((id) => {
         const office = doctorsOfficesSeed[id]
-        return office ? [toHomeDoctorCard(office)] : []
+        return office ? [toHomeDoctorCard(office, locale)] : []
       }),
     }
   })
@@ -208,57 +209,77 @@ export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
 }
 
-function toHomeDoctorCard(office: DoctorsOfficeSeed): HomeDoctorCard {
+function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): string {
+  return (
+    office.specialty?.[locale]
+    ?? specializationsSeed.find((item) => item.id === office.specializationId)?.labels[locale]
+    ?? ""
+  )
+}
+
+function cloneOpeningHours(
+  hours: DoctorsOfficeOpeningHours,
+): DoctorsOfficeOpeningHours {
+  return WeekdayUtils.array.reduce((next, day) => {
+    next[day] = [...(hours[day] ?? [])]
+    return next
+  }, {} as DoctorsOfficeOpeningHours)
+}
+
+function toHomeDoctorCard(
+  office: DoctorsOfficeSeed,
+  locale: AppLocale,
+): HomeDoctorCard {
   return {
     id: office.id,
     name: office.name,
-    specialty: office.specialty,
+    specialty: localizedSpecialty(office, locale),
     phone: office.phone,
     imageUri: office.imageUri,
     initials: office.initials,
-    isOpen: office.isOpen,
-    openStatusLabel: office.openStatusLabel,
+    status: office.status,
   }
 }
 
-function toDoctorsOffice(office: DoctorsOfficeSeed): DoctorsOffice {
+function toDoctorsOffice(
+  office: DoctorsOfficeSeed,
+  locale: AppLocale,
+): DoctorsOffice {
   return {
     id: office.id,
     name: office.name,
-    specialty: office.specialty,
+    specialty: localizedSpecialty(office, locale),
     phone: office.phone,
     imageUri: office.imageUri,
     initials: office.initials,
-    isOpen: office.isOpen,
-    openStatusLabel: office.openStatusLabel,
+    status: office.status,
     isMyDoctor: myDoctorIds.has(office.id),
-    services: [...(office.services ?? [])],
+    services: (office.services ?? []).map((label) => label[locale]),
     addressLine1: office.addressLine1,
     addressLine2: office.addressLine2,
     websiteLabel: office.websiteLabel,
     websiteUrl: office.websiteUrl,
-    additionalOfferLabel: office.additionalOfferLabel,
-    openingHours: office.openingHours.map((period) => ({
-      ...period,
-      times: [...period.times],
-    })),
+    additionalOfferLabel: office.additionalOffer?.[locale] ?? "",
+    openingHours: cloneOpeningHours(office.openingHours),
   }
 }
 
 export async function fetchDoctorsOffice(
   doctorsOfficeId: string,
+  locale: AppLocale,
 ): Promise<DoctorsOffice> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
-    return toDoctorsOffice(office)
+    return toDoctorsOffice(office, locale)
   })
 }
 
 export async function addMyDoctor(
   doctorsOfficeId: string,
+  locale: AppLocale,
 ): Promise<DoctorsOffice> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
@@ -266,12 +287,13 @@ export async function addMyDoctor(
       throw new Error("Arztpraxis nicht gefunden.")
     }
     myDoctorIds.add(office.id)
-    return toDoctorsOffice(office)
+    return toDoctorsOffice(office, locale)
   })
 }
 
 export async function removeMyDoctor(
   doctorsOfficeId: string,
+  locale: AppLocale,
 ): Promise<DoctorsOffice> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
@@ -279,7 +301,7 @@ export async function removeMyDoctor(
       throw new Error("Arztpraxis nicht gefunden.")
     }
     myDoctorIds.delete(office.id)
-    return toDoctorsOffice(office)
+    return toDoctorsOffice(office, locale)
   })
 }
 
@@ -323,9 +345,6 @@ export async function fetchDoctors(
   return withMockLatency(() => {
     const query = filters.query?.trim().toLowerCase() ?? ""
     const cityById = new Map(citiesSeed.map((city) => [city.id, city]))
-    const specializationById = new Map(
-      specializationsSeed.map((specialization) => [specialization.id, specialization]),
-    )
 
     return Object.values(doctorsOfficesSeed)
       .filter((office) => {
@@ -344,28 +363,12 @@ export async function fetchDoctors(
         }
 
         const cityLabel = cityById.get(office.cityId)?.labels[filters.locale] ?? ""
-        const specializationLabel =
-          specializationById.get(office.specializationId)?.labels[filters.locale]
-          ?? office.specialty
+        const specializationLabel = localizedSpecialty(office, filters.locale)
         const haystack = `${office.name} ${specializationLabel} ${cityLabel}`
         return matchesQuery(haystack, query)
       })
       .map((office) => {
-        const specializationLabel =
-          specializationById.get(office.specializationId)?.labels[filters.locale]
-          ?? office.specialty
-        return {
-          id: office.id,
-          name: office.name,
-          specialty: specializationLabel,
-          phone: office.phone,
-          imageUri: office.imageUri,
-          initials: office.initials,
-          isOpen: office.isOpen,
-          openStatusLabel: office.isOpen
-            ? openStatusLabels.open[filters.locale]
-            : openStatusLabels.closed[filters.locale],
-        }
+        return toHomeDoctorCard(office, filters.locale)
       })
   }, { failKey: filters.query })
 }
