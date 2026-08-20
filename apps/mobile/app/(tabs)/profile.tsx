@@ -5,13 +5,13 @@ import {
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
+import { useAppNotificationPermission } from "@/hooks/useAppNotificationPermission"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
-import { Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon } from "@helpwave/hightide-native/components"
-import { useRouter } from "expo-router"
-import { Building2, LogOut, UserIcon } from "lucide-react-native"
-import { useEffect, useState } from "react"
-import { Alert, ScrollView, View } from "react-native"
+import { Button, Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon } from "@helpwave/hightide-native/components"
+import { useRouter, type Href } from "expo-router"
+import { ChevronRight, LogOut, Scale, Shield } from "lucide-react-native"
+import { Alert, Linking, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAppTranslation } from "../../hooks/useAppTranslation"
 
@@ -22,13 +22,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const profileQuery = usePatientProfile()
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true)
-
-  useEffect(() => {
-    if (profileQuery.data) {
-      setNotificationsEnabled(profileQuery.data.notificationsEnabled)
-    }
-  }, [profileQuery.data])
+  const { notificationsEnabled, setNotificationsEnabled } = useAppNotificationPermission()
 
   return (
     <View
@@ -61,41 +55,41 @@ export default function ProfileScreen() {
           >
             <ProfileHeader profile={profileQuery.data} />
             
-            <Section title={t("personalData")}>
+            <Section
+              title={t("personalData")}
+              trailing={
+                <Button
+                  accessibilityRole="button"
+                  onPress={() => {
+                    router.push("/personal-information" as Href)
+                  }}
+                  size="xs"
+                  color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color}}
+                  trailingIcon={ChevronRight}
+                  variant="foreground"
+                >
+                  {t("edit")}
+                </Button>
+              }
+            >
               <Card>
                 <ListItem 
                   title={profileQuery.data.fullName}
                   subtitle={t("name")} 
                 />
-                  <ListItem
+                <ListItem
                   subtitle={t("dateOfBirth")}
                   title={profileQuery.data.dateOfBirth}
                 />
                 <ListItem subtitle={t("email")} title={profileQuery.data.email} />
                 <ListItem subtitle={t("phone")} title={profileQuery.data.phone} />
-              </Card>
-            </Section>
-            
-            <Section title={t("practiceSection")}>
-              <Card>
-                <ListItem 
-                  title={profileQuery.data.practiceName}
-                  subtitle={t("practice")} 
-                />
-                <ListItem
-                  title={profileQuery.data.practiceAddress}
-                  subtitle={t("address")}
-                />
                 <ListNavigationItem 
-                  title={profileQuery.data.email}
-                  subtitle={t("practiceDetails")}
+                  title={t("signOut")}
+                  leading={<ThemedIcon icon={LogOut}/>}
+                  color={theme.colors.negative}
                   onPress={() => {
-                    router.push({
-                      pathname: "/doctor/[id]",
-                      params: { id: "office-moser" },
-                    })
+                    Alert.alert(t("tabProfile"), t("placeholderComingSoon"))
                   }}
-                  leading={<ThemedIcon icon={Building2}/>}
                 />
               </Card>
             </Section>
@@ -103,33 +97,38 @@ export default function ProfileScreen() {
             <Section title={t("settingsSection")}>
               <Card>
                 <ListActionItem 
-                  title={profileQuery.data.practiceName}
-                  subtitle={t("notifications")}
-                  onPress={() => setNotificationsEnabled(prev => !prev)}
+                  title={t("notifications")}
+                  onPress={() => {
+                    setNotificationsEnabled(!notificationsEnabled)
+                  }}
                   trailing={
                     <Switch
                       value={notificationsEnabled}
-                      onValueChange={setNotificationsEnabled}
+                      onValueChange={(value) => {
+                        setNotificationsEnabled(value)
+                      }}
                     />
                   }
                 />
                 <ThemeModeSetting />
                 <LocaleSetting />
-                <ListNavigationItem 
-                  title={t("editPersonalData")}
-                  leading={<ThemedIcon icon={UserIcon}/>}
+              </Card>
+            </Section>
+
+            <Section title={t("privacyAndInformation")}>
+              <Card>
+                <ListNavigationItem
+                  title={t("imprint")}
+                  leading={<ThemedIcon icon={Scale}/>}
                   onPress={() => {
-                    // TODO replace this
-                    Alert.alert(t("tabProfile"), "Bearbeiten ist hier noch nicht verfügbar.")
+                    void Linking.openURL("https://www.helpwave.de/imprint")
                   }}
                 />
-                <ListNavigationItem 
-                  title={t("signOut")}
-                  leading={<ThemedIcon icon={LogOut}/>}
-                  color={theme.colors.negative}
+                <ListNavigationItem
+                  title={t("privacyPolicy")}
+                  leading={<ThemedIcon icon={Shield}/>}
                   onPress={() => {
-                    // TODO replace this
-                    Alert.alert(t("tabProfile"), "Bearbeiten ist hier noch nicht verfügbar.")
+                    void Linking.openURL("https://www.helpwave.de/privacy")
                   }}
                 />
               </Card>

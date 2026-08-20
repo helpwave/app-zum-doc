@@ -82,5 +82,14 @@
   "clearSelection": "Clear selection",
   "servicesAndOffers": "Services and Offers",
   "removeDoctor": "Remove doctor",
-  "removeDoctorConfirm": "Do you really want to remove this doctor from My doctors?"
+  "removeDoctorConfirm": "Do you really want to remove this doctor from My doctors?",
+  "privacyAndInformation": "Privacy and information",
+  "imprint": "Imprint",
+  "privacyPolicy": "Privacy policy",
+  "openSettings": "Open settings",
+  "notificationsEnableTitle": "Enable notifications",
+  "notificationsEnableMessage": "To receive notifications, allow them in the system settings.",
+  "notificationsDisableTitle": "Disable notifications",
+  "notificationsDisableMessage": "Notifications can only be turned off in the system settings.",
+  "edit": "Edit"
 }

@@ -82,5 +82,14 @@
   "clearSelection": "Auswahl entfernen",
   "servicesAndOffers": "Leistungen und Angebote",
   "removeDoctor": "Arzt entfernen",
-  "removeDoctorConfirm": "Möchten Sie diesen Arzt wirklich aus „Meine Ärzte“ entfernen?"
+  "removeDoctorConfirm": "Möchten Sie diesen Arzt wirklich aus „Meine Ärzte“ entfernen?",
+  "privacyAndInformation": "Datenschutz und Informationen",
+  "imprint": "Impressum",
+  "privacyPolicy": "Datenschutz",
+  "openSettings": "Einstellungen öffnen",
+  "notificationsEnableTitle": "Benachrichtigungen aktivieren",
+  "notificationsEnableMessage": "Um Benachrichtigungen zu erhalten, erlauben Sie diese in den Systemeinstellungen.",
+  "notificationsDisableTitle": "Benachrichtigungen deaktivieren",
+  "notificationsDisableMessage": "Benachrichtigungen können nur in den Systemeinstellungen ausgeschaltet werden.",
+  "edit": "Bearbeiten"
 }

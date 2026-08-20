@@ -107,6 +107,13 @@ function AppStack() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="personal-information"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
       </Stack>
     </>
   )
