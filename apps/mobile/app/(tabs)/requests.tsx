@@ -3,11 +3,12 @@ import { NavigationHeader } from "@/components/navigation-header"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { hrefForRequest } from "@/lib/request-routes"
 import { toAppLocale, type RequestKind } from "@app-zum-doc/utils/api"
 import { useDoctorsOffice, useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
-import { useLocalSearchParams, useRouter, type Href } from "expo-router"
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { useMemo, useState } from "react"
 import { ScrollView, View } from "react-native"
 
@@ -155,10 +156,7 @@ export default function RequestsScreen() {
                   key={request.id}
                   request={request}
                   onPress={() => {
-                    router.push({
-                      pathname: "/requests/[id]",
-                      params: { id: request.id },
-                    } as Href)
+                    router.push(hrefForRequest(request))
                   }}
                 />
               ))}

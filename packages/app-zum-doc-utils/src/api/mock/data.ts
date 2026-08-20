@@ -1,4 +1,5 @@
 import type {
+  Appointment,
   ChatMessage,
   Conversation,
   DoctorsOffice,
@@ -7,6 +8,7 @@ import type {
   Medication,
   MedicationCatalogItem,
   PatientProfile,
+  PatientProfileSummary,
 } from "../types"
 
 export type LocalizedLabel = {
@@ -438,7 +440,7 @@ export function buildHomeSummary(): HomeSummary {
       {
         id: "appointment",
         label: "Termin",
-        href: "/requests/appointment",
+        href: "/requests/appointment/create",
       },
       {
         id: "referral",
@@ -513,8 +515,8 @@ export function buildHomeSummary(): HomeSummary {
         title: "Vorsorgeuntersuchung",
         kind: "appointment",
         kindLabel: "Termin",
-        status: "confirmed",
-        statusLabel: "Bestätigt",
+        status: "in_progress",
+        statusLabel: "Angefragt",
       },
       {
         id: "req-haumann-vaccine",
@@ -529,3 +531,46 @@ export function buildHomeSummary(): HomeSummary {
     ],
   }
 }
+
+export const patientProfilesSeed: PatientProfileSummary[] = [
+  {
+    id: patientProfileSeed.id,
+    fullName: patientProfileSeed.fullName,
+    dateOfBirth: patientProfileSeed.dateOfBirth,
+  },
+]
+
+export const appointmentsSeed: Appointment[] = [
+  {
+    id: "req-checkup",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    patientDateOfBirth: patientProfileSeed.dateOfBirth,
+    date: "2025-06-22",
+    time: "14:00",
+    isEmergency: false,
+    note: "",
+    sickNote: "Arbeitgeber",
+    status: "requested",
+  },
+  {
+    id: "req-haumann-vaccine",
+    doctorsOfficeId: "office-haumann",
+    doctorName: "Dr. Haumann",
+    doctorSpecialty: "Allgemeinmedizin",
+    doctorImageUri: null,
+    doctorInitials: "HM",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    patientDateOfBirth: patientProfileSeed.dateOfBirth,
+    date: "2025-06-21",
+    time: "10:00",
+    isEmergency: false,
+    note: "",
+    status: "confirmed",
+  },
+]

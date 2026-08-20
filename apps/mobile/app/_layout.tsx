@@ -80,7 +80,14 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="requests/appointment"
+          name="requests/appointment/create"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/appointment/[id]"
           options={{
             animation: "slide_from_right",
             headerShown: false,

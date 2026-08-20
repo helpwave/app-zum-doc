@@ -143,5 +143,34 @@
         "type": "string"
       }
     }
+  },
+  "requestAppointment": "Request appointment",
+  "selectPractice": "Select practice",
+  "selectProfile": "Profile",
+  "selectDay": "Day",
+  "selectTime": "Select a time",
+  "selectTimePlaceholder": "Select time",
+  "appointmentTime": "Time",
+  "morning": "Morning",
+  "afternoon": "Afternoon",
+  "isEmergency": "Is this an emergency?",
+  "appointmentNote": "Note",
+  "appointmentNotePlaceholder": "Describe your concern so we can plan your appointment as well as possible.",
+  "sendAppointmentRequest": "Send request",
+  "cancelAppointmentRequest": "Cancel request",
+  "cancelAppointmentConfirm": "Do you really want to cancel this appointment request?",
+  "appointmentTitle": "Appointment",
+  "patient": "Patient",
+  "sickNote": "Sick note",
+  "loadingAppointment": "Loading appointment…",
+  "openChat": "Open chat",
+  "noTimeSlots": "No appointments on this day.",
+  "appointmentStatus": "{status, select, requested{Requested} confirmed{Confirmed} cancelled{Cancelled} other{}}",
+  "@appointmentStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
   }
 }

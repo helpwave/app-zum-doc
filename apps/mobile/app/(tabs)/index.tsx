@@ -1,5 +1,6 @@
 import { RequestTile, StartDoctorCard, StartHero } from "@/components/home-sections"
 import { QueryState } from "@/components/query-state"
+import { hrefForRequest } from "@/lib/request-routes"
 import { Section } from "@/components/section"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -142,10 +143,7 @@ export default function HomeScreen() {
                       key={request.id}
                       request={request}
                       onPress={() => {
-                        router.push({
-                          pathname: "/requests/[id]",
-                          params: { id: request.id },
-                        })
+                        router.push(hrefForRequest(request))
                       }}
                     />
                   ))}

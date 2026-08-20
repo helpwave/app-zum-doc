@@ -1,22 +1,23 @@
 import {
-    AzdAvatarImage,
-    contactAvatarImage,
+  AzdAvatarImage,
+  contactAvatarImage,
 } from "@/components/azd-avatar-image"
 import { ChatMessageItem } from "@/components/chat-message-item"
 import { Composer } from "@/components/composer"
 import { QueryState } from "@/components/query-state"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { useKeyBoard } from "@/hooks/useKeyBoardIsVisible"
 import {
-    useConversation,
-    useMarkConversationRead,
-    useMessages,
-    useResolveCardAction,
-    useSendMessage,
+  useConversation,
+  useMarkConversationRead,
+  useMessages,
+  useResolveCardAction,
+  useSendMessage,
 } from "@app-zum-doc/utils/hooks"
 import {
-    ChatMessageList,
-    ChatThreadHeader,
-    IconButton
+  ChatMessageList,
+  ChatThreadHeader,
+  IconButton
 } from "@helpwave/hightide-native/components"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { ChevronLeft, Phone } from "lucide-react-native"
@@ -28,7 +29,6 @@ import { useAppTranslation } from "../../hooks/useAppTranslation"
 export default function ChatThreadScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const headerColors = theme.components.screenHeader
   const { id } = useLocalSearchParams<{ id: string }>()
   const conversationId = typeof id === "string" ? id : ""
@@ -60,14 +60,14 @@ export default function ChatThreadScreen() {
   }
 
   const contact = conversationQuery.data?.contact
+  const { isVisible: isKeyboardVisible } = useKeyBoard()
 
   return (
     <KeyboardAvoidingView
       style={{
         flex: 1,
-        backgroundColor: colors.background,
       }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
     >
       <View
         style={{
@@ -112,7 +112,7 @@ export default function ChatThreadScreen() {
         onRetry={refetch}
         loadingLabel={t("loadingMessages")}
       >
-        <ChatMessageList>
+        <ChatMessageList style={{ flex: 1 }}>
           {(messagesQuery.data ?? []).map((item) => (
             <ChatMessageItem
               key={item.id}
@@ -135,6 +135,7 @@ export default function ChatThreadScreen() {
               ? (sendMessage.error?.message ?? t("errorUnknown"))
               : null
           }
+          style={{paddingBottom: isKeyboardVisible ? theme.padding.xl : insets.bottom + theme.padding.md }}
         />
       </QueryState>
     </KeyboardAvoidingView>

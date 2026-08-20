@@ -56,3 +56,14 @@ export const medicationKeys = {
   patient: ["medications", "patient"] as const,
   search: (search: string) => ["medications", "search", search] as const,
 }
+
+export const appointmentKeys = {
+  all: ["appointments"] as const,
+  detail: (id: string, locale: string) =>
+    ["appointments", "detail", id, locale] as const,
+}
+
+export const profileListKeys = {
+  all: ["profiles"] as const,
+  list: ["profiles", "list"] as const,
+}

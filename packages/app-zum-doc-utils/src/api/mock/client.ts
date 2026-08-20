@@ -1,4 +1,5 @@
 import {
+  appointmentsSeed,
   buildHomeSummary,
   citiesSeed,
   conversationsSeed,
@@ -7,23 +8,28 @@ import {
   messagesByConversation,
   patientMedicationsSeed,
   patientProfileSeed,
+  patientProfilesSeed,
   specializationsSeed,
   type DoctorsOfficeSeed,
 } from "./data"
 import {
   WeekdayUtils,
+  type Appointment,
   type AppLocale,
   type ChatMessage,
   type Conversation,
+  type CreateAppointmentInput,
   type DoctorSearchFilters,
   type DoctorsOffice,
   type DoctorsOfficeOpeningHours,
   type HomeDoctorCard,
+  type HomeRequest,
   type HomeSummary,
   type Medication,
   type MedicationCatalogItem,
   type MedicationSize,
   type PatientProfile,
+  type PatientProfileSummary,
   type SearchCity,
   type SearchSpecialization,
   type StructuredCardMessage,
@@ -40,6 +46,10 @@ let myDoctorIds = new Set(
   buildHomeSummary().myDoctors.map((doctor) => doctor.id),
 )
 let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
+let recentRequestsState: HomeRequest[] = structuredClone(
+  buildHomeSummary().recentRequests,
+)
+let appointmentsState: Appointment[] = structuredClone(appointmentsSeed)
 
 export const mockApiConfig = {
   forceFail: false,
@@ -207,12 +217,127 @@ export async function fetchHomeSummary(locale: AppLocale): Promise<HomeSummary> 
         const office = doctorsOfficesSeed[id]
         return office ? [toHomeDoctorCard(office, locale)] : []
       }),
+      recentRequests: recentRequestsState.map((request) => ({ ...request })),
     }
   })
 }
 
 export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
+}
+
+export async function fetchPatientProfiles(): Promise<PatientProfileSummary[]> {
+  return withMockLatency(() =>
+    patientProfilesSeed.map((profile) => ({ ...profile })),
+  )
+}
+
+export async function fetchAppointment(
+  appointmentId: string,
+  locale: AppLocale,
+): Promise<Appointment> {
+  return withMockLatency(() => {
+    const appointment = appointmentsState.find((item) => item.id === appointmentId)
+    if (!appointment) {
+      throw new Error("Termin nicht gefunden.")
+    }
+    const office = doctorsOfficesSeed[appointment.doctorsOfficeId]
+    return {
+      ...appointment,
+      doctorName: office?.name ?? appointment.doctorName,
+      doctorSpecialty: office
+        ? localizedSpecialty(office, locale)
+        : appointment.doctorSpecialty,
+      doctorImageUri: office?.imageUri ?? appointment.doctorImageUri,
+      doctorInitials: office?.initials ?? appointment.doctorInitials,
+    }
+  })
+}
+
+export async function createAppointment(
+  input: CreateAppointmentInput,
+  locale: AppLocale,
+): Promise<Appointment> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesSeed[input.doctorsOfficeId]
+    if (!office) {
+      throw new Error("Arztpraxis nicht gefunden.")
+    }
+    const profile =
+      patientProfilesSeed.find((item) => item.id === input.profileId)
+      ?? patientProfilesSeed[0]
+    if (!profile) {
+      throw new Error("Profil nicht gefunden.")
+    }
+
+    const appointment: Appointment = {
+      id: `req-appointment-${Date.now()}`,
+      doctorsOfficeId: office.id,
+      doctorName: office.name,
+      doctorSpecialty: localizedSpecialty(office, locale),
+      doctorImageUri: office.imageUri,
+      doctorInitials: office.initials,
+      profileId: profile.id,
+      patientName: profile.fullName,
+      patientDateOfBirth: profile.dateOfBirth,
+      date: input.date,
+      time: input.time,
+      isEmergency: input.isEmergency,
+      note: input.note,
+      status: "requested",
+    }
+    appointmentsState = [appointment, ...appointmentsState]
+    recentRequestsState = [
+      {
+        id: appointment.id,
+        doctorsOfficeId: appointment.doctorsOfficeId,
+        doctorName: appointment.doctorName,
+        title: appointment.time,
+        kind: "appointment",
+        kindLabel: "Termin",
+        status: "in_progress",
+        statusLabel: "Angefragt",
+      },
+      ...recentRequestsState,
+    ]
+    return { ...appointment }
+  })
+}
+
+export async function cancelAppointment(
+  appointmentId: string,
+  locale: AppLocale,
+): Promise<Appointment> {
+  return withMockLatency(() => {
+    const existing = appointmentsState.find((item) => item.id === appointmentId)
+    if (!existing) {
+      throw new Error("Termin nicht gefunden.")
+    }
+    const appointment: Appointment = {
+      ...existing,
+      status: "cancelled",
+    }
+    appointmentsState = appointmentsState.map((item) =>
+      item.id === appointmentId ? appointment : item,
+    )
+    recentRequestsState = recentRequestsState.map((request) => {
+      if (request.id !== appointmentId) {
+        return request
+      }
+      return {
+        ...request,
+        status: "cancelled",
+        statusLabel: "Storniert",
+      }
+    })
+    const office = doctorsOfficesSeed[appointment.doctorsOfficeId]
+    return {
+      ...appointment,
+      doctorSpecialty: office
+        ? localizedSpecialty(office, locale)
+        : appointment.doctorSpecialty,
+    }
+  })
 }
 
 export async function fetchPatientMedications(): Promise<Medication[]> {
@@ -445,4 +570,6 @@ export function resetMockStore(): void {
     buildHomeSummary().myDoctors.map((doctor) => doctor.id),
   )
   patientMedicationsState = structuredClone(patientMedicationsSeed)
+  recentRequestsState = structuredClone(buildHomeSummary().recentRequests)
+  appointmentsState = structuredClone(appointmentsSeed)
 }

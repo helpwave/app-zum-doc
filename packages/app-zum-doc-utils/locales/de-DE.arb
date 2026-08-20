@@ -143,5 +143,34 @@
         "type": "string"
       }
     }
+  },
+  "requestAppointment": "Termin anfragen",
+  "selectPractice": "Praxis wählen",
+  "selectProfile": "Profil",
+  "selectDay": "Tag",
+  "selectTime": "Zeitpunkt wählen",
+  "selectTimePlaceholder": "Uhrzeit wählen",
+  "appointmentTime": "Uhrzeit",
+  "morning": "Vormittags",
+  "afternoon": "Nachmittags",
+  "isEmergency": "Handelt es sich um einen Notfall?",
+  "appointmentNote": "Hinweis",
+  "appointmentNotePlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.",
+  "sendAppointmentRequest": "Anfrage senden",
+  "cancelAppointmentRequest": "Anfrage stornieren",
+  "cancelAppointmentConfirm": "Möchten Sie diese Terminanfrage wirklich stornieren?",
+  "appointmentTitle": "Termin",
+  "patient": "Patient",
+  "sickNote": "Krankmeldung",
+  "loadingAppointment": "Termin wird geladen…",
+  "openChat": "Chat öffnen",
+  "noTimeSlots": "Keine Termine an diesem Tag.",
+  "appointmentStatus": "{status, select, requested{Angefragt} confirmed{Bestätigt} cancelled{Storniert} other{}}",
+  "@appointmentStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
   }
 }

@@ -74,7 +74,7 @@ export function DoctorDetailHero({
     {
       id: "appointment",
       label: t("actionAppointment"),
-      href: "/requests/appointment",
+      href: "/requests/appointment/create",
     },
     {
       id: "referral",

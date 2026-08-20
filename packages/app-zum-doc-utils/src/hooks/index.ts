@@ -1,4 +1,5 @@
 export * from './queryKeys'
+export * from './useAppointments'
 export * from './useConversations'
 export * from './useDoctorSearch'
 export * from './useDoctorsOffice'

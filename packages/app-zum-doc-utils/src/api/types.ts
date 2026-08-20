@@ -123,6 +123,7 @@ export type RequestStatus =
   | "confirmed"
   | "ready_for_pickup"
   | "completed"
+  | "cancelled"
 
 export type HomeRequest = {
   id: string
@@ -250,4 +251,54 @@ export type DoctorSearchFilters = {
   cityId?: string
   specializationId?: string
   locale: AppLocale
+}
+
+const appointmentStatusValues = ["requested", "confirmed", "cancelled"] as const
+export type AppointmentStatus = (typeof appointmentStatusValues)[number]
+const allowedAppointmentStatusValues: ReadonlySet<string> = new Set(
+  appointmentStatusValues,
+)
+function isAppointmentStatusValue(value: unknown): value is AppointmentStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedAppointmentStatusValues.has(value)
+}
+export const AppointmentStatusUtils = {
+  array: appointmentStatusValues,
+  set: allowedAppointmentStatusValues,
+  typeCheck: isAppointmentStatusValue,
+}
+
+export type PatientProfileSummary = {
+  id: string
+  fullName: string
+  dateOfBirth: string
+}
+
+export type Appointment = {
+  id: string
+  doctorsOfficeId: string
+  doctorName: string
+  doctorSpecialty: string
+  doctorImageUri: string | null
+  doctorInitials?: string
+  profileId: string
+  patientName: string
+  patientDateOfBirth: string
+  date: string
+  time: string
+  isEmergency: boolean
+  note: string
+  sickNote?: string
+  status: AppointmentStatus
+}
+
+export type CreateAppointmentInput = {
+  doctorsOfficeId: string
+  profileId: string
+  date: string
+  time: string
+  isEmergency: boolean
+  note: string
 }

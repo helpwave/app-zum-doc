@@ -5,6 +5,7 @@ import {
   OpeningHoursSection,
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
+import { hrefForRequest } from "@/lib/request-routes"
 import { Snackbar } from "@/components/snackbar"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -86,6 +87,13 @@ export default function DoctorDetailScreen() {
                 })
               }}
               onQuickActionPress={(action) => {
+                if (action.id === "appointment") {
+                  router.push({
+                    pathname: "/requests/appointment/create",
+                    params: { doctorId: office.id },
+                  } as Href)
+                  return
+                }
                 router.push(action.href as Href)
               }}
             />
@@ -106,10 +114,11 @@ export default function DoctorDetailScreen() {
                     })
                   }}
                   onRequestPress={(requestId) => {
-                    router.push({
-                      pathname: "/requests/[id]",
-                      params: { id: requestId },
-                    })
+                    const request = doctorRequests.find((item) => item.id === requestId)
+                    if (!request) {
+                      return
+                    }
+                    router.push(hrefForRequest(request))
                   }}
                 />
               ) : null}
