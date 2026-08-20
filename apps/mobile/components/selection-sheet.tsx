@@ -1,13 +1,14 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { withAlpha } from "@/theme/azd-theme"
 import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
-    Modal,
-    Pressable,
-    Text,
-    View,
+  Modal,
+  Pressable,
+  Text,
+  View,
 } from "react-native"
 
 export type SelectionSheetOption = {
@@ -53,6 +54,9 @@ export function SelectionSheet({
     <Modal
       visible={visible}
       transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      presentationStyle="overFullScreen"
       animationType="fade"
       onRequestClose={revertAndCancel}
     >
@@ -61,10 +65,10 @@ export function SelectionSheet({
           flex: 1,
           justifyContent: "center",
           paddingHorizontal: theme.spacing.lg + theme.spacing.sm,
-          backgroundColor: theme.semantics.withAppearance({
-            color: "#000000",
-            appearance: "faded",
-          }),
+          backgroundColor: withAlpha(
+            "#000000",
+            theme.config.appearancePercentages.faded,
+          ),
         }}
         onPress={revertAndCancel}
       >

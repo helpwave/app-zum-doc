@@ -3,14 +3,16 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
-  Avatar,
   ListActionItem,
   ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
+import { Image } from "expo-image"
 import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
 import { useMemo, useState } from "react"
 import { Text, View } from "react-native"
+
+const azdLogo = require("../assets/images/azd-logo.png")
 
 type ProfileHeaderProps = {
   profile: PatientProfile
@@ -28,9 +30,13 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         paddingVertical: theme.spacing.lg + theme.spacing.sm,
       }}
     >
-      <Avatar
-        name={profile.fullName}
-        size="lg"
+      <Image
+        source={azdLogo}
+        style={{
+          width: theme.semantics.container.md.size * 2,
+          height: theme.semantics.container.md.size * 2,
+        }}
+        contentFit="contain"
       />
       <Text
         style={{
