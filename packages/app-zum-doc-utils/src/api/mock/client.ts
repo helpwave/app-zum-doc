@@ -7,6 +7,7 @@ import {
   openStatusLabels,
   patientProfileSeed,
   specializationsSeed,
+  type DoctorsOfficeSeed,
 } from "./data"
 import type {
   AppLocale,
@@ -28,6 +29,9 @@ const delayMs = 550
 let conversationsState: Conversation[] = structuredClone(conversationsSeed)
 let messagesState: Record<string, ChatMessage[]> = structuredClone(
   messagesByConversation,
+)
+let myDoctorIds = new Set(
+  buildHomeSummary().myDoctors.map((doctor) => doctor.id),
 )
 
 export const mockApiConfig = {
@@ -188,11 +192,57 @@ export async function resolveCardAction(
 }
 
 export async function fetchHomeSummary(): Promise<HomeSummary> {
-  return withMockLatency(() => buildHomeSummary())
+  return withMockLatency(() => {
+    const summary = buildHomeSummary()
+    return {
+      ...summary,
+      myDoctors: [...myDoctorIds].flatMap((id) => {
+        const office = doctorsOfficesSeed[id]
+        return office ? [toHomeDoctorCard(office)] : []
+      }),
+    }
+  })
 }
 
 export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
+}
+
+function toHomeDoctorCard(office: DoctorsOfficeSeed): HomeDoctorCard {
+  return {
+    id: office.id,
+    name: office.name,
+    specialty: office.specialty,
+    phone: office.phone,
+    imageUri: office.imageUri,
+    initials: office.initials,
+    isOpen: office.isOpen,
+    openStatusLabel: office.openStatusLabel,
+  }
+}
+
+function toDoctorsOffice(office: DoctorsOfficeSeed): DoctorsOffice {
+  return {
+    id: office.id,
+    name: office.name,
+    specialty: office.specialty,
+    phone: office.phone,
+    imageUri: office.imageUri,
+    initials: office.initials,
+    isOpen: office.isOpen,
+    openStatusLabel: office.openStatusLabel,
+    isMyDoctor: myDoctorIds.has(office.id),
+    services: [...(office.services ?? [])],
+    addressLine1: office.addressLine1,
+    addressLine2: office.addressLine2,
+    websiteLabel: office.websiteLabel,
+    websiteUrl: office.websiteUrl,
+    additionalOfferLabel: office.additionalOfferLabel,
+    openingHours: office.openingHours.map((period) => ({
+      ...period,
+      times: [...period.times],
+    })),
+  }
 }
 
 export async function fetchDoctorsOffice(
@@ -203,25 +253,33 @@ export async function fetchDoctorsOffice(
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
-    return {
-      id: office.id,
-      name: office.name,
-      specialty: office.specialty,
-      phone: office.phone,
-      imageUri: office.imageUri,
-      initials: office.initials,
-      isOpen: office.isOpen,
-      openStatusLabel: office.openStatusLabel,
-      addressLine1: office.addressLine1,
-      addressLine2: office.addressLine2,
-      websiteLabel: office.websiteLabel,
-      websiteUrl: office.websiteUrl,
-      additionalOfferLabel: office.additionalOfferLabel,
-      openingHours: office.openingHours.map((period) => ({
-        ...period,
-        times: [...period.times],
-      })),
+    return toDoctorsOffice(office)
+  })
+}
+
+export async function addMyDoctor(
+  doctorsOfficeId: string,
+): Promise<DoctorsOffice> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesSeed[doctorsOfficeId]
+    if (!office) {
+      throw new Error("Arztpraxis nicht gefunden.")
     }
+    myDoctorIds.add(office.id)
+    return toDoctorsOffice(office)
+  })
+}
+
+export async function removeMyDoctor(
+  doctorsOfficeId: string,
+): Promise<DoctorsOffice> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesSeed[doctorsOfficeId]
+    if (!office) {
+      throw new Error("Arztpraxis nicht gefunden.")
+    }
+    myDoctorIds.delete(office.id)
+    return toDoctorsOffice(office)
   })
 }
 
@@ -315,4 +373,7 @@ export async function fetchDoctors(
 export function resetMockStore(): void {
   conversationsState = structuredClone(conversationsSeed)
   messagesState = structuredClone(messagesByConversation)
+  myDoctorIds = new Set(
+    buildHomeSummary().myDoctors.map((doctor) => doctor.id),
+  )
 }

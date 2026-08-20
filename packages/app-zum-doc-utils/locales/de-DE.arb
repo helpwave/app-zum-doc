@@ -79,5 +79,8 @@
   "loadingDoctorSearch": "Suche wird geladen…",
   "loadingCities": "Städte werden geladen…",
   "loadingSpecializations": "Fachrichtungen werden geladen…",
-  "clearSelection": "Auswahl entfernen"
+  "clearSelection": "Auswahl entfernen",
+  "servicesAndOffers": "Leistungen und Angebote",
+  "removeDoctor": "Arzt entfernen",
+  "removeDoctorConfirm": "Möchten Sie diesen Arzt wirklich aus „Meine Ärzte“ entfernen?"
 }

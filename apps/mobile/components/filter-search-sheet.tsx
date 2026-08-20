@@ -2,11 +2,11 @@ import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-  IconButton,
-  ListActionItem,
-  SearchBar,
-  ThemedIcon,
-  ThemedText,
+    IconButton,
+    ListActionItem,
+    SearchBar,
+    ThemedIcon,
+    ThemedText,
 } from "@helpwave/hightide-native/components"
 import type { LucideIcon } from "lucide-react-native"
 import { Check, TrashIcon } from "lucide-react-native"
@@ -110,11 +110,11 @@ export function FilterSearchSheet({
               marginBottom: theme.spacing.lg,
             }}
           >
-            <View style={{ width: theme.elements.control.sm.size }} />
+            <View style={{ width: theme.semantics.control.sm.size }} />
             <ThemedText
               style={{
                 ...theme.typography.heading.md,
-                fontWeight: theme.typography.fontWeights.bold,
+                fontWeight: theme.fontWeights.bold,
                 textAlign: "center",
                 flex: 1,
               }}
@@ -123,7 +123,7 @@ export function FilterSearchSheet({
             </ThemedText>
             <View
               style={{
-                width: theme.elements.control.sm.size,
+                width: theme.semantics.control.sm.size,
                 alignItems: "flex-end",
               }}
             >

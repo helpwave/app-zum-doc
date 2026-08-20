@@ -1,7 +1,7 @@
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toShadowStyle } from "@/theme/azd-theme"
 import type { HomeDoctorCard } from "@app-zum-doc/utils/api"
 import { ThemedPressable } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image, ImageStyle } from "expo-image"
 import { Phone } from "lucide-react-native"
 import { Text, View, ViewStyle, type DimensionValue } from "react-native"
@@ -25,7 +25,7 @@ export function DoctorCard({ doctor, onPress, width = 306 }: DoctorCardProps) {
         ? doctorPortrait
         : null
   const photoStyle: ViewStyle & ImageStyle = {
-    width: theme.elements.container.md.size * 2,
+    width: theme.semantics.container.md.size * 2,
     borderRadius: theme.borderRadius.md,
     alignSelf: "stretch"
   }
@@ -45,7 +45,7 @@ export function DoctorCard({ doctor, onPress, width = 306 }: DoctorCardProps) {
         gap: theme.spacing.md + theme.spacing.xs,
         padding: theme.spacing.md + theme.spacing.xs,
         backgroundColor: colors.cardBackground,
-        ...toShadowStyle(theme.shadow.container),
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
       }}
     >
       {imageSource ? (
@@ -66,7 +66,7 @@ export function DoctorCard({ doctor, onPress, width = 306 }: DoctorCardProps) {
           <Text
             style={{
               ...theme.typography.heading.lg,
-              fontWeight: theme.typography.fontWeights.semibold,
+              fontWeight: theme.fontWeights.semibold,
               color: colors.avatarText,
             }}
           >

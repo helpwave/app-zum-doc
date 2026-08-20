@@ -3,9 +3,9 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
-    Avatar,
-    ListActionItem,
-    ThemedIcon
+  Avatar,
+  ListActionItem,
+  ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
@@ -35,7 +35,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
       <Text
         style={{
           ...theme.typography.heading.lg,
-          fontWeight: theme.typography.fontWeights.bold,
+          fontWeight: theme.fontWeights.bold,
           color: colors.name,
           marginTop: theme.spacing.md,
         }}
@@ -45,7 +45,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
       <Text
         style={{
           ...theme.typography.body.sm,
-          fontFamily: theme.typography.fontFamilies.default,
+          fontFamily: theme.fontFamilies.default,
           textAlign: "center",
           paddingHorizontal: theme.spacing.lg,
           color: colors.meta,
@@ -102,7 +102,7 @@ export function ThemeModeSetting() {
           <Text
             style={{
               ...theme.typography.body.sm,
-              fontFamily: theme.typography.fontFamilies.default,
+              fontFamily: theme.fontFamilies.default,
               color: colors.meta,
             }}
           >
@@ -158,7 +158,7 @@ export function LocaleSetting() {
           <Text
             style={{
               ...theme.typography.body.sm,
-              fontFamily: theme.typography.fontFamilies.default,
+              fontFamily: theme.fontFamilies.default,
               color: colors.meta,
             }}
           >

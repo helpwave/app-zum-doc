@@ -1,17 +1,15 @@
 import {
     DoctorDetailHero,
+    DoctorOfficeContactSections,
     OpeningHoursSection,
-    openDoctorsOfficeNavigation,
-    openDoctorsOfficePhone,
-    openDoctorsOfficeWebsite
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
-import { Section } from "@/components/section"
+import { Snackbar } from "@/components/snackbar"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { useDoctorsOffice } from "@app-zum-doc/utils/hooks"
-import { Card, ListNavigationItem } from "@helpwave/hightide-native/components"
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { useAddMyDoctor, useDoctorsOffice, useRemoveMyDoctor } from "@app-zum-doc/utils/hooks"
+import { useLocalSearchParams, useRouter, type Href } from "expo-router"
+import { useCallback, useState } from "react"
 import { Alert, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
@@ -24,7 +22,13 @@ export default function DoctorDetailScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const officeQuery = useDoctorsOffice(doctorsOfficeId)
+  const addMyDoctor = useAddMyDoctor()
+  const removeMyDoctor = useRemoveMyDoctor()
   const office = officeQuery.data
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
+  const dismissSnackbar = useCallback(() => {
+    setSnackbarMessage(null)
+  }, [])
 
   return (
     <View
@@ -53,74 +57,55 @@ export default function DoctorDetailScreen() {
           >
             <DoctorDetailHero
               office={office}
+              isAddingDoctor={addMyDoctor.isPending}
+              isRemovingDoctor={removeMyDoctor.isPending}
               onBack={() => router.back()}
-              onMore={() => {
-                Alert.alert(t("moreOptions"), t("offersSoon"))
+              onRemoveDoctor={() => {
+                if (removeMyDoctor.isPending) {
+                  return
+                }
+                removeMyDoctor.mutate(office.id, {
+                  onError: () => {
+                    setSnackbarMessage(t("errorTitle"))
+                  },
+                })
               }}
               onAddDoctor={() => {
-                Alert.alert(t("addAsMyDoctor"), t("addDoctorSoon"))
+                if (addMyDoctor.isPending) {
+                  return
+                }
+                addMyDoctor.mutate(office.id, {
+                  onError: () => {
+                    setSnackbarMessage(t("errorTitle"))
+                  },
+                })
               }}
-              onCall={() => {
-                openDoctorsOfficePhone(office.phone)
+              onQuickActionPress={(action) => {
+                router.push(action.href as Href)
               }}
             />
 
-            <View 
+            <View
               style={{
                 padding: theme.spacing.lg,
                 gap: theme.spacing.lg,
               }}
             >
               <OpeningHoursSection openingHours={office.openingHours} />
-
-              <Card>
-                <ListNavigationItem
-                  title={t("ourServices")}
-                  onPress={() => {
+              <DoctorOfficeContactSections
+                office={office}
+                onServicesPress={() => {
                   Alert.alert(t("ourServices"), t("servicesSoon"))
                 }}
-                />
-              </Card>
-
-              <Section title={t("address")}>
-                <Card>
-                  <ListNavigationItem
-                    title={`${office.addressLine1}\n${office.addressLine2}`}
-                    onPress={() => {
-                      openDoctorsOfficeNavigation(
-                        office.addressLine1,
-                        office.addressLine2,
-                      )
-                    }}
-                  />
-                </Card>
-              </Section>
-              
-              <Section title={t("website")}>
-                <Card>
-                  <ListNavigationItem
-                    title={office.websiteLabel}
-                    onPress={() => {
-                      openDoctorsOfficeWebsite(office.websiteUrl)
-                    }}
-                  />
-                </Card>
-              </Section>
-
-              <Section title={t("furtherOffers")}>
-                <Card>
-                  <ListNavigationItem
-                    title={office.additionalOfferLabel}
-                    onPress={() => {
-                      Alert.alert(t("furtherOffers"), t("offersSoon"))
-                    }}
-                  />
-                </Card>
-              </Section>
+                onOffersPress={() => {
+                  Alert.alert(t("furtherOffers"), t("offersSoon"))
+                }}
+              />
             </View>
           </ScrollView>
         ) : null}
       </QueryState>
+      <Snackbar message={snackbarMessage} onDismiss={dismissSnackbar} />
     </View>
   )
 }

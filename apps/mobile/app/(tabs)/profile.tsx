@@ -1,7 +1,7 @@
 import {
-    LocaleSetting,
-    ProfileHeader,
-    ThemeModeSetting
+  LocaleSetting,
+  ProfileHeader,
+  ThemeModeSetting
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
@@ -33,7 +33,11 @@ export default function ProfileScreen() {
   return (
     <View
       style={[
-        { paddingTop: insets.top, backgroundColor: colors.background },
+        { 
+          paddingTop: insets.top,
+          backgroundColor: colors.background,
+          flex: 1,
+        },
       ]}
     >
       <QueryState

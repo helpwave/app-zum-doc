@@ -13,7 +13,7 @@ function createAzdThemeTokens(themeMode: "light" | "dark"): AzdThemeTokens {
 
   const themeTokens = createThemeTokens({
     themeMode,
-    colors: {
+    color: {
       primary: {
         color: primary,
         onColor: white.value,

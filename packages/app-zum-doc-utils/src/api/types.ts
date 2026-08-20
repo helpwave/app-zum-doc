@@ -152,7 +152,9 @@ export type DoctorsOffice = {
   initials?: string
   isOpen: boolean
   openStatusLabel: string
+  isMyDoctor: boolean
   openingHours: DoctorsOfficeOpeningPeriod[]
+  services: string[]
   addressLine1: string
   addressLine2: string
   websiteLabel: string

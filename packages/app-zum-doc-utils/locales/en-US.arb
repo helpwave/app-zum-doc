@@ -79,5 +79,8 @@
   "loadingDoctorSearch": "Loading search…",
   "loadingCities": "Loading cities…",
   "loadingSpecializations": "Loading specialties…",
-  "clearSelection": "Clear selection"
+  "clearSelection": "Clear selection",
+  "servicesAndOffers": "Services and Offers",
+  "removeDoctor": "Remove doctor",
+  "removeDoctorConfirm": "Do you really want to remove this doctor from My doctors?"
 }

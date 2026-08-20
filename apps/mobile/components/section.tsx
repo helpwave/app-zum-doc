@@ -11,7 +11,7 @@ export const Section = ({title, children, ...restProps}: SectionProps) => {
     return (
         <View {...restProps} style={[{ gap: theme.spacing.md }, restProps.style]}>
             <ThemedText 
-                style={{...theme.typography.body.md, fontWeight: theme.typography.fontWeights.bold}} 
+                style={{...theme.typography.body.md, fontWeight: theme.fontWeights.bold}} 
                 appearance="description"
             >
                 {title}

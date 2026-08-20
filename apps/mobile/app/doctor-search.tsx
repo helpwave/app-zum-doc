@@ -93,7 +93,7 @@ export default function DoctorSearchScreen() {
           paddingHorizontal: theme.spacing.lg,
           paddingTop: insets.top + theme.spacing.lg - theme.spacing.xs,
           paddingBottom: theme.spacing.lg - theme.spacing.xs,
-          borderBottomWidth: theme.border.thin,
+          borderBottomWidth: theme.borderWidth.thin,
           borderBottomColor: headerColors.border,
           backgroundColor: headerColors.background,
         }}
@@ -115,7 +115,7 @@ export default function DoctorSearchScreen() {
         </Text>
         <View
           style={{
-            width: theme.elements.control.xs.size,
+            width: theme.semantics.control.xs.size,
           }}
         />
       </View>
@@ -148,7 +148,7 @@ export default function DoctorSearchScreen() {
           <ThemedText
             style={{
               ...theme.typography.heading.sm,
-              fontWeight: theme.typography.fontWeights.bold,
+              fontWeight: theme.fontWeights.bold,
             }}
           >
             {t("filter")}

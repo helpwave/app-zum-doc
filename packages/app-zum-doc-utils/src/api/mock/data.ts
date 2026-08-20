@@ -11,9 +11,10 @@ export type LocalizedLabel = {
   "en-US": string
 }
 
-export type DoctorsOfficeSeed = DoctorsOffice & {
+export type DoctorsOfficeSeed = Omit<DoctorsOffice, "isMyDoctor" | "services"> & {
   cityId: string
   specializationId: string
+  services?: string[]
 }
 
 export const citiesSeed: {
@@ -240,6 +241,7 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
     websiteLabel: "www.dr-moser.de",
     websiteUrl: "https://www.dr-moser.de",
     additionalOfferLabel: "Online-Termin für Impfungen",
+    services: ["Impfungen", "Vorsorgeuntersuchung", "DMP"],
     cityId: "nordberg",
     specializationId: "internal-medicine",
   },
@@ -266,6 +268,7 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
     websiteLabel: "www.dr-haumann.de",
     websiteUrl: "https://www.dr-haumann.de",
     additionalOfferLabel: "Videosprechstunde",
+    services: ["Hausbesuche", "Videosprechstunde"],
     cityId: "aachen",
     specializationId: "general-medicine",
   },

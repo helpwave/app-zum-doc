@@ -13,4 +13,6 @@ export {
   resetMockStore,
   resolveCardAction,
   sendMessage,
+  addMyDoctor,
+  removeMyDoctor,
 } from "./mock/client"

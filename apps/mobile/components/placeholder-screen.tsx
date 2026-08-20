@@ -40,7 +40,7 @@ export function PlaceholderScreen({
           paddingHorizontal: theme.spacing.lg,
           paddingTop: insets.top + theme.spacing.lg - theme.spacing.xs,
           paddingBottom: theme.spacing.lg - theme.spacing.xs,
-          borderBottomWidth: theme.border.thin,
+          borderBottomWidth: theme.borderWidth.thin,
           borderBottomColor: headerColors.border,
           backgroundColor: headerColors.background,
         }}
@@ -51,7 +51,7 @@ export function PlaceholderScreen({
           onPress={onBack}
           hitSlop={theme.spacing.md}
           style={{
-            width: theme.elements.control.xs.size,
+            width: theme.semantics.control.xs.size,
             alignItems: "flex-start",
           }}
         >
@@ -70,7 +70,7 @@ export function PlaceholderScreen({
         </Text>
         <View
           style={{
-            width: theme.elements.control.xs.size,
+            width: theme.semantics.control.xs.size,
           }}
         />
       </View>

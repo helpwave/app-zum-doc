@@ -1,7 +1,6 @@
 import { DoctorCard } from "@/components/doctor-card"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toShadowStyle } from "@/theme/azd-theme"
 import type {
   HomeDoctorCard,
   HomeQuickAction,
@@ -9,8 +8,8 @@ import type {
   HomeSummary,
 } from "@app-zum-doc/utils/api"
 import { OKLCHUtils } from "@helpwave/hightide-design/utils"
-import { Button, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
-import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
+import { Button, Chip, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   Calendar,
@@ -77,8 +76,8 @@ export function StartHero({
       <Text
         style={{
           ...theme.typography.heading.lg,
-          fontFamily: "SpaceGrotesk",
-          fontWeight: theme.typography.fontWeights.semibold,
+          fontFamily: theme.fontFamilies.accent,
+          fontWeight: theme.fontWeights.semibold,
           textAlign: "center",
           color: colors.heroTitle,
         }}
@@ -96,14 +95,15 @@ export function StartHero({
           borderRadius: 999,
         }}
         style={{
-          height: theme.elements.control.md.size - theme.spacing.xs,
           borderRadius: 9999,
           flexDirection: "row",
           alignItems: "center",
           gap: theme.spacing.md,
-          paddingLeft: theme.spacing.lg,
-          paddingRight: theme.spacing.lg,
-          ...toShadowStyle(theme.shadow.dialog),
+          ...StyleAdapterUtils.padding({
+            type: "logicalAxis",
+            inline: theme.spacing.lg,
+          }),
+          boxShadow: StyleAdapterUtils.shadow(theme.shadow.dialog),
         }}
       >
         <Search 
@@ -150,7 +150,7 @@ const quickActionIcons = {
   referral: FileText,
 } as const
 
-function StartQuickActionCard({
+export function StartQuickActionCard({
   action,
   onPress,
 }: StartQuickActionCardProps) {
@@ -178,14 +178,14 @@ function StartQuickActionCard({
         paddingBottom: theme.spacing.md + theme.spacing.sm,
         paddingLeft: theme.spacing.md + theme.spacing.sm,
         gap: theme.spacing.lg,
-        ...toShadowStyle(theme.shadow.popover),
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.popover),
       }}
     >
       <ThemedIcon size={theme.icongraphy.sizes.md} icon={Icon}/>
       <ThemedText
         style={{
           ...theme.typography.body.sm,
-          fontWeight: theme.typography.fontWeights.semibold,
+          fontWeight: theme.fontWeights.semibold,
         }}
       >
         {action.label}
@@ -215,7 +215,7 @@ export function StartSectionHeader({ title, onShowAll }: SectionHeaderProps) {
       <Text
         style={{
           ...theme.typography.heading.sm,
-          fontWeight: theme.typography.fontWeights.bold,
+          fontWeight: theme.fontWeights.bold,
           color: colors.sectionTitle,
         }}
       >
@@ -351,7 +351,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         gap: theme.spacing.md + theme.spacing.sm,
         alignItems: "flex-start",
         backgroundColor: colors.cardBackground,
-        ...toShadowStyle(theme.shadow.container),
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
       }}
     >
       <View
@@ -364,7 +364,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           <Text
             style={{
               ...theme.typography.body.md,
-              fontWeight: theme.typography.fontWeights.medium,
+              fontWeight: theme.fontWeights.medium,
               color: colors.requestDoctor,
             }}
           >
@@ -409,7 +409,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
             style={{
               flexShrink: 1,
               ...theme.typography.body.sm,
-              fontWeight: theme.typography.fontWeights.medium,
+              fontWeight: theme.fontWeights.medium,
               color: isWarning
                 ? colors.statusWarningText
                 : colors.statusSuccessText,
@@ -421,37 +421,26 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           </Text>
         </View>
       </View>
-      <View
+      <Chip
         style={{
-          maxWidth: theme.elements.container.md.size * 3,
-          flexDirection: "row",
-          alignItems: "center",
-          alignContent: "center",
-          alignSelf: "flex-start",
-          gap: theme.spacing.md,
-          paddingVertical: theme.spacing.md,
-          paddingHorizontal: theme.spacing.md + theme.spacing.sm,
-          borderRadius: theme.borderRadius.lg,
-          overflow: "hidden",
+          maxWidth: theme.semantics.container.md.size * 3,
           flexShrink: 0,
-          backgroundColor: theme.colors[request.kind].color,
         }}
+        color={theme.colors[request.kind]}
       >
-        <ContentThemeOverrideProvider foreground={theme.colors[request.kind].onColor}>
           <ThemedIcon size={theme.icongraphy.sizes.xs} icon={KindIcon} />
           <ThemedText
             style={{
               flexShrink: 1,
               ...theme.typography.body.sm,
-              fontWeight: theme.typography.fontWeights.medium,
+              fontWeight: theme.fontWeights.medium,
             }}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {request.kindLabel}
           </ThemedText>
-        </ContentThemeOverrideProvider>
-      </View>
+      </Chip>
     </ThemedPressable>
   )
 }

@@ -33,7 +33,7 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         paddingBottom: insets.bottom + theme.spacing.sm,
         paddingLeft: insets.left + theme.spacing.md,
         paddingRight: insets.right + theme.spacing.md,
-        borderTopWidth: theme.border.thin,
+        borderTopWidth: theme.borderWidth.thin,
         backgroundColor: colors.background,
         borderTopColor: colors.border,
       }}
@@ -100,8 +100,8 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
                 ...theme.typography.label.sm,
                 color: selected ? theme.colors.primary.color : colors.inactive,
                 fontWeight: selected
-                  ? theme.typography.fontWeights.bold
-                  : theme.typography.fontWeights.medium,
+                  ? theme.fontWeights.bold
+                  : theme.fontWeights.medium,
               }}
             >
               {label}
