@@ -1,15 +1,16 @@
 import { AppBar } from "@/components/app-bar"
-import { StartQuickActionCard } from "@/components/home-sections"
+import { RequestTile, StartQuickActionCard } from "@/components/home-sections"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { WeekdayUtils, type DoctorsOffice, type HomeQuickAction } from "@app-zum-doc/utils/api"
-import { Card, Divider, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
+import { WeekdayUtils, type DoctorsOffice, type HomeQuickAction, type HomeRequest } from "@app-zum-doc/utils/api"
+import { Button, Card, Divider, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
 import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   BriefcaseMedical,
+  ChevronRight,
   Ellipsis,
   Globe,
   MapPin,
@@ -75,6 +76,11 @@ export function DoctorDetailHero({
       label: t("actionAppointment"),
       href: "/requests/appointment",
     },
+    {
+      id: "referral",
+      label: t("actionReferral"),
+      href: "/requests/referral",
+    },
   ]
 
   const closeMenu = () => {
@@ -106,7 +112,8 @@ export function DoctorDetailHero({
   }
 
   return (
-    <LinearGradient
+    <>
+      <LinearGradient
       colors={[colors.heroStart, colors.heroEnd]}
       start={{ x: 0.05, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -118,22 +125,6 @@ export function DoctorDetailHero({
         overflow: "hidden",
       }}
     >
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          left: -120,
-          top: 60,
-          width: 340,
-          height: 340,
-          borderRadius: 9999,
-          borderWidth: theme.spacing.xl - theme.spacing.xs,
-          borderColor: theme.semantics.withAppearance({
-            color: "#F5F5F5",
-            appearance: "faded",
-          }),
-        }}
-      />
       <ContentThemeOverrideProvider foreground={colors.heroIcon}>
         <AppBar
           trailing={
@@ -212,10 +203,13 @@ export function DoctorDetailHero({
           </Text>
         </Pressable>
       )}
+      </LinearGradient>
       <Modal
         visible={menuOpen}
         transparent
         animationType="fade"
+        statusBarTranslucent
+        navigationBarTranslucent
         onRequestClose={closeMenu}
       >
         <Pressable
@@ -226,7 +220,7 @@ export function DoctorDetailHero({
             onPress={() => undefined}
             style={{
               position: "absolute",
-              top: menuAnchor.y + menuAnchor.height + theme.spacing.xs,
+              top: menuAnchor.y + menuAnchor.height + theme.spacing.sm,
               right: window.width - (menuAnchor.x + menuAnchor.width),
               minWidth: 220,
               boxShadow: StyleAdapterUtils.shadow(theme.shadow.popover),
@@ -243,7 +237,7 @@ export function DoctorDetailHero({
           </Pressable>
         </Pressable>
       </Modal>
-    </LinearGradient>
+    </>
   )
 }
 
@@ -342,6 +336,47 @@ export function DoctorSummaryCard({
         </View>
       </View>
     </View>
+  )
+}
+
+type DoctorRequestsSectionProps = {
+  requests: HomeRequest[]
+  onShowAll: () => void
+  onRequestPress: (requestId: string) => void
+}
+
+export function DoctorRequestsSection({
+  requests,
+  onShowAll,
+  onRequestPress,
+}: DoctorRequestsSectionProps) {
+  const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+
+  return (
+    <Section
+      title={t("myRequests")}
+      trailing={
+        <Button
+          accessibilityRole="button"
+          onPress={onShowAll}
+          size="xs"
+          color={{ color: theme.colors.surface.onColor, onColor: theme.colors.surface.color }}
+          trailingIcon={ChevronRight}
+          variant="foreground"
+        >
+          {t("showAll")}
+        </Button>
+      }
+    >
+      {requests.map((request) => (
+        <RequestTile
+          key={request.id}
+          request={request}
+          onPress={() => onRequestPress(request.id)}
+        />
+      ))}
+    </Section>
   )
 }
 

@@ -31,6 +31,7 @@
     }
   },
   "myDoctors": "My doctors",
+  "myRequests": "My requests",
   "recentRequests": "Current requests",
   "showAll": "Show all",
   "actionPrescription": "Prescription",

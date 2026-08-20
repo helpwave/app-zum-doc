@@ -8,18 +8,16 @@ import type {
   HomeSummary,
 } from "@app-zum-doc/utils/api"
 import { OKLCHUtils } from "@helpwave/hightide-design/utils"
-import { Button, Chip, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
+import { Chip, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   Calendar,
-  ChevronRight,
   FileText,
   Pill,
   Search,
 } from "lucide-react-native"
 import {
-  ScrollView,
   Text,
   useWindowDimensions,
   View,
@@ -57,47 +55,17 @@ export function StartHero({
         overflow: "hidden",
       }}
     >
-      <View
-        pointerEvents="none"
+      <ThemedText
         style={{
-          position: "absolute",
-          left: -120,
-          top: 40,
-          width: 340,
-          height: 340,
-          borderRadius: 9999,
-          borderWidth: theme.spacing.xl - theme.spacing.xs,
-          borderColor: theme.semantics.withAppearance({
-            color: "#F5F5F5",
-            appearance: "faded",
-          }),
-        }}
-      />
-      <Chip 
-        color={theme.colors.primary}
-        style={{
-          alignSelf: "center",
-          ...StyleAdapterUtils.padding({
-            type: "logicalAxis",
-            inline: theme.padding.xl,
-          }),
-          ...StyleAdapterUtils.borderRadius({
-            type: "all",
-            value: 999
-          }),
-          boxShadow: StyleAdapterUtils.shadow(theme.shadow.popover)
+          ...theme.typography.heading.lg,
+          fontFamily: theme.fontFamilies.accent,
+          fontWeight: theme.fontWeights.semibold,
+          textAlign: "center",
+          color: theme.colors.primary.onColor,
         }}
       >
-        <ThemedText
-          style={{
-            ...theme.typography.heading.lg,
-            fontFamily: theme.fontFamilies.accent,
-            fontWeight: theme.fontWeights.semibold,
-          }}
-        >
-          {t("appName")}
-        </ThemedText>
-      </Chip>
+        {t("appName")}
+      </ThemedText>
       
 
       <ThemedPressable
@@ -209,87 +177,6 @@ export function StartQuickActionCard({
   )
 }
 
-type SectionHeaderProps = {
-  title: string
-  onShowAll: () => void
-}
-
-export function StartSectionHeader({ title, onShowAll }: SectionHeaderProps) {
-  const t = useAppTranslation()
-  const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
-
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <Text
-        style={{
-          ...theme.typography.heading.sm,
-          fontWeight: theme.fontWeights.bold,
-          color: colors.sectionTitle,
-        }}
-      >
-        {title}
-      </Text>
-      <Button
-        accessibilityRole="button"
-        onPress={onShowAll}
-        size="xs"
-        color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color}}
-        trailingIcon={ChevronRight}
-        variant="foreground"
-      >
-          {t("showAll")}
-      </Button>
-    </View>
-  )
-}
-
-type MyDoctorsSectionProps = {
-  doctors: HomeDoctorCard[]
-  onShowAll: () => void
-  onDoctorPress: (doctorId: string) => void
-}
-
-export function MyDoctorsSection({
-  doctors,
-  onShowAll,
-  onDoctorPress,
-}: MyDoctorsSectionProps) {
-  const t = useAppTranslation()
-  const { theme } = useAzdTheme()
-
-  return (
-    <View style={{ gap: theme.spacing.md + theme.spacing.sm }}>
-      <View style={{ paddingHorizontal: theme.spacing.lg }}>
-        <StartSectionHeader title={t("myDoctors")} onShowAll={onShowAll} />
-      </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: theme.spacing.lg,
-          paddingVertical: theme.spacing.md,
-          gap: theme.spacing.md + theme.spacing.sm,
-        }}
-      >
-        {doctors.map((doctor) => (
-          <StartDoctorCard
-            key={doctor.id}
-            doctor={doctor}
-            onPress={() => onDoctorPress(doctor.id)}
-          />
-        ))}
-      </ScrollView>
-    </View>
-  )
-}
-
 type StartDoctorCardProps = {
   doctor: HomeDoctorCard
   onPress: () => void
@@ -301,41 +188,6 @@ export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
   const width = Math.min(windowWidth * 0.8, theme.semantics.container.md.size * 6)
 
   return <DoctorCard doctor={doctor} onPress={onPress} style={{ width}} />
-}
-
-type RecentRequestsSectionProps = {
-  requests: HomeRequest[]
-  onShowAll: () => void
-  onRequestPress: (requestId: string) => void
-}
-
-export function RecentRequestsSection({
-  requests,
-  onShowAll,
-  onRequestPress,
-}: RecentRequestsSectionProps) {
-  const t = useAppTranslation()
-  const { theme } = useAzdTheme()
-
-  return (
-    <View
-      style={{
-        gap: theme.spacing.md + theme.spacing.sm,
-        paddingHorizontal: theme.spacing.lg,
-      }}
-    >
-      <StartSectionHeader title={t("recentRequests")} onShowAll={onShowAll} />
-      <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
-        {requests.map((request) => (
-          <RequestTile
-            key={request.id}
-            request={request}
-            onPress={() => onRequestPress(request.id)}
-          />
-        ))}
-      </View>
-    </View>
-  )
 }
 
 type RequestTileProps = {

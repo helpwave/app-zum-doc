@@ -31,6 +31,7 @@
     }
   },
   "myDoctors": "Meine Ärzte",
+  "myRequests": "Meine Anfragen",
   "recentRequests": "Aktuelle Anfragen",
   "showAll": "Alle anzeigen",
   "actionPrescription": "Rezept",

@@ -439,7 +439,8 @@ export function buildHomeSummary(): HomeSummary {
     recentRequests: [
       {
         id: "req-aciclovir",
-        doctorName: "Dr. Moser",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
         title: "Aciclovir 800 Heumann",
         kind: "prescription",
         kindLabel: "Rezept",
@@ -448,12 +449,23 @@ export function buildHomeSummary(): HomeSummary {
       },
       {
         id: "req-radiologie",
-        doctorName: "Dr. Moser",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
         title: "Radiologie Dr. Kern",
         kind: "referral",
         kindLabel: "Überweisung",
         status: "ready_for_pickup",
         statusLabel: "Abholbereit",
+      },
+      {
+        id: "req-checkup",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Vorsorgeuntersuchung",
+        kind: "appointment",
+        kindLabel: "Termin",
+        status: "confirmed",
+        statusLabel: "Bestätigt",
       },
     ],
   }

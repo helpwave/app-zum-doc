@@ -1,14 +1,15 @@
 import {
   DoctorDetailHero,
   DoctorOfficeContactSections,
+  DoctorRequestsSection,
   OpeningHoursSection,
 } from "@/components/doctor-detail-sections"
 import { QueryState } from "@/components/query-state"
 import { Snackbar } from "@/components/snackbar"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { useAddMyDoctor, useDoctorsOffice, useRemoveMyDoctor } from "@app-zum-doc/utils/hooks"
 import { toAppLocale } from "@app-zum-doc/utils/api"
+import { useAddMyDoctor, useDoctorsOffice, useHomeSummary, useRemoveMyDoctor } from "@app-zum-doc/utils/hooks"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { useCallback, useState } from "react"
@@ -26,9 +27,13 @@ export default function DoctorDetailScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const officeQuery = useDoctorsOffice(doctorsOfficeId, locale)
+  const homeQuery = useHomeSummary(locale)
   const addMyDoctor = useAddMyDoctor()
   const removeMyDoctor = useRemoveMyDoctor()
   const office = officeQuery.data
+  const doctorRequests = (homeQuery.data?.recentRequests ?? []).filter(
+    (request) => request.doctorsOfficeId === doctorsOfficeId,
+  )
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
   const dismissSnackbar = useCallback(() => {
     setSnackbarMessage(null)
@@ -93,6 +98,20 @@ export default function DoctorDetailScreen() {
                 gap: theme.spacing.lg,
               }}
             >
+              {office.isMyDoctor && doctorRequests.length > 0 ? (
+                <DoctorRequestsSection
+                  requests={doctorRequests.slice(0, 3)}
+                  onShowAll={() => {
+                    router.push("/requests" as Href)
+                  }}
+                  onRequestPress={(requestId) => {
+                    router.push({
+                      pathname: "/requests/[id]",
+                      params: { id: requestId },
+                    })
+                  }}
+                />
+              ) : null}
               <OpeningHoursSection openingHours={office.openingHours} />
               <DoctorOfficeContactSections
                 office={office}

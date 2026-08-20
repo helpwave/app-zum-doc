@@ -126,6 +126,7 @@ export type RequestStatus =
 
 export type HomeRequest = {
   id: string
+  doctorsOfficeId: string
   doctorName: string
   title: string
   kind: RequestKind
