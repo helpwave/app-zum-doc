@@ -94,6 +94,20 @@ export default function DoctorDetailScreen() {
                   } as Href)
                   return
                 }
+                if (action.id === "prescription") {
+                  router.push({
+                    pathname: "/requests/prescription/create",
+                    params: { doctorId: office.id },
+                  } as Href)
+                  return
+                }
+                if (action.id === "referral") {
+                  router.push({
+                    pathname: "/requests/referral/create",
+                    params: { doctorId: office.id },
+                  } as Href)
+                  return
+                }
                 router.push(action.href as Href)
               }}
             />

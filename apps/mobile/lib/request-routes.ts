@@ -8,6 +8,18 @@ export function hrefForRequest(request: Pick<HomeRequest, "id" | "kind">): Href 
       params: { id: request.id },
     }
   }
+  if (request.kind === "prescription") {
+    return {
+      pathname: "/requests/prescription/[id]",
+      params: { id: request.id },
+    }
+  }
+  if (request.kind === "referral") {
+    return {
+      pathname: "/requests/referral/[id]",
+      params: { id: request.id },
+    }
+  }
 
   return {
     pathname: "/requests/[id]",

@@ -13,7 +13,7 @@ export function LabeledField({ label, trailing, children }: LabeledFieldProps) {
   const { theme } = useAzdTheme()
 
   return (
-    <View style={{ gap: theme.spacing.sm }}>
+    <View style={{ flex: 1, gap: theme.spacing.sm }}>
       <ThemedText
         appearance="description"
         style={theme.typography.body.sm}

@@ -25,6 +25,7 @@ type AddMedicationSheetProps = {
   isSubmitting?: boolean
   onSubmit: (selection: {
     catalogId: string
+    name: string
     size: MedicationSize
   }) => void
   onClose: () => void
@@ -51,10 +52,6 @@ export function AddMedicationSheet({
   const [selectedSize, setSelectedSize] = useState<MedicationSize | undefined>()
   const searchQuery = useMedicationSearch(debouncedSearch, visible)
   const items = searchQuery.data ?? []
-  const tonalPrimary = theme.semantics.coloringColorVariant({
-    colorPair: theme.colors.primary,
-    variant: "tonal",
-  })
   const showInitialLoading = searchQuery.isPending && items.length === 0
   const isLastStep = currentStep === stepCount - 1
   const canGoForward =
@@ -91,6 +88,7 @@ export function AddMedicationSheet({
     if (selectedItem != null && selectedSize != null) {
       onSubmit({
         catalogId: selectedItem.id,
+        name: selectedItem.name,
         size: selectedSize,
       })
     }
@@ -121,7 +119,7 @@ export function AddMedicationSheet({
           flex: 1,
           justifyContent: "flex-end",
           backgroundColor: theme.semantics.withAppearance({
-            color: "#000000",
+            colorPair: theme.colors.surface,
             appearance: "faded",
           }),
         }}
@@ -213,12 +211,6 @@ export function AddMedicationSheet({
                         <ListActionItem
                           title={item.name}
                           color={isSelected ? theme.colors.primary : undefined}
-                          itemStyle={(previous) => ({
-                            ...previous,
-                            backgroundColor: isSelected
-                              ? tonalPrimary.color
-                              : previous.backgroundColor,
-                          })}
                           leading={<ThemedIcon icon={Pill} />}
                           trailing={
                             isSelected ? <ThemedIcon icon={Check} /> : undefined
@@ -255,12 +247,6 @@ export function AddMedicationSheet({
                       key={size}
                       title={t("medicationSize", { size })}
                       color={isSelected ? theme.colors.primary : undefined}
-                      itemStyle={(previous) => ({
-                        ...previous,
-                        backgroundColor: isSelected
-                          ? tonalPrimary.color
-                          : previous.backgroundColor,
-                      })}
                       trailing={
                         isSelected ? <ThemedIcon icon={Check} /> : undefined
                       }

@@ -73,7 +73,14 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="requests/prescription"
+          name="requests/prescription/create"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/prescription/[id]"
           options={{
             animation: "slide_from_right",
             headerShown: false,
@@ -94,7 +101,14 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="requests/referral"
+          name="requests/referral/create"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/referral/[id]"
           options={{
             animation: "slide_from_right",
             headerShown: false,

@@ -69,7 +69,7 @@ export function DoctorDetailHero({
     {
       id: "prescription",
       label: t("actionPrescription"),
-      href: "/requests/prescription",
+      href: "/requests/prescription/create",
     },
     {
       id: "appointment",
@@ -79,7 +79,7 @@ export function DoctorDetailHero({
     {
       id: "referral",
       label: t("actionReferral"),
-      href: "/requests/referral",
+      href: "/requests/referral/create",
     },
   ]
 

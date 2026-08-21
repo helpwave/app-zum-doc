@@ -172,5 +172,50 @@
         "type": "string"
       }
     }
+  },
+  "doctor": "Doctor",
+  "orderPrescription": "Order prescription",
+  "medicationsSection": "Medications",
+  "medicationLabel": "Medication",
+  "medicationPackageSize": "Pack size",
+  "addAnotherMedication": "Add another medication",
+  "shipPrescriptionByMail": "Send prescription by mail",
+  "shipByMail": "Sent by mail",
+  "prescriptionNotePlaceholder": "Describe your request so we can prepare your prescription as well as possible.",
+  "orderAgain": "Order again",
+  "cancelPrescriptionConfirm": "Do you really want to cancel this prescription request?",
+  "loadingPrescription": "Loading prescription…",
+  "yes": "Yes",
+  "no": "No",
+  "profileSelf": "{name} (me)",
+  "@profileSelf": {
+    "placeholders": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "prescriptionStatus": "{status, select, in_progress{In progress} ready_for_pickup{Ready for pickup} cancelled{Cancelled} other{}}",
+  "@prescriptionStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "orderReferral": "Order referral",
+  "referralToSpecialist": "Referral to specialist",
+  "selectSpecialist": "Select specialist",
+  "referralReason": "Reason for referral",
+  "referralReasonPlaceholder": "Describe your request so we can plan your appointment as well as possible.",
+  "cancelReferralConfirm": "Do you really want to cancel this referral request?",
+  "loadingReferral": "Loading referral…",
+  "referralStatus": "{status, select, in_progress{In progress} ready_for_pickup{Ready for pickup} cancelled{Cancelled} other{}}",
+  "@referralStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
   }
 }

@@ -13,11 +13,11 @@ export function toAzdComponents({
   const textPrimary = color.surface.onColor
   const textSecondary = hightideSemanticTokenResolvers.asDescription({
     themeTokens,
-    color: textPrimary,
+    colorPair: color.surface,
   })
   const textTertiary = hightideSemanticTokenResolvers.asFaded({
     themeTokens,
-    color: textPrimary,
+    colorPair: color.surface,
   })
   const placeholder = textTertiary
   const onWhite = azdPrimitiveTokens.color.palettes.white.value
@@ -68,7 +68,7 @@ export function toAzdComponents({
     screenHeader: {
       background: color.surface.color,
       border: color.border,
-      title: color.primary.color,
+      title: color.surface.onColor,
     },
     searchField: {
       background: color.background.color,

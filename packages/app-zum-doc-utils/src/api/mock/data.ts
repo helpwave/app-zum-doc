@@ -9,6 +9,8 @@ import type {
   MedicationCatalogItem,
   PatientProfile,
   PatientProfileSummary,
+  Prescription,
+  Referral,
 } from "../types"
 
 export type LocalizedLabel = {
@@ -63,6 +65,7 @@ export const specializationsSeed: {
   { id: "cardiology", labels: { "de-DE": "Kardiologie", "en-US": "Cardiology" } },
   { id: "dentistry", labels: { "de-DE": "Zahnmedizin", "en-US": "Dentistry" } },
   { id: "radiology", labels: { "de-DE": "Radiologie", "en-US": "Radiology" } },
+  { id: "orthopedics", labels: { "de-DE": "Orthopädie", "en-US": "Orthopedics" } },
 ]
 
 export const conversationsSeed: Conversation[] = [
@@ -424,6 +427,35 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
     cityId: "aachen",
     specializationId: "general-medicine",
   },
+  "office-willendorfer": {
+    id: "office-willendorfer",
+    name: "Dr. Anton Willendorfer",
+    phone: "040 44556677",
+    imageUri: null,
+    initials: "AW",
+    status: "open",
+    openingHours: openingHours({
+      monday: ["8:00 - 16:00"],
+      tuesday: ["8:00 - 16:00"],
+      wednesday: ["8:00 - 12:00"],
+      thursday: ["8:00 - 16:00"],
+      friday: ["8:00 - 12:00"],
+    }),
+    addressLine1: "Alsterweg 8",
+    addressLine2: "22637 Nordberg",
+    websiteLabel: "www.ortho-willendorfer.de",
+    websiteUrl: "https://www.ortho-willendorfer.de",
+    specialty: {
+      "de-DE": "Orthopädie",
+      "en-US": "Orthopedics",
+    },
+    additionalOffer: {
+      "de-DE": "Rückensprechstunde",
+      "en-US": "Back consultation",
+    },
+    cityId: "nordberg",
+    specializationId: "orthopedics",
+  },
 }
 
 export function buildHomeSummary(): HomeSummary {
@@ -435,7 +467,7 @@ export function buildHomeSummary(): HomeSummary {
       {
         id: "prescription",
         label: "Rezept",
-        href: "/requests/prescription",
+        href: "/requests/prescription/create",
       },
       {
         id: "appointment",
@@ -445,7 +477,7 @@ export function buildHomeSummary(): HomeSummary {
       {
         id: "referral",
         label: "Überweisung",
-        href: "/requests/referral",
+        href: "/requests/referral/create",
       },
     ],
     myDoctors: [
@@ -502,11 +534,11 @@ export function buildHomeSummary(): HomeSummary {
         id: "req-radiologie",
         doctorsOfficeId: moser.id,
         doctorName: moser.name,
-        title: "Radiologie Dr. Kern",
+        title: "Dr. Anton Willendorfer",
         kind: "referral",
         kindLabel: "Überweisung",
-        status: "ready_for_pickup",
-        statusLabel: "Abholbereit",
+        status: "in_progress",
+        statusLabel: "In Bearbeitung",
       },
       {
         id: "req-checkup",
@@ -572,5 +604,71 @@ export const appointmentsSeed: Appointment[] = [
     isEmergency: false,
     note: "",
     status: "confirmed",
+  },
+]
+
+export const prescriptionsSeed: Prescription[] = [
+  {
+    id: "req-limptar",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    shipByMail: true,
+    note: "Wenn möglich bitte zwei kleine Packungen Paracetamol. Vielen Dank und lieben Gruß.",
+    medications: [
+      { id: "rx-med-paracetamol", name: "Paracetamol", size: "n2" },
+      { id: "rx-med-zip", name: "1-KAM Zip-Kompresse", size: "n1" },
+    ],
+    status: "in_progress",
+  },
+  {
+    id: "req-aciclovir",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    shipByMail: false,
+    note: "",
+    medications: [
+      { id: "rx-med-aciclovir", name: "Amoxicillin", size: "n1" },
+    ],
+    status: "in_progress",
+  },
+  {
+    id: "req-floxal",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    shipByMail: true,
+    note: "",
+    medications: [
+      { id: "rx-med-floxal", name: "Ibuprofen", size: "n3" },
+    ],
+    status: "ready_for_pickup",
+  },
+]
+
+export const referralsSeed: Referral[] = [
+  {
+    id: "req-radiologie",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    specialistDoctorsOfficeId: "office-willendorfer",
+    specialistName: "Dr. Anton Willendorfer",
+    reason:
+      "Anhaltendes Unwohlsein und starke Schmerzen im unteren Rücken.",
+    status: "in_progress",
   },
 ]

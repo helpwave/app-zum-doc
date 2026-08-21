@@ -91,13 +91,13 @@ export function StartHero({
       >
         <Search 
           size={theme.icongraphy.sizes.xs} 
-          color={theme.semantics.withAppearance({color: theme.colors.surface.onColor, appearance: "subtle"})}
+          color={theme.semantics.withAppearance({colorPair: theme.colors.surface, appearance: "subtle"})}
         />
         <Text
           style={{
             flex: 1,
             ...theme.typography.body.md,
-            color: theme.semantics.asDescription({color: theme.colors.surface.onColor}),
+            color: theme.semantics.asDescription({colorPair: theme.colors.surface}),
           }}
         >
           {t("searchDoctor")}

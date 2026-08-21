@@ -2,11 +2,11 @@ import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-    IconButton,
-    ListActionItem,
-    SearchBar,
-    ThemedIcon,
-    ThemedText,
+  IconButton,
+  ListActionItem,
+  SearchBar,
+  ThemedIcon,
+  ThemedText,
 } from "@helpwave/hightide-native/components"
 import type { LucideIcon } from "lucide-react-native"
 import { Check, TrashIcon } from "lucide-react-native"
@@ -50,10 +50,6 @@ export function FilterSearchSheet({
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const insets = useSafeAreaInsets()
-  const tonalPrimary = theme.semantics.coloringColorVariant({
-    colorPair: theme.colors.primary,
-    variant: "tonal",
-  })
   const showInitialLoading = isPending && items.length === 0
 
   return (
@@ -70,7 +66,7 @@ export function FilterSearchSheet({
           flex: 1,
           justifyContent: "flex-end",
           backgroundColor: theme.semantics.withAppearance({
-            color: "#000000",
+            colorPair: theme.colors.surface,
             appearance: "faded",
           }),
         }}
@@ -182,12 +178,6 @@ export function FilterSearchSheet({
                   <ListActionItem
                     title={item.label}
                     color={isSelected ? theme.colors.primary : undefined}
-                    itemStyle={(previous) => ({
-                      ...previous,
-                      backgroundColor: isSelected
-                        ? tonalPrimary.color
-                        : previous.backgroundColor,
-                    })}
                     leading={<ThemedIcon icon={leadingIcon} />}
                     trailing={isSelected ? <ThemedIcon icon={Check} /> : undefined}
                     onPress={() => {

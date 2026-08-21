@@ -43,7 +43,7 @@ export function TimeSlotSheet({
           flex: 1,
           justifyContent: "flex-end",
           backgroundColor: theme.semantics.withAppearance({
-            color: "#000000",
+            colorPair: theme.colors.surface,
             appearance: "faded",
           }),
         }}

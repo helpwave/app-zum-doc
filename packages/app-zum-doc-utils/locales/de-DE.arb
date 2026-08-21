@@ -172,5 +172,50 @@
         "type": "string"
       }
     }
+  },
+  "doctor": "Arzt",
+  "orderPrescription": "Rezept bestellen",
+  "medicationsSection": "Medikamente",
+  "medicationLabel": "Medikament",
+  "medicationPackageSize": "Packungsgröße",
+  "addAnotherMedication": "Weiteres Medikament",
+  "shipPrescriptionByMail": "Rezept per Post zuschicken",
+  "shipByMail": "Versand per Post",
+  "prescriptionNotePlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihr Rezept optimal vorbereiten können.",
+  "orderAgain": "Nochmal bestellen",
+  "cancelPrescriptionConfirm": "Möchten Sie diese Rezeptanfrage wirklich stornieren?",
+  "loadingPrescription": "Rezept wird geladen…",
+  "yes": "Ja",
+  "no": "Nein",
+  "profileSelf": "{name} (ich)",
+  "@profileSelf": {
+    "placeholders": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "prescriptionStatus": "{status, select, in_progress{In Bearbeitung} ready_for_pickup{Abholbereit} cancelled{Storniert} other{}}",
+  "@prescriptionStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "orderReferral": "Überweisung bestellen",
+  "referralToSpecialist": "Überweisung zu Facharzt",
+  "selectSpecialist": "Facharzt wählen",
+  "referralReason": "Grund für die Überweisung",
+  "referralReasonPlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.",
+  "cancelReferralConfirm": "Möchten Sie diese Überweisungsanfrage wirklich stornieren?",
+  "loadingReferral": "Überweisung wird geladen…",
+  "referralStatus": "{status, select, in_progress{In Bearbeitung} ready_for_pickup{Abholbereit} cancelled{Storniert} other{}}",
+  "@referralStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
   }
 }

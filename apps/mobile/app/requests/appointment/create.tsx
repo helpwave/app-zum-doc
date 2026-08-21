@@ -1,7 +1,3 @@
-import {
-  AzdAvatarImage,
-  contactAvatarImage,
-} from "@/components/azd-avatar-image"
 import { DatePickerSheet } from "@/components/date-picker-sheet"
 import { LabeledField } from "@/components/labeled-field"
 import { NavigationHeader } from "@/components/navigation-header"
@@ -23,22 +19,21 @@ import {
   usePatientProfiles,
 } from "@app-zum-doc/utils/hooks"
 import {
-  Avatar,
   Button,
   Card,
-  IconButton,
   Input,
   ListActionItem,
   ListItem,
   ListNavigationItem,
+  Select,
   Switch,
-  ThemedIcon,
+  ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { Calendar, ChevronRight, Ellipsis } from "lucide-react-native"
+import { Calendar, ChevronRight } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
-import { Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native"
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 
 export default function RequestAppointmentScreen() {
   const t = useAppTranslation()
@@ -50,12 +45,11 @@ export default function RequestAppointmentScreen() {
   const { doctorId: doctorIdParam } = useLocalSearchParams<{
     doctorId?: string | string[]
   }>()
-  const initialDoctorId = typeof doctorIdParam === "string" ? doctorIdParam : ""
+  const initialDoctorId = typeof doctorIdParam === "string" ? doctorIdParam : undefined
 
   const homeQuery = useHomeSummary(locale)
   const profilesQuery = usePatientProfiles()
   const createAppointment = useCreateAppointment()
-  const myDoctors = homeQuery.data?.myDoctors ?? []
   const profiles = useMemo(
     () => profilesQuery.data ?? [],
     [profilesQuery.data],
@@ -68,23 +62,26 @@ export default function RequestAppointmentScreen() {
   const [isEmergency, setIsEmergency] = useState(false)
   const [note, setNote] = useState("")
   const [openSheet, setOpenSheet] = useState<
-    "doctor" | "profile" | "date" | "time" | null
+    "profile" | "date" | "time" | null
   >(null)
 
-  const officeQuery = useDoctorsOffice(doctorId, locale)
-  const selectedDoctor =
-    myDoctors.find((doctor) => doctor.id === doctorId)
-    ?? (officeQuery.data && officeQuery.data.id === doctorId
-      ? {
-          id: officeQuery.data.id,
-          name: officeQuery.data.name,
-          specialty: officeQuery.data.specialty,
-          phone: officeQuery.data.phone,
-          imageUri: officeQuery.data.imageUri,
-          initials: officeQuery.data.initials,
-          status: officeQuery.data.status,
-        }
-      : undefined)
+  const officeQuery = useDoctorsOffice(doctorId ?? "", locale)
+  const doctorOptions = useMemo(() => {
+    const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({
+      id: doctor.id,
+      label: doctor.name,
+    }))
+    if (
+      officeQuery.data
+      && !options.some((option) => option.id === officeQuery.data.id)
+    ) {
+      return [
+        { id: officeQuery.data.id, label: officeQuery.data.name },
+        ...options,
+      ]
+    }
+    return options
+  }, [homeQuery.data?.myDoctors, officeQuery.data])
   const selectedProfile = profiles.find((profile) => profile.id === profileId)
   const profileReadonly = profiles.length <= 1
   const openingHours = officeQuery.data?.openingHours
@@ -124,7 +121,7 @@ export default function RequestAppointmentScreen() {
   }, [time, timeSlots])
 
   const canSubmit =
-    doctorId.length > 0
+    !!doctorId
     && profileId.length > 0
     && date != null
     && time != null
@@ -141,17 +138,6 @@ export default function RequestAppointmentScreen() {
       <NavigationHeader
         title={t("requestAppointment")}
         onBack={() => router.back()}
-        trailing={
-          <IconButton
-            icon={Ellipsis}
-            size="sm"
-            variant="foreground"
-            accessibilityLabel={t("moreOptions")}
-            onPress={() => {
-              Alert.alert(t("requestAppointment"), t("placeholderComingSoon"))
-            }}
-          />
-        }
       />
       <QueryState
         isPending={homeQuery.isPending || profilesQuery.isPending}
@@ -174,25 +160,13 @@ export default function RequestAppointmentScreen() {
           showsVerticalScrollIndicator={false}
         >
           <LabeledField label={t("practice")}>
-            <Card>
-              <ListNavigationItem
-                title={selectedDoctor?.name ?? t("selectPractice")}
-                leading={
-                  <Avatar
-                    name={selectedDoctor?.name ?? t("practice")}
-                    size="sm"
-                    image={contactAvatarImage(
-                      selectedDoctor?.imageUri,
-                      selectedDoctor?.name ?? t("practice"),
-                    )}
-                    ImageComponent={AzdAvatarImage}
-                  />
-                }
-                onPress={() => {
-                  setOpenSheet("doctor")
-                }}
-              />
-            </Card>
+            <Select
+              options={doctorOptions}
+              value={doctorId}
+              onValueChange={setDoctorId}
+              placeholder={t("selectPractice")}
+              style={{ width: "100%" }}
+            />
           </LabeledField>
 
           <LabeledField label={t("selectProfile")}>
@@ -239,8 +213,11 @@ export default function RequestAppointmentScreen() {
           </LabeledField>
 
           <Card>
-            <ListItem
+            <ListActionItem
               title={t("isEmergency")}
+              onPress={() => {
+                setIsEmergency(!isEmergency)
+              }}
               trailing={
                 <Switch
                   value={isEmergency}
@@ -268,7 +245,7 @@ export default function RequestAppointmentScreen() {
           <Button
             disabled={!canSubmit}
             onPress={() => {
-              if (!date || !time) {
+              if (!date || !time || !doctorId) {
                 return
               }
               void createAppointment.mutateAsync({
@@ -288,28 +265,13 @@ export default function RequestAppointmentScreen() {
                 } as Href)
               })
             }}
+            style={{alignSelf: "flex-end"}}
           >
             {t("sendAppointmentRequest")}
           </Button>
         </ScrollView>
       </QueryState>
 
-      <SelectionSheet
-        visible={openSheet === "doctor"}
-        title={t("practice")}
-        options={myDoctors.map((doctor) => ({
-          id: doctor.id,
-          label: doctor.name,
-        }))}
-        value={doctorId}
-        onChange={setDoctorId}
-        onCancel={() => {
-          setOpenSheet(null)
-        }}
-        onDone={() => {
-          setOpenSheet(null)
-        }}
-      />
       <SelectionSheet
         visible={openSheet === "profile"}
         title={t("selectProfile")}

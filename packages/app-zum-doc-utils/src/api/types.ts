@@ -302,3 +302,99 @@ export type CreateAppointmentInput = {
   isEmergency: boolean
   note: string
 }
+
+const prescriptionStatusValues = [
+  "in_progress",
+  "ready_for_pickup",
+  "cancelled",
+] as const
+export type PrescriptionStatus = (typeof prescriptionStatusValues)[number]
+const allowedPrescriptionStatusValues: ReadonlySet<string> = new Set(
+  prescriptionStatusValues,
+)
+function isPrescriptionStatusValue(value: unknown): value is PrescriptionStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedPrescriptionStatusValues.has(value)
+}
+export const PrescriptionStatusUtils = {
+  array: prescriptionStatusValues,
+  set: allowedPrescriptionStatusValues,
+  typeCheck: isPrescriptionStatusValue,
+}
+
+export type PrescriptionMedication = {
+  id: string
+  name: string
+  size: MedicationSize
+}
+
+export type Prescription = {
+  id: string
+  doctorsOfficeId: string
+  doctorName: string
+  doctorSpecialty: string
+  doctorImageUri: string | null
+  doctorInitials?: string
+  profileId: string
+  patientName: string
+  shipByMail: boolean
+  note: string
+  medications: PrescriptionMedication[]
+  status: PrescriptionStatus
+}
+
+export type CreatePrescriptionInput = {
+  doctorsOfficeId: string
+  profileId: string
+  shipByMail: boolean
+  note: string
+  medications: Array<{
+    name: string
+    size: MedicationSize
+  }>
+}
+
+const referralStatusValues = [
+  "in_progress",
+  "ready_for_pickup",
+  "cancelled",
+] as const
+export type ReferralStatus = (typeof referralStatusValues)[number]
+const allowedReferralStatusValues: ReadonlySet<string> = new Set(
+  referralStatusValues,
+)
+function isReferralStatusValue(value: unknown): value is ReferralStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedReferralStatusValues.has(value)
+}
+export const ReferralStatusUtils = {
+  array: referralStatusValues,
+  set: allowedReferralStatusValues,
+  typeCheck: isReferralStatusValue,
+}
+
+export type Referral = {
+  id: string
+  doctorsOfficeId: string
+  doctorName: string
+  doctorSpecialty: string
+  doctorImageUri: string | null
+  doctorInitials?: string
+  profileId: string
+  patientName: string
+  specialistDoctorsOfficeId: string
+  specialistName: string
+  reason: string
+  status: ReferralStatus
+}
+
+export type CreateReferralInput = {
+  doctorsOfficeId: string
+  profileId: string
+  specialistDoctorsOfficeId: string
+  reason: string
+}

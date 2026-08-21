@@ -63,6 +63,18 @@ export const appointmentKeys = {
     ["appointments", "detail", id, locale] as const,
 }
 
+export const prescriptionKeys = {
+  all: ["prescriptions"] as const,
+  detail: (id: string, locale: string) =>
+    ["prescriptions", "detail", id, locale] as const,
+}
+
+export const referralKeys = {
+  all: ["referrals"] as const,
+  detail: (id: string, locale: string) =>
+    ["referrals", "detail", id, locale] as const,
+}
+
 export const profileListKeys = {
   all: ["profiles"] as const,
   list: ["profiles", "list"] as const,
