@@ -89,6 +89,23 @@ export type HomeQuickAction = {
   href: string
 }
 
+const doctorsOfficeStatusValues = ["open", "closed"] as const
+export type DoctorsOfficeStatus = (typeof doctorsOfficeStatusValues)[number]
+const allowedDoctorsOfficeStatusValues: ReadonlySet<string> = new Set(
+  doctorsOfficeStatusValues,
+)
+function isDoctorsOfficeStatusValue(value: unknown): value is DoctorsOfficeStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedDoctorsOfficeStatusValues.has(value)
+}
+export const DoctorsOfficeStatusUtils = {
+  array: doctorsOfficeStatusValues,
+  set: allowedDoctorsOfficeStatusValues,
+  typeCheck: isDoctorsOfficeStatusValue,
+}
+
 export type HomeDoctorCard = {
   id: string
   name: string
@@ -96,8 +113,7 @@ export type HomeDoctorCard = {
   phone: string
   imageUri: string | null
   initials?: string
-  isOpen: boolean
-  openStatusLabel: string
+  status: DoctorsOfficeStatus
 }
 
 export type RequestKind = "prescription" | "appointment" | "referral"
@@ -107,9 +123,11 @@ export type RequestStatus =
   | "confirmed"
   | "ready_for_pickup"
   | "completed"
+  | "cancelled"
 
 export type HomeRequest = {
   id: string
+  doctorsOfficeId: string
   doctorName: string
   title: string
   kind: RequestKind
@@ -128,9 +146,12 @@ export type PatientProfile = {
   id: string
   fullName: string
   firstName: string
+  lastName: string
   dateOfBirth: string
   insuranceNumber: string
   insuranceType: string
+  insuranceProviderId: string
+  federalStateId: string
   email: string
   phone: string
   practiceName: string
@@ -138,10 +159,58 @@ export type PatientProfile = {
   notificationsEnabled: boolean
 }
 
-export type DoctorsOfficeOpeningPeriod = {
-  dayLabel: string
-  times: string[]
+const medicationSizeValues = ["n1", "n2", "n3"] as const
+export type MedicationSize = (typeof medicationSizeValues)[number]
+const allowedMedicationSizeValues: ReadonlySet<string> = new Set(
+  medicationSizeValues,
+)
+function isMedicationSizeValue(value: unknown): value is MedicationSize {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedMedicationSizeValues.has(value)
 }
+export const MedicationSizeUtils = {
+  array: medicationSizeValues,
+  set: allowedMedicationSizeValues,
+  typeCheck: isMedicationSizeValue,
+}
+
+export type MedicationCatalogItem = {
+  id: string
+  name: string
+}
+
+export type Medication = {
+  id: string
+  name: string
+  size: MedicationSize
+}
+
+const weekdayValues = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const
+export type Weekday = (typeof weekdayValues)[number]
+const allowedWeekdayValues: ReadonlySet<string> = new Set(weekdayValues)
+function isWeekdayValue(value: unknown): value is Weekday {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedWeekdayValues.has(value)
+}
+export const WeekdayUtils = {
+  array: weekdayValues,
+  set: allowedWeekdayValues,
+  typeCheck: isWeekdayValue,
+}
+
+export type DoctorsOfficeOpeningHours = Record<Weekday, string[]>
 
 export type DoctorsOffice = {
   id: string
@@ -150,9 +219,10 @@ export type DoctorsOffice = {
   phone: string
   imageUri: string | null
   initials?: string
-  isOpen: boolean
-  openStatusLabel: string
-  openingHours: DoctorsOfficeOpeningPeriod[]
+  status: DoctorsOfficeStatus
+  isMyDoctor: boolean
+  openingHours: DoctorsOfficeOpeningHours
+  services: string[]
   addressLine1: string
   addressLine2: string
   websiteLabel: string
@@ -161,6 +231,10 @@ export type DoctorsOffice = {
 }
 
 export type AppLocale = "de-DE" | "en-US"
+
+export function toAppLocale(locale: string): AppLocale {
+  return locale === "en-US" ? "en-US" : "de-DE"
+}
 
 export type SearchCity = {
   id: string
@@ -177,4 +251,150 @@ export type DoctorSearchFilters = {
   cityId?: string
   specializationId?: string
   locale: AppLocale
+}
+
+const appointmentStatusValues = ["requested", "confirmed", "cancelled"] as const
+export type AppointmentStatus = (typeof appointmentStatusValues)[number]
+const allowedAppointmentStatusValues: ReadonlySet<string> = new Set(
+  appointmentStatusValues,
+)
+function isAppointmentStatusValue(value: unknown): value is AppointmentStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedAppointmentStatusValues.has(value)
+}
+export const AppointmentStatusUtils = {
+  array: appointmentStatusValues,
+  set: allowedAppointmentStatusValues,
+  typeCheck: isAppointmentStatusValue,
+}
+
+export type PatientProfileSummary = {
+  id: string
+  fullName: string
+  dateOfBirth: string
+}
+
+export type Appointment = {
+  id: string
+  doctorsOfficeId: string
+  doctorName: string
+  doctorSpecialty: string
+  doctorImageUri: string | null
+  doctorInitials?: string
+  profileId: string
+  patientName: string
+  patientDateOfBirth: string
+  date: string
+  time: string
+  isEmergency: boolean
+  note: string
+  sickNote?: string
+  status: AppointmentStatus
+}
+
+export type CreateAppointmentInput = {
+  doctorsOfficeId: string
+  profileId: string
+  date: string
+  time: string
+  isEmergency: boolean
+  note: string
+}
+
+const prescriptionStatusValues = [
+  "in_progress",
+  "ready_for_pickup",
+  "cancelled",
+] as const
+export type PrescriptionStatus = (typeof prescriptionStatusValues)[number]
+const allowedPrescriptionStatusValues: ReadonlySet<string> = new Set(
+  prescriptionStatusValues,
+)
+function isPrescriptionStatusValue(value: unknown): value is PrescriptionStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedPrescriptionStatusValues.has(value)
+}
+export const PrescriptionStatusUtils = {
+  array: prescriptionStatusValues,
+  set: allowedPrescriptionStatusValues,
+  typeCheck: isPrescriptionStatusValue,
+}
+
+export type PrescriptionMedication = {
+  id: string
+  name: string
+  size: MedicationSize
+}
+
+export type Prescription = {
+  id: string
+  doctorsOfficeId: string
+  doctorName: string
+  doctorSpecialty: string
+  doctorImageUri: string | null
+  doctorInitials?: string
+  profileId: string
+  patientName: string
+  shipByMail: boolean
+  note: string
+  medications: PrescriptionMedication[]
+  status: PrescriptionStatus
+}
+
+export type CreatePrescriptionInput = {
+  doctorsOfficeId: string
+  profileId: string
+  shipByMail: boolean
+  note: string
+  medications: Array<{
+    name: string
+    size: MedicationSize
+  }>
+}
+
+const referralStatusValues = [
+  "in_progress",
+  "ready_for_pickup",
+  "cancelled",
+] as const
+export type ReferralStatus = (typeof referralStatusValues)[number]
+const allowedReferralStatusValues: ReadonlySet<string> = new Set(
+  referralStatusValues,
+)
+function isReferralStatusValue(value: unknown): value is ReferralStatus {
+  if (typeof value !== "string") {
+    return false
+  }
+  return allowedReferralStatusValues.has(value)
+}
+export const ReferralStatusUtils = {
+  array: referralStatusValues,
+  set: allowedReferralStatusValues,
+  typeCheck: isReferralStatusValue,
+}
+
+export type Referral = {
+  id: string
+  doctorsOfficeId: string
+  doctorName: string
+  doctorSpecialty: string
+  doctorImageUri: string | null
+  doctorInitials?: string
+  profileId: string
+  patientName: string
+  specialistDoctorsOfficeId: string
+  specialistName: string
+  reason: string
+  status: ReferralStatus
+}
+
+export type CreateReferralInput = {
+  doctorsOfficeId: string
+  profileId: string
+  specialistDoctorsOfficeId: string
+  reason: string
 }

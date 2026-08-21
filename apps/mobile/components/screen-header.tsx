@@ -21,7 +21,7 @@ export function ScreenHeader({ title, trailing, children }: ScreenHeaderProps) {
         paddingTop: insets.top + theme.spacing.lg + theme.spacing.sm,
         paddingBottom: theme.spacing.lg - theme.spacing.xs,
         gap: theme.spacing.lg - theme.spacing.xs,
-        borderBottomWidth: theme.border.thin,
+        borderBottomWidth: theme.borderWidth.thin,
         backgroundColor: colors.background,
         borderBottomColor: colors.border,
       }}
@@ -36,7 +36,7 @@ export function ScreenHeader({ title, trailing, children }: ScreenHeaderProps) {
         <Text
           style={{
             ...theme.typography.heading.lg,
-            fontWeight: theme.typography.fontWeights.bold,
+            fontWeight: theme.fontWeights.bold,
             color: colors.title,
           }}
         >

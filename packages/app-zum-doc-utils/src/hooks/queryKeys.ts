@@ -7,7 +7,7 @@ export const conversationKeys = {
 
 export const homeKeys = {
   all: ["home"] as const,
-  summary: ["home", "summary"] as const,
+  summary: (locale: string) => ["home", "summary", locale] as const,
 }
 
 export const profileKeys = {
@@ -17,7 +17,8 @@ export const profileKeys = {
 
 export const doctorsOfficeKeys = {
   all: ["doctorsOffice"] as const,
-  detail: (id: string) => ["doctorsOffice", "detail", id] as const,
+  detail: (id: string, locale: string) =>
+    ["doctorsOffice", "detail", id, locale] as const,
 }
 
 export const doctorSearchKeys = {
@@ -48,4 +49,33 @@ export const specializationKeys = {
   all: ["specializations"] as const,
   list: (search: string, locale: string) =>
     ["specializations", "list", locale, search] as const,
+}
+
+export const medicationKeys = {
+  all: ["medications"] as const,
+  patient: ["medications", "patient"] as const,
+  search: (search: string) => ["medications", "search", search] as const,
+}
+
+export const appointmentKeys = {
+  all: ["appointments"] as const,
+  detail: (id: string, locale: string) =>
+    ["appointments", "detail", id, locale] as const,
+}
+
+export const prescriptionKeys = {
+  all: ["prescriptions"] as const,
+  detail: (id: string, locale: string) =>
+    ["prescriptions", "detail", id, locale] as const,
+}
+
+export const referralKeys = {
+  all: ["referrals"] as const,
+  detail: (id: string, locale: string) =>
+    ["referrals", "detail", id, locale] as const,
+}
+
+export const profileListKeys = {
+  all: ["profiles"] as const,
+  list: ["profiles", "list"] as const,
 }

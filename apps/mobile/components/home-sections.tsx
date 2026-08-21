@@ -1,26 +1,25 @@
 import { DoctorCard } from "@/components/doctor-card"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toShadowStyle } from "@/theme/azd-theme"
 import type {
   HomeDoctorCard,
   HomeQuickAction,
   HomeRequest,
   HomeSummary,
 } from "@app-zum-doc/utils/api"
-import { Button, ThemedPressable } from "@helpwave/hightide-native/components"
+import { OKLCHUtils } from "@helpwave/hightide-design/utils"
+import { Chip, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { LinearGradient } from "expo-linear-gradient"
 import {
   Calendar,
-  ChevronRight,
   FileText,
   Pill,
   Search,
 } from "lucide-react-native"
 import {
-  Pressable,
-  ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -38,12 +37,14 @@ export function StartHero({
 }: StartHeroProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
   const insets = useSafeAreaInsets()
 
   return (
     <LinearGradient
-      colors={[colors.heroStart, colors.heroEnd]}
+      colors={[
+        OKLCHUtils.changeLightness(theme.colors.primary.color, 0.4), 
+        OKLCHUtils.changeLightness(theme.colors.primary.color, 0.6)
+      ]}
       start={{ x: 0.05, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
@@ -54,58 +55,54 @@ export function StartHero({
         overflow: "hidden",
       }}
     >
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          left: -120,
-          top: 40,
-          width: 340,
-          height: 340,
-          borderRadius: 9999,
-          borderWidth: theme.spacing.xl - theme.spacing.xs,
-          borderColor: theme.semantics.withAppearance({
-            color: "#F5F5F5",
-            appearance: "faded",
-          }),
-        }}
-      />
-      <Text
+      <ThemedText
         style={{
           ...theme.typography.heading.lg,
+          fontFamily: theme.fontFamilies.accent,
+          fontWeight: theme.fontWeights.semibold,
           textAlign: "center",
-          color: colors.heroTitle,
+          color: theme.colors.primary.onColor,
         }}
       >
         {t("appName")}
-      </Text>
+      </ThemedText>
+      
 
-      <Pressable
+      <ThemedPressable
         accessibilityRole="button"
         accessibilityLabel={t("searchDoctor")}
         onPress={onSearchPress}
+        color={theme.colors.surface}
+        coloringStyle="filled"
+        stateLayerStyle={{
+          borderRadius: 999,
+        }}
         style={{
-          height: theme.elements.control.md.size - theme.spacing.xs,
           borderRadius: 9999,
           flexDirection: "row",
           alignItems: "center",
           gap: theme.spacing.md,
-          paddingHorizontal: theme.spacing.lg,
-          backgroundColor: colors.searchBackground,
-          ...toShadowStyle(theme.shadow.dialog),
+          ...StyleAdapterUtils.padding({
+            type: "logicalAxis",
+            inline: theme.spacing.lg,
+          }),
+          boxShadow: StyleAdapterUtils.shadow(theme.shadow.dialog),
         }}
       >
-        <Search size={theme.icongraphy.sizes.xs} color={colors.searchIcon} />
+        <Search 
+          size={theme.icongraphy.sizes.xs} 
+          color={theme.semantics.withAppearance({colorPair: theme.colors.surface, appearance: "subtle"})}
+        />
         <Text
           style={{
             flex: 1,
             ...theme.typography.body.md,
-            color: colors.searchPlaceholder,
+            color: theme.semantics.asDescription({colorPair: theme.colors.surface}),
           }}
         >
           {t("searchDoctor")}
         </Text>
-      </Pressable>
+      </ThemedPressable>
 
       <View
         style={{
@@ -136,119 +133,47 @@ const quickActionIcons = {
   referral: FileText,
 } as const
 
-function StartQuickActionCard({
+export function StartQuickActionCard({
   action,
   onPress,
 }: StartQuickActionCardProps) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
+  const color = theme.colors[action.id]
   const Icon = quickActionIcons[action.id]
 
   return (
-    <Pressable
+    <ThemedPressable
       accessibilityRole="button"
       onPress={onPress}
+      // TODO fix typing
+      color={{color: theme.colors.surface.color, onColor: color.color}}
+      coloringStyle="filled"
       style={{
         flex: 1,
-        borderRadius: theme.borderRadius.lg,
-        padding: theme.spacing.md + theme.spacing.sm,
-        gap: theme.spacing.md + theme.spacing.sm,
-        backgroundColor: colors.actionBackground,
-        ...toShadowStyle(theme.shadow.popover),
+        flexDirection: "column",
+        alignItems: "flex-start",
+        borderTopLeftRadius: theme.borderRadius.lg,
+        borderTopRightRadius: theme.borderRadius.lg,
+        borderBottomLeftRadius: theme.borderRadius.lg,
+        borderBottomRightRadius: theme.borderRadius.lg,
+        paddingTop: theme.spacing.md + theme.spacing.sm,
+        paddingRight: theme.spacing.md + theme.spacing.sm,
+        paddingBottom: theme.spacing.md + theme.spacing.sm,
+        paddingLeft: theme.spacing.md + theme.spacing.sm,
+        gap: theme.spacing.lg,
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.popover),
       }}
     >
-      <Icon size={theme.icongraphy.sizes.md} color={colors.actionIcon} />
-      <Text
+      <ThemedIcon size={theme.icongraphy.sizes.md} icon={Icon}/>
+      <ThemedText
         style={{
           ...theme.typography.body.sm,
-          fontWeight: theme.typography.fontWeights.semibold,
-          color: colors.actionText,
+          fontWeight: theme.fontWeights.semibold,
         }}
       >
         {action.label}
-      </Text>
-    </Pressable>
-  )
-}
-
-type SectionHeaderProps = {
-  title: string
-  onShowAll: () => void
-}
-
-export function StartSectionHeader({ title, onShowAll }: SectionHeaderProps) {
-  const t = useAppTranslation()
-  const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
-
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <Text
-        style={{
-          ...theme.typography.heading.sm,
-          fontWeight: theme.typography.fontWeights.bold,
-          color: colors.sectionTitle,
-        }}
-      >
-        {title}
-      </Text>
-      <Button
-        accessibilityRole="button"
-        onPress={onShowAll}
-        size="xs"
-        color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color}}
-        trailingIcon={ChevronRight}
-        variant="foreground"
-      >
-          {t("showAll")}
-      </Button>
-    </View>
-  )
-}
-
-type MyDoctorsSectionProps = {
-  doctors: HomeDoctorCard[]
-  onShowAll: () => void
-  onDoctorPress: (doctorId: string) => void
-}
-
-export function MyDoctorsSection({
-  doctors,
-  onShowAll,
-  onDoctorPress,
-}: MyDoctorsSectionProps) {
-  const t = useAppTranslation()
-  const { theme } = useAzdTheme()
-
-  return (
-    <View style={{ gap: theme.spacing.md + theme.spacing.sm }}>
-      <View style={{ paddingHorizontal: theme.spacing.lg }}>
-        <StartSectionHeader title={t("myDoctors")} onShowAll={onShowAll} />
-      </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: theme.spacing.lg,
-          paddingVertical: theme.spacing.md,
-          gap: theme.spacing.md + theme.spacing.sm,
-        }}
-      >
-        {doctors.map((doctor) => (
-          <StartDoctorCard
-            key={doctor.id}
-            doctor={doctor}
-            onPress={() => onDoctorPress(doctor.id)}
-          />
-        ))}
-      </ScrollView>
-    </View>
+      </ThemedText>
+    </ThemedPressable>
   )
 }
 
@@ -258,42 +183,11 @@ type StartDoctorCardProps = {
 }
 
 export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
-  return <DoctorCard doctor={doctor} onPress={onPress} width={306} />
-}
+  const {theme} = useAzdTheme()
+  const { width: windowWidth } = useWindowDimensions();
+  const width = Math.min(windowWidth * 0.8, theme.semantics.container.md.size * 6)
 
-type RecentRequestsSectionProps = {
-  requests: HomeRequest[]
-  onShowAll: () => void
-  onRequestPress: (requestId: string) => void
-}
-
-export function RecentRequestsSection({
-  requests,
-  onShowAll,
-  onRequestPress,
-}: RecentRequestsSectionProps) {
-  const t = useAppTranslation()
-  const { theme } = useAzdTheme()
-
-  return (
-    <View
-      style={{
-        gap: theme.spacing.md + theme.spacing.sm,
-        paddingHorizontal: theme.spacing.lg,
-      }}
-    >
-      <StartSectionHeader title={t("recentRequests")} onShowAll={onShowAll} />
-      <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
-        {requests.map((request) => (
-          <RequestTile
-            key={request.id}
-            request={request}
-            onPress={() => onRequestPress(request.id)}
-          />
-        ))}
-      </View>
-    </View>
-  )
+  return <DoctorCard doctor={doctor} onPress={onPress} style={{ width}} />
 }
 
 type RequestTileProps = {
@@ -328,7 +222,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         gap: theme.spacing.md + theme.spacing.sm,
         alignItems: "flex-start",
         backgroundColor: colors.cardBackground,
-        ...toShadowStyle(theme.shadow.container),
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
       }}
     >
       <View
@@ -341,7 +235,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           <Text
             style={{
               ...theme.typography.body.md,
-              fontWeight: theme.typography.fontWeights.medium,
+              fontWeight: theme.fontWeights.medium,
               color: colors.requestDoctor,
             }}
           >
@@ -358,9 +252,9 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         </View>
         <View
           style={{
-            width: 132,
             flexDirection: "row",
             alignItems: "center",
+            alignSelf: "flex-start",
             gap: theme.spacing.sm + theme.spacing.xs,
             paddingVertical: theme.spacing.md - theme.spacing.xs,
             paddingHorizontal: theme.spacing.md + theme.spacing.sm,
@@ -386,7 +280,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
             style={{
               flexShrink: 1,
               ...theme.typography.body.sm,
-              fontWeight: theme.typography.fontWeights.medium,
+              fontWeight: theme.fontWeights.medium,
               color: isWarning
                 ? colors.statusWarningText
                 : colors.statusSuccessText,
@@ -398,34 +292,26 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           </Text>
         </View>
       </View>
-      <View
+      <Chip
         style={{
-          width: 132,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: theme.spacing.md,
-          paddingVertical: theme.spacing.md,
-          paddingHorizontal: theme.spacing.md + theme.spacing.sm,
-          borderRadius: theme.borderRadius.lg,
-          overflow: "hidden",
+          maxWidth: theme.semantics.container.md.size * 3,
           flexShrink: 0,
-          backgroundColor: colors.kindTagBackground,
         }}
+        color={theme.colors[request.kind]}
       >
-        <KindIcon size={15} color={colors.kindTagText} />
-        <Text
-          style={{
-            flexShrink: 1,
-            ...theme.typography.body.sm,
-            fontWeight: theme.typography.fontWeights.medium,
-            color: colors.kindTagText,
-          }}
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {request.kindLabel}
-        </Text>
-      </View>
+          <ThemedIcon size={theme.icongraphy.sizes.xs} icon={KindIcon} />
+          <ThemedText
+            style={{
+              flexShrink: 1,
+              ...theme.typography.body.sm,
+              fontWeight: theme.fontWeights.medium,
+            }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {request.kindLabel}
+          </ThemedText>
+      </Chip>
     </ThemedPressable>
   )
 }

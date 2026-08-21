@@ -5,7 +5,7 @@ import { QueryState } from "@/components/query-state"
 import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { AppLocale } from "@app-zum-doc/utils/api"
+import { toAppLocale } from "@app-zum-doc/utils/api"
 import {
   useCities,
   useDoctorSearch,
@@ -19,10 +19,6 @@ import { BriefcaseMedical, ChevronLeft, MapPin } from "lucide-react-native"
 import { useMemo, useState } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-
-function toAppLocale(locale: string): AppLocale {
-  return locale === "en-US" ? "en-US" : "de-DE"
-}
 
 export default function DoctorSearchScreen() {
   const t = useAppTranslation()
@@ -93,7 +89,7 @@ export default function DoctorSearchScreen() {
           paddingHorizontal: theme.spacing.lg,
           paddingTop: insets.top + theme.spacing.lg - theme.spacing.xs,
           paddingBottom: theme.spacing.lg - theme.spacing.xs,
-          borderBottomWidth: theme.border.thin,
+          borderBottomWidth: theme.borderWidth.thin,
           borderBottomColor: headerColors.border,
           backgroundColor: headerColors.background,
         }}
@@ -115,7 +111,7 @@ export default function DoctorSearchScreen() {
         </Text>
         <View
           style={{
-            width: theme.elements.control.xs.size,
+            width: theme.semantics.control.xs.size,
           }}
         />
       </View>
@@ -124,8 +120,8 @@ export default function DoctorSearchScreen() {
         style={{
           paddingHorizontal: theme.spacing.lg,
           paddingTop: theme.spacing.md,
+          paddingBottom: theme.spacing.lg,
           gap: theme.spacing.lg,
-          flex: 1,
         }}
       >
         <SearchBar
@@ -148,7 +144,7 @@ export default function DoctorSearchScreen() {
           <ThemedText
             style={{
               ...theme.typography.heading.sm,
-              fontWeight: theme.typography.fontWeights.bold,
+              fontWeight: theme.fontWeights.bold,
             }}
           >
             {t("filter")}
@@ -176,7 +172,9 @@ export default function DoctorSearchScreen() {
             />
           </View>
         </View>
+      </View>
 
+      <View style={{flex: 1}}>
         <QueryState
           isPending={doctorsQuery.isPending}
           isError={doctorsQuery.isError}
@@ -204,12 +202,13 @@ export default function DoctorSearchScreen() {
               style={{ flex: 1 }}
               contentContainerStyle={{
                 gap: theme.spacing.md,
-                paddingBottom: theme.spacing.xl,
+                paddingHorizontal: theme.spacing.lg,
+                paddingBottom: theme.spacing.md + insets.bottom,
+                alignItems: "stretch"
               }}
               renderItem={({ item }) => (
                 <DoctorCard
                   doctor={item}
-                  width="100%"
                   onPress={() => {
                     router.push({
                       pathname: "/doctor/[id]",

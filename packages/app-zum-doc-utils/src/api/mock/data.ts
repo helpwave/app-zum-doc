@@ -1,9 +1,16 @@
 import type {
+  Appointment,
   ChatMessage,
   Conversation,
   DoctorsOffice,
+  DoctorsOfficeOpeningHours,
   HomeSummary,
+  Medication,
+  MedicationCatalogItem,
   PatientProfile,
+  PatientProfileSummary,
+  Prescription,
+  Referral,
 } from "../types"
 
 export type LocalizedLabel = {
@@ -11,9 +18,29 @@ export type LocalizedLabel = {
   "en-US": string
 }
 
-export type DoctorsOfficeSeed = DoctorsOffice & {
+export type DoctorsOfficeSeed = Omit<
+  DoctorsOffice,
+  "isMyDoctor" | "specialty" | "services" | "additionalOfferLabel"
+> & {
   cityId: string
   specializationId: string
+  specialty?: LocalizedLabel
+  services?: LocalizedLabel[]
+  additionalOffer?: LocalizedLabel
+}
+
+function openingHours(
+  hours: Partial<DoctorsOfficeOpeningHours>,
+): DoctorsOfficeOpeningHours {
+  return {
+    monday: hours.monday ?? [],
+    tuesday: hours.tuesday ?? [],
+    wednesday: hours.wednesday ?? [],
+    thursday: hours.thursday ?? [],
+    friday: hours.friday ?? [],
+    saturday: hours.saturday ?? [],
+    sunday: hours.sunday ?? [],
+  }
 }
 
 export const citiesSeed: {
@@ -38,15 +65,8 @@ export const specializationsSeed: {
   { id: "cardiology", labels: { "de-DE": "Kardiologie", "en-US": "Cardiology" } },
   { id: "dentistry", labels: { "de-DE": "Zahnmedizin", "en-US": "Dentistry" } },
   { id: "radiology", labels: { "de-DE": "Radiologie", "en-US": "Radiology" } },
+  { id: "orthopedics", labels: { "de-DE": "Orthopädie", "en-US": "Orthopedics" } },
 ]
-
-export const openStatusLabels: {
-  open: LocalizedLabel
-  closed: LocalizedLabel
-} = {
-  open: { "de-DE": "Praxis ist geöffnet", "en-US": "Practice is open" },
-  closed: { "de-DE": "Praxis ist geschlossen", "en-US": "Practice is closed" },
-}
 
 export const conversationsSeed: Conversation[] = [
   {
@@ -130,6 +150,7 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
       status: "pending",
       statusLabel: "AUSSTEHEND",
+      timeLabel: "09:15",
       actions: [
         { id: "accept", label: "Zusagen", variant: "primary" },
         { id: "decline", label: "Ablehnen", variant: "secondary" },
@@ -203,13 +224,40 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
   ],
 }
 
+export const medicationCatalogSeed: MedicationCatalogItem[] = [
+  { id: "catalog-paracetamol", name: "Paracetamol" },
+  { id: "catalog-ibuprofen", name: "Ibuprofen" },
+  { id: "catalog-aspirin", name: "Aspirin" },
+  { id: "catalog-amoxicillin", name: "Amoxicillin" },
+  { id: "catalog-cetirizine", name: "Cetirizine" },
+  { id: "catalog-zip-kompresse", name: "1-KAM Zip-Kompresse" },
+  { id: "catalog-metformin", name: "Metformin" },
+  { id: "catalog-omeprazole", name: "Omeprazole" },
+  { id: "catalog-ramipril", name: "Ramipril" },
+  { id: "catalog-simvastatin", name: "Simvastatin" },
+  { id: "catalog-levothyroxine", name: "Levothyroxine" },
+  { id: "catalog-salbutamol", name: "Salbutamol" },
+]
+
+export const patientMedicationsSeed: Medication[] = [
+  { id: "med-paracetamol", name: "Paracetamol", size: "n1" },
+  { id: "med-zip-kompresse", name: "1-KAM Zip-Kompresse", size: "n2" },
+  { id: "med-ibuprofen", name: "Ibuprofen", size: "n2" },
+  { id: "med-aspirin", name: "Aspirin", size: "n1" },
+  { id: "med-amoxicillin", name: "Amoxicillin", size: "n2" },
+  { id: "med-cetirizine", name: "Cetirizine", size: "n3" },
+]
+
 export const patientProfileSeed: PatientProfile = {
   id: "patient-wellermann",
   fullName: "Jonas Wellermann",
   firstName: "Jonas",
+  lastName: "Wellermann",
   dateOfBirth: "14.03.1989",
   insuranceNumber: "A123456789",
   insuranceType: "GKV",
+  insuranceProviderId: "tk",
+  federalStateId: "nordrhein-westfalen",
   email: "jonas.wellermann@mail.de",
   phone: "+49 170 1234567",
   practiceName: "Hausarztpraxis Altstadt",
@@ -221,157 +269,192 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   "office-moser": {
     id: "office-moser",
     name: "Dr. Moser",
-    specialty: "Allgemeinmedizin - Innere Medizin",
     phone: "040 3187612001",
     imageUri: "doctor-portrait",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["7:00 - 16:00"] },
-      { dayLabel: "Dienstag", times: ["7:00 - 12:00", "14:00 - 16:00"] },
-      { dayLabel: "Mittwoch", times: ["7:00 - 12:00"] },
-      { dayLabel: "Donnerstag", times: ["7:00 - 16:00"] },
-      { dayLabel: "Freitag", times: ["7:00 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["7:00 - 16:00"],
+      tuesday: ["7:00 - 12:00", "14:00 - 16:00"],
+      wednesday: ["7:00 - 12:00"],
+      thursday: ["7:00 - 16:00"],
+      friday: ["7:00 - 12:00"],
+    }),
     addressLine1: "Teichweg 12",
     addressLine2: "22637 Nordberg",
     websiteLabel: "www.dr-moser.de",
     websiteUrl: "https://www.dr-moser.de",
-    additionalOfferLabel: "Online-Termin für Impfungen",
+    specialty: {
+      "de-DE": "Allgemeinmedizin - Innere Medizin",
+      "en-US": "General medicine - Internal medicine",
+    },
+    additionalOffer: {
+      "de-DE": "Online-Termin für Impfungen",
+      "en-US": "Online appointment for vaccinations",
+    },
+    services: [
+      { "de-DE": "Impfungen", "en-US": "Vaccinations" },
+      { "de-DE": "Vorsorgeuntersuchung", "en-US": "Preventive checkup" },
+      { "de-DE": "DMP", "en-US": "DMP" },
+    ],
     cityId: "nordberg",
     specializationId: "internal-medicine",
   },
   "office-haumann": {
     id: "office-haumann",
     name: "Dr. Haumann",
-    specialty: "Allgemeinmedizin",
     phone: "0241 5566 730",
     imageUri: null,
     initials: "HM",
-    isOpen: false,
-    openStatusLabel: "Praxis ist geschlossen",
-    openingHours: [
-      { dayLabel: "Montag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Dienstag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Mittwoch", times: [] },
-      { dayLabel: "Donnerstag", times: ["8:00 - 12:00", "14:00 - 17:00"] },
-      { dayLabel: "Freitag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "closed",
+    openingHours: openingHours({
+      monday: ["8:00 - 12:00"],
+      tuesday: ["8:00 - 12:00"],
+      thursday: ["8:00 - 12:00", "14:00 - 17:00"],
+      friday: ["8:00 - 12:00"],
+    }),
     addressLine1: "Pontstraße 55",
     addressLine2: "52062 Aachen",
     websiteLabel: "www.dr-haumann.de",
     websiteUrl: "https://www.dr-haumann.de",
-    additionalOfferLabel: "Videosprechstunde",
+    additionalOffer: {
+      "de-DE": "Videosprechstunde",
+      "en-US": "Video consultation",
+    },
+    services: [
+      { "de-DE": "Hausbesuche", "en-US": "Home visits" },
+      { "de-DE": "Videosprechstunde", "en-US": "Video consultation" },
+    ],
     cityId: "aachen",
     specializationId: "general-medicine",
   },
   "office-vogt": {
     id: "office-vogt",
     name: "Dr. med. Sophie Vogt",
-    specialty: "Kardiologie",
     phone: "030 88776611",
     imageUri: "doctor-portrait",
     initials: "SV",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["8:00 - 16:00"] },
-      { dayLabel: "Dienstag", times: ["8:00 - 16:00"] },
-      { dayLabel: "Mittwoch", times: ["8:00 - 12:00"] },
-      { dayLabel: "Donnerstag", times: ["8:00 - 16:00"] },
-      { dayLabel: "Freitag", times: ["8:00 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["8:00 - 16:00"],
+      tuesday: ["8:00 - 16:00"],
+      wednesday: ["8:00 - 12:00"],
+      thursday: ["8:00 - 16:00"],
+      friday: ["8:00 - 12:00"],
+    }),
     addressLine1: "Friedrichstraße 88",
     addressLine2: "10117 Berlin",
     websiteLabel: "www.kardiologie-vogt.de",
     websiteUrl: "https://www.kardiologie-vogt.de",
-    additionalOfferLabel: "Belastungs-EKG",
+    additionalOffer: {
+      "de-DE": "Belastungs-EKG",
+      "en-US": "Stress ECG",
+    },
     cityId: "berlin",
     specializationId: "cardiology",
   },
   "office-klein": {
     id: "office-klein",
     name: "Zahnarztpraxis Dr. Klein",
-    specialty: "Zahnmedizin",
     phone: "0521 334455",
     imageUri: "practice-logo",
     initials: "KL",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["9:00 - 17:00"] },
-      { dayLabel: "Dienstag", times: ["9:00 - 17:00"] },
-      { dayLabel: "Mittwoch", times: ["9:00 - 13:00"] },
-      { dayLabel: "Donnerstag", times: ["9:00 - 17:00"] },
-      { dayLabel: "Freitag", times: ["9:00 - 13:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["9:00 - 17:00"],
+      tuesday: ["9:00 - 17:00"],
+      wednesday: ["9:00 - 13:00"],
+      thursday: ["9:00 - 17:00"],
+      friday: ["9:00 - 13:00"],
+    }),
     addressLine1: "Jahnplatz 4",
     addressLine2: "33602 Bielefeld",
     websiteLabel: "www.zahnarzt-klein.de",
     websiteUrl: "https://www.zahnarzt-klein.de",
-    additionalOfferLabel: "Professionelle Zahnreinigung",
+    additionalOffer: {
+      "de-DE": "Professionelle Zahnreinigung",
+      "en-US": "Professional dental cleaning",
+    },
     cityId: "bielefeld",
     specializationId: "dentistry",
   },
   "office-kern": {
     id: "office-kern",
     name: "Radiologie Dr. Kern",
-    specialty: "Radiologie",
     phone: "0234 998877",
     imageUri: "practice-logo",
     initials: "RK",
-    isOpen: false,
-    openStatusLabel: "Praxis ist geschlossen",
-    openingHours: [
-      { dayLabel: "Montag", times: ["7:30 - 15:30"] },
-      { dayLabel: "Dienstag", times: ["7:30 - 15:30"] },
-      { dayLabel: "Mittwoch", times: ["7:30 - 15:30"] },
-      { dayLabel: "Donnerstag", times: ["7:30 - 15:30"] },
-      { dayLabel: "Freitag", times: ["7:30 - 12:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "closed",
+    openingHours: openingHours({
+      monday: ["7:30 - 15:30"],
+      tuesday: ["7:30 - 15:30"],
+      wednesday: ["7:30 - 15:30"],
+      thursday: ["7:30 - 15:30"],
+      friday: ["7:30 - 12:00"],
+    }),
     addressLine1: "Kortumstraße 19",
     addressLine2: "44787 Bochum",
     websiteLabel: "www.radiologie-kern.de",
     websiteUrl: "https://www.radiologie-kern.de",
-    additionalOfferLabel: "MRT ohne Wartezeit",
+    additionalOffer: {
+      "de-DE": "MRT ohne Wartezeit",
+      "en-US": "MRI without waiting",
+    },
     cityId: "bochum",
     specializationId: "radiology",
   },
   "office-altstadt": {
     id: "office-altstadt",
     name: "Hausarztpraxis Altstadt",
-    specialty: "Allgemeinmedizin",
     phone: "0241 112233",
     imageUri: "practice-logo",
     initials: "HA",
-    isOpen: true,
-    openStatusLabel: "Praxis ist geöffnet",
-    openingHours: [
-      { dayLabel: "Montag", times: ["8:00 - 18:00"] },
-      { dayLabel: "Dienstag", times: ["8:00 - 18:00"] },
-      { dayLabel: "Mittwoch", times: ["8:00 - 13:00"] },
-      { dayLabel: "Donnerstag", times: ["8:00 - 18:00"] },
-      { dayLabel: "Freitag", times: ["8:00 - 13:00"] },
-      { dayLabel: "Samstag", times: [] },
-      { dayLabel: "Sonntag", times: [] },
-    ],
+    status: "open",
+    openingHours: openingHours({
+      monday: ["8:00 - 18:00"],
+      tuesday: ["8:00 - 18:00"],
+      wednesday: ["8:00 - 13:00"],
+      thursday: ["8:00 - 18:00"],
+      friday: ["8:00 - 13:00"],
+    }),
     addressLine1: "Markt 12",
     addressLine2: "52062 Aachen",
     websiteLabel: "www.hausarzt-altstadt.de",
     websiteUrl: "https://www.hausarzt-altstadt.de",
-    additionalOfferLabel: "Hausbesuche",
+    additionalOffer: {
+      "de-DE": "Hausbesuche",
+      "en-US": "Home visits",
+    },
     cityId: "aachen",
     specializationId: "general-medicine",
+  },
+  "office-willendorfer": {
+    id: "office-willendorfer",
+    name: "Dr. Anton Willendorfer",
+    phone: "040 44556677",
+    imageUri: null,
+    initials: "AW",
+    status: "open",
+    openingHours: openingHours({
+      monday: ["8:00 - 16:00"],
+      tuesday: ["8:00 - 16:00"],
+      wednesday: ["8:00 - 12:00"],
+      thursday: ["8:00 - 16:00"],
+      friday: ["8:00 - 12:00"],
+    }),
+    addressLine1: "Alsterweg 8",
+    addressLine2: "22637 Nordberg",
+    websiteLabel: "www.ortho-willendorfer.de",
+    websiteUrl: "https://www.ortho-willendorfer.de",
+    specialty: {
+      "de-DE": "Orthopädie",
+      "en-US": "Orthopedics",
+    },
+    additionalOffer: {
+      "de-DE": "Rückensprechstunde",
+      "en-US": "Back consultation",
+    },
+    cityId: "nordberg",
+    specializationId: "orthopedics",
   },
 }
 
@@ -384,44 +467,53 @@ export function buildHomeSummary(): HomeSummary {
       {
         id: "prescription",
         label: "Rezept",
-        href: "/requests/prescription",
+        href: "/requests/prescription/create",
       },
       {
         id: "appointment",
         label: "Termin",
-        href: "/requests/appointment",
+        href: "/requests/appointment/create",
       },
       {
         id: "referral",
         label: "Überweisung",
-        href: "/requests/referral",
+        href: "/requests/referral/create",
       },
     ],
     myDoctors: [
       {
         id: moser.id,
         name: moser.name,
-        specialty: moser.specialty,
+        specialty: moser.specialty?.["de-DE"] ?? "",
         phone: moser.phone,
         imageUri: moser.imageUri,
-        isOpen: moser.isOpen,
-        openStatusLabel: moser.openStatusLabel,
+        status: moser.status,
       },
       {
         id: haumann.id,
         name: haumann.name,
-        specialty: haumann.specialty,
+        specialty: haumann.specialty?.["de-DE"] ?? "",
         phone: haumann.phone,
         imageUri: haumann.imageUri,
         initials: haumann.initials,
-        isOpen: haumann.isOpen,
-        openStatusLabel: haumann.openStatusLabel,
+        status: haumann.status,
       },
     ],
     recentRequests: [
       {
+        id: "req-limptar",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Limptar N Filmtabletten, 80 St",
+        kind: "prescription",
+        kindLabel: "Rezept",
+        status: "in_progress",
+        statusLabel: "In Bearbeitung",
+      },
+      {
         id: "req-aciclovir",
-        doctorName: "Dr. Moser",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
         title: "Aciclovir 800 Heumann",
         kind: "prescription",
         kindLabel: "Rezept",
@@ -429,14 +521,154 @@ export function buildHomeSummary(): HomeSummary {
         statusLabel: "In Bearbeitung",
       },
       {
-        id: "req-radiologie",
-        doctorName: "Dr. Moser",
-        title: "Radiologie Dr. Kern",
-        kind: "referral",
-        kindLabel: "Überweisung",
+        id: "req-floxal",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Floxal EDO 3 mg/ml Augentropfen",
+        kind: "prescription",
+        kindLabel: "Rezept",
         status: "ready_for_pickup",
         statusLabel: "Abholbereit",
+      },
+      {
+        id: "req-radiologie",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Dr. Anton Willendorfer",
+        kind: "referral",
+        kindLabel: "Überweisung",
+        status: "in_progress",
+        statusLabel: "In Bearbeitung",
+      },
+      {
+        id: "req-checkup",
+        doctorsOfficeId: moser.id,
+        doctorName: moser.name,
+        title: "Vorsorgeuntersuchung",
+        kind: "appointment",
+        kindLabel: "Termin",
+        status: "in_progress",
+        statusLabel: "Angefragt",
+      },
+      {
+        id: "req-haumann-vaccine",
+        doctorsOfficeId: haumann.id,
+        doctorName: haumann.name,
+        title: "Grippeimpfung",
+        kind: "appointment",
+        kindLabel: "Termin",
+        status: "confirmed",
+        statusLabel: "Bestätigt",
       },
     ],
   }
 }
+
+export const patientProfilesSeed: PatientProfileSummary[] = [
+  {
+    id: patientProfileSeed.id,
+    fullName: patientProfileSeed.fullName,
+    dateOfBirth: patientProfileSeed.dateOfBirth,
+  },
+]
+
+export const appointmentsSeed: Appointment[] = [
+  {
+    id: "req-checkup",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    patientDateOfBirth: patientProfileSeed.dateOfBirth,
+    date: "2025-06-22",
+    time: "14:00",
+    isEmergency: false,
+    note: "",
+    sickNote: "Arbeitgeber",
+    status: "requested",
+  },
+  {
+    id: "req-haumann-vaccine",
+    doctorsOfficeId: "office-haumann",
+    doctorName: "Dr. Haumann",
+    doctorSpecialty: "Allgemeinmedizin",
+    doctorImageUri: null,
+    doctorInitials: "HM",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    patientDateOfBirth: patientProfileSeed.dateOfBirth,
+    date: "2025-06-21",
+    time: "10:00",
+    isEmergency: false,
+    note: "",
+    status: "confirmed",
+  },
+]
+
+export const prescriptionsSeed: Prescription[] = [
+  {
+    id: "req-limptar",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    shipByMail: true,
+    note: "Wenn möglich bitte zwei kleine Packungen Paracetamol. Vielen Dank und lieben Gruß.",
+    medications: [
+      { id: "rx-med-paracetamol", name: "Paracetamol", size: "n2" },
+      { id: "rx-med-zip", name: "1-KAM Zip-Kompresse", size: "n1" },
+    ],
+    status: "in_progress",
+  },
+  {
+    id: "req-aciclovir",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    shipByMail: false,
+    note: "",
+    medications: [
+      { id: "rx-med-aciclovir", name: "Amoxicillin", size: "n1" },
+    ],
+    status: "in_progress",
+  },
+  {
+    id: "req-floxal",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    shipByMail: true,
+    note: "",
+    medications: [
+      { id: "rx-med-floxal", name: "Ibuprofen", size: "n3" },
+    ],
+    status: "ready_for_pickup",
+  },
+]
+
+export const referralsSeed: Referral[] = [
+  {
+    id: "req-radiologie",
+    doctorsOfficeId: "office-moser",
+    doctorName: "Dr. Moser",
+    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
+    doctorImageUri: "doctor-portrait",
+    profileId: patientProfileSeed.id,
+    patientName: patientProfileSeed.fullName,
+    specialistDoctorsOfficeId: "office-willendorfer",
+    specialistName: "Dr. Anton Willendorfer",
+    reason:
+      "Anhaltendes Unwohlsein und starke Schmerzen im unteren Rücken.",
+    status: "in_progress",
+  },
+]

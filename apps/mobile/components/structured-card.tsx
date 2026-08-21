@@ -30,11 +30,11 @@ export function StructuredCard({
       timestamp={message.timeLabel}
     >
       <View style={{flexDirection: "row", alignItems: "center", gap: theme.spacing.md}}>
-        <View style={{...theme.elements.container.sm, backgroundColor: tonalPrimary.color}}>
+        <View style={{...theme.semantics.container.sm, backgroundColor: tonalPrimary.color}}>
           <ThemedIcon color={tonalPrimary.onColor} icon={CalendarDays} size={theme.icongraphy.sizes.md}/>
         </View>
         <View style={{flexDirection: "column", gap: theme.spacing.xs}}>
-          <ThemedText style={{fontWeight: theme.typography.fontWeights.semibold}}>{message.title}</ThemedText>
+          <ThemedText style={{fontWeight: theme.fontWeights.semibold}}>{message.title}</ThemedText>
           <ThemedText appearance="description">{message.subtitle}</ThemedText>
         </View>
       </View>
@@ -42,7 +42,7 @@ export function StructuredCard({
         <Text
           style={{
             ...theme.typography.heading.md,
-            fontWeight: theme.typography.fontWeights.bold,
+            fontWeight: theme.fontWeights.bold,
             color: colors.title,
           }}
         >

@@ -1,16 +1,17 @@
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-    ChatMessageComposer,
-    IconButton,
+  ChatMessageComposer,
+  IconButton,
 } from "@helpwave/hightide-native/components"
 import { Camera, Plus } from "lucide-react-native"
-import { Text } from "react-native"
+import { Text, ViewStyle } from "react-native"
 
 type ComposerProps = {
   placeholder?: string
   onSend: (text: string) => void
   isSending?: boolean
-  errorMessage?: string | null
+  errorMessage?: string | null,
+  style?: ViewStyle,
 }
 
 export function Composer({
@@ -18,6 +19,7 @@ export function Composer({
   onSend,
   isSending = false,
   errorMessage = null,
+  style,
 }: ComposerProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.composer
@@ -49,6 +51,7 @@ export function Composer({
             size="sm"
             color={theme.colors.neutral}
             style={{ borderRadius: 9999 }}
+            stateLayerStyle={{ borderRadius: 9999 }}
           />
         }
         trailing={
@@ -58,8 +61,10 @@ export function Composer({
             size="sm"
             color={theme.colors.neutral}
             style={{marginInlineEnd: theme.spacing.sm, borderRadius: 9999 }}
+            stateLayerStyle={{ borderRadius: 9999 }}
           />
         }
+        style={style}
       />
     </>
   )

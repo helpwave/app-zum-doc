@@ -3,14 +3,16 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { PatientProfile } from "@app-zum-doc/utils/api"
 import {
-    Avatar,
-    ListActionItem,
-    ThemedIcon
+  ListActionItem,
+  ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
+import { Image } from "expo-image"
 import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
 import { useMemo, useState } from "react"
 import { Text, View } from "react-native"
+
+const azdLogo = require("../assets/images/azd-logo.png")
 
 type ProfileHeaderProps = {
   profile: PatientProfile
@@ -28,14 +30,18 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         paddingVertical: theme.spacing.lg + theme.spacing.sm,
       }}
     >
-      <Avatar
-        name={profile.fullName}
-        size="lg"
+      <Image
+        source={azdLogo}
+        style={{
+          width: theme.semantics.container.md.size * 2,
+          height: theme.semantics.container.md.size * 2,
+        }}
+        contentFit="contain"
       />
       <Text
         style={{
           ...theme.typography.heading.lg,
-          fontWeight: theme.typography.fontWeights.bold,
+          fontWeight: theme.fontWeights.bold,
           color: colors.name,
           marginTop: theme.spacing.md,
         }}
@@ -45,7 +51,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
       <Text
         style={{
           ...theme.typography.body.sm,
-          fontFamily: theme.typography.fontFamilies.default,
+          fontFamily: theme.fontFamilies.default,
           textAlign: "center",
           paddingHorizontal: theme.spacing.lg,
           color: colors.meta,
@@ -102,7 +108,7 @@ export function ThemeModeSetting() {
           <Text
             style={{
               ...theme.typography.body.sm,
-              fontFamily: theme.typography.fontFamilies.default,
+              fontFamily: theme.fontFamilies.default,
               color: colors.meta,
             }}
           >
@@ -158,7 +164,7 @@ export function LocaleSetting() {
           <Text
             style={{
               ...theme.typography.body.sm,
-              fontFamily: theme.typography.fontFamilies.default,
+              fontFamily: theme.fontFamilies.default,
               color: colors.meta,
             }}
           >

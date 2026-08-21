@@ -3,6 +3,7 @@ import { Image as ExpoImage } from "expo-image"
 import { Image } from "react-native"
 
 const practiceLogo = require("../assets/images/practice-logo.png")
+const doctorPortrait = require("../assets/images/doctor-portrait.png")
 
 export function AzdAvatarImage({
   source,
@@ -15,6 +16,18 @@ export function AzdAvatarImage({
     return (
       <ExpoImage
         source={practiceLogo}
+        style={style}
+        contentFit="cover"
+        accessibilityLabel={alt}
+        onLoad={() => onLoad?.({} as never)}
+      />
+    )
+  }
+
+  if (source.uri === "doctor-portrait") {
+    return (
+      <ExpoImage
+        source={doctorPortrait}
         style={style}
         contentFit="cover"
         accessibilityLabel={alt}
@@ -42,7 +55,7 @@ export function contactAvatarImage(
     return undefined
   }
 
-  if (imageUri === "practice-logo" || imageUri.startsWith("http")) {
+  if (imageUri === "practice-logo" || imageUri === "doctor-portrait" || imageUri.startsWith("http")) {
     return { avatarUrl: imageUri, alt }
   }
 

@@ -26,12 +26,18 @@
   "@unreadCount": {
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "number"
       }
     }
   },
   "myDoctors": "Meine Ärzte",
+  "myRequests": "Meine Anfragen",
   "recentRequests": "Aktuelle Anfragen",
+  "allRequests": "Alle Anfragen",
+  "filterAppointments": "Termine",
+  "filterPrescriptions": "Rezepte",
+  "filterReferrals": "Überweisungen",
+  "loadingRequests": "Anfragen werden geladen…",
   "showAll": "Alle anzeigen",
   "actionPrescription": "Rezept",
   "actionAppointment": "Termin",
@@ -62,7 +68,23 @@
   "ourServices": "Unsere Leistungen",
   "website": "Website",
   "furtherOffers": "Weitere Angebote",
-  "closed": "geschlossen",
+  "closed": "Geschlossen",
+  "officeStatus": "{status, select, open{Praxis ist geöffnet} closed{Praxis ist geschlossen} other{}}",
+  "@officeStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "weekday": "{day, select, monday{Montag} tuesday{Dienstag} wednesday{Mittwoch} thursday{Donnerstag} friday{Freitag} saturday{Samstag} sunday{Sonntag} other{}}",
+  "@weekday": {
+    "placeholders": {
+      "day": {
+        "type": "string"
+      }
+    }
+  },
   "moreOptions": "Weitere Optionen",
   "addDoctorSoon": "„Als mein Arzt hinzufügen“ folgt in einem späteren Release.",
   "servicesSoon": "Leistungen folgen in einem späteren Release.",
@@ -79,5 +101,121 @@
   "loadingDoctorSearch": "Suche wird geladen…",
   "loadingCities": "Städte werden geladen…",
   "loadingSpecializations": "Fachrichtungen werden geladen…",
-  "clearSelection": "Auswahl entfernen"
+  "clearSelection": "Auswahl entfernen",
+  "servicesAndOffers": "Leistungen und Angebote",
+  "removeDoctor": "Arzt entfernen",
+  "removeDoctorConfirm": "Möchten Sie diesen Arzt wirklich aus „Meine Ärzte“ entfernen?",
+  "privacyAndInformation": "Datenschutz und Informationen",
+  "imprint": "Impressum",
+  "privacyPolicy": "Datenschutz",
+  "openSettings": "Einstellungen öffnen",
+  "notificationsEnableTitle": "Benachrichtigungen aktivieren",
+  "notificationsEnableMessage": "Um Benachrichtigungen zu erhalten, erlauben Sie diese in den Systemeinstellungen.",
+  "notificationsDisableTitle": "Benachrichtigungen deaktivieren",
+  "notificationsDisableMessage": "Benachrichtigungen können nur in den Systemeinstellungen ausgeschaltet werden.",
+  "edit": "Bearbeiten",
+  "personalInformation": "Persönliche Angaben",
+  "firstName": "Vorname",
+  "lastName": "Nachname",
+  "phoneNumber": "Telefonnummer",
+  "insuranceType": "Versicherungsart",
+  "insuranceStatutory": "Gesetzlich",
+  "insurancePrivate": "Privat",
+  "insuranceProvider": "Versicherung",
+  "federalState": "Bundesland",
+  "insuranceNumberOptional": "Versichertennummer (optional)",
+  "selectDateOfBirth": "Geburtsdatum wählen",
+  "medicationList": "Medikamentenliste",
+  "addMedication": "Medikament hinzufügen",
+  "goodToKnow": "Gut zu wissen",
+  "medicationListHint": "Fügen Sie Medikamente hinzu, die Sie regelmäßig verwenden, um sie beim Bestellen eines Rezeptes direkt auswählen zu können.",
+  "understood": "Verstanden",
+  "scanMedication": "Medikament scannen",
+  "searchMedicationPlaceholder": "Medikament suchen",
+  "selectMedicationSize": "Packungsgröße wählen",
+  "deleteMedication": "Medikament entfernen",
+  "loadingMedications": "Medikamente werden geladen…",
+  "next": "Weiter",
+  "medicationSize": "{size, select, n1{N1 - klein} n2{N2 - mittel} n3{N3 - groß} other{}}",
+  "@medicationSize": {
+    "placeholders": {
+      "size": {
+        "type": "string"
+      }
+    }
+  },
+  "requestAppointment": "Termin anfragen",
+  "selectPractice": "Praxis wählen",
+  "selectProfile": "Profil",
+  "selectDay": "Tag",
+  "selectTime": "Zeitpunkt wählen",
+  "selectTimePlaceholder": "Uhrzeit wählen",
+  "appointmentTime": "Uhrzeit",
+  "morning": "Vormittags",
+  "afternoon": "Nachmittags",
+  "isEmergency": "Handelt es sich um einen Notfall?",
+  "appointmentNote": "Hinweis",
+  "appointmentNotePlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.",
+  "sendAppointmentRequest": "Anfrage senden",
+  "cancelAppointmentRequest": "Anfrage stornieren",
+  "cancelAppointmentConfirm": "Möchten Sie diese Terminanfrage wirklich stornieren?",
+  "appointmentTitle": "Termin",
+  "patient": "Patient",
+  "sickNote": "Krankmeldung",
+  "loadingAppointment": "Termin wird geladen…",
+  "openChat": "Chat öffnen",
+  "noTimeSlots": "Keine Termine an diesem Tag.",
+  "appointmentStatus": "{status, select, requested{Angefragt} confirmed{Bestätigt} cancelled{Storniert} other{}}",
+  "@appointmentStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "doctor": "Arzt",
+  "orderPrescription": "Rezept bestellen",
+  "medicationsSection": "Medikamente",
+  "medicationLabel": "Medikament",
+  "medicationPackageSize": "Packungsgröße",
+  "addAnotherMedication": "Weiteres Medikament",
+  "shipPrescriptionByMail": "Rezept per Post zuschicken",
+  "shipByMail": "Versand per Post",
+  "prescriptionNotePlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihr Rezept optimal vorbereiten können.",
+  "orderAgain": "Nochmal bestellen",
+  "cancelPrescriptionConfirm": "Möchten Sie diese Rezeptanfrage wirklich stornieren?",
+  "loadingPrescription": "Rezept wird geladen…",
+  "yes": "Ja",
+  "no": "Nein",
+  "profileSelf": "{name} (ich)",
+  "@profileSelf": {
+    "placeholders": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "prescriptionStatus": "{status, select, in_progress{In Bearbeitung} ready_for_pickup{Abholbereit} cancelled{Storniert} other{}}",
+  "@prescriptionStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "orderReferral": "Überweisung bestellen",
+  "referralToSpecialist": "Überweisung zu Facharzt",
+  "selectSpecialist": "Facharzt wählen",
+  "referralReason": "Grund für die Überweisung",
+  "referralReasonPlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.",
+  "cancelReferralConfirm": "Möchten Sie diese Überweisungsanfrage wirklich stornieren?",
+  "loadingReferral": "Überweisung wird geladen…",
+  "referralStatus": "{status, select, in_progress{In Bearbeitung} ready_for_pickup{Abholbereit} cancelled{Storniert} other{}}",
+  "@referralStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  }
 }

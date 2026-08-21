@@ -26,12 +26,18 @@
   "@unreadCount": {
     "placeholders": {
       "count": {
-        "type": "int"
+        "type": "number"
       }
     }
   },
   "myDoctors": "My doctors",
+  "myRequests": "My requests",
   "recentRequests": "Current requests",
+  "allRequests": "All requests",
+  "filterAppointments": "Appointments",
+  "filterPrescriptions": "Prescriptions",
+  "filterReferrals": "Referrals",
+  "loadingRequests": "Loading requests…",
   "showAll": "Show all",
   "actionPrescription": "Prescription",
   "actionAppointment": "Appointment",
@@ -62,7 +68,23 @@
   "ourServices": "Our services",
   "website": "Website",
   "furtherOffers": "Further offers",
-  "closed": "closed",
+  "closed": "Closed",
+  "officeStatus": "{status, select, open{Practice is open} closed{Practice is closed} other{}}",
+  "@officeStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "weekday": "{day, select, monday{Monday} tuesday{Tuesday} wednesday{Wednesday} thursday{Thursday} friday{Friday} saturday{Saturday} sunday{Sunday} other{}}",
+  "@weekday": {
+    "placeholders": {
+      "day": {
+        "type": "string"
+      }
+    }
+  },
   "moreOptions": "More options",
   "addDoctorSoon": "“Add as my doctor” will follow in a later release.",
   "servicesSoon": "Services will follow in a later release.",
@@ -79,5 +101,121 @@
   "loadingDoctorSearch": "Loading search…",
   "loadingCities": "Loading cities…",
   "loadingSpecializations": "Loading specialties…",
-  "clearSelection": "Clear selection"
+  "clearSelection": "Clear selection",
+  "servicesAndOffers": "Services and Offers",
+  "removeDoctor": "Remove doctor",
+  "removeDoctorConfirm": "Do you really want to remove this doctor from My doctors?",
+  "privacyAndInformation": "Privacy and information",
+  "imprint": "Imprint",
+  "privacyPolicy": "Privacy policy",
+  "openSettings": "Open settings",
+  "notificationsEnableTitle": "Enable notifications",
+  "notificationsEnableMessage": "To receive notifications, allow them in the system settings.",
+  "notificationsDisableTitle": "Disable notifications",
+  "notificationsDisableMessage": "Notifications can only be turned off in the system settings.",
+  "edit": "Edit",
+  "personalInformation": "Personal information",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "phoneNumber": "Phone number",
+  "insuranceType": "Insurance type",
+  "insuranceStatutory": "Statutory",
+  "insurancePrivate": "Private",
+  "insuranceProvider": "Insurance provider",
+  "federalState": "State",
+  "insuranceNumberOptional": "Insurance number (optional)",
+  "selectDateOfBirth": "Select date of birth",
+  "medicationList": "Medication list",
+  "addMedication": "Add medication",
+  "goodToKnow": "Good to know",
+  "medicationListHint": "Add medications you use regularly so you can select them directly when ordering a prescription.",
+  "understood": "Understood",
+  "scanMedication": "Scan medication",
+  "searchMedicationPlaceholder": "Search medication",
+  "selectMedicationSize": "Select pack size",
+  "deleteMedication": "Remove medication",
+  "loadingMedications": "Loading medications…",
+  "next": "Next",
+  "medicationSize": "{size, select, n1{N1 - small} n2{N2 - medium} n3{N3 - large} other{}}",
+  "@medicationSize": {
+    "placeholders": {
+      "size": {
+        "type": "string"
+      }
+    }
+  },
+  "requestAppointment": "Request appointment",
+  "selectPractice": "Select practice",
+  "selectProfile": "Profile",
+  "selectDay": "Day",
+  "selectTime": "Select a time",
+  "selectTimePlaceholder": "Select time",
+  "appointmentTime": "Time",
+  "morning": "Morning",
+  "afternoon": "Afternoon",
+  "isEmergency": "Is this an emergency?",
+  "appointmentNote": "Note",
+  "appointmentNotePlaceholder": "Describe your concern so we can plan your appointment as well as possible.",
+  "sendAppointmentRequest": "Send request",
+  "cancelAppointmentRequest": "Cancel request",
+  "cancelAppointmentConfirm": "Do you really want to cancel this appointment request?",
+  "appointmentTitle": "Appointment",
+  "patient": "Patient",
+  "sickNote": "Sick note",
+  "loadingAppointment": "Loading appointment…",
+  "openChat": "Open chat",
+  "noTimeSlots": "No appointments on this day.",
+  "appointmentStatus": "{status, select, requested{Requested} confirmed{Confirmed} cancelled{Cancelled} other{}}",
+  "@appointmentStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "doctor": "Doctor",
+  "orderPrescription": "Order prescription",
+  "medicationsSection": "Medications",
+  "medicationLabel": "Medication",
+  "medicationPackageSize": "Pack size",
+  "addAnotherMedication": "Add another medication",
+  "shipPrescriptionByMail": "Send prescription by mail",
+  "shipByMail": "Sent by mail",
+  "prescriptionNotePlaceholder": "Describe your request so we can prepare your prescription as well as possible.",
+  "orderAgain": "Order again",
+  "cancelPrescriptionConfirm": "Do you really want to cancel this prescription request?",
+  "loadingPrescription": "Loading prescription…",
+  "yes": "Yes",
+  "no": "No",
+  "profileSelf": "{name} (me)",
+  "@profileSelf": {
+    "placeholders": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "prescriptionStatus": "{status, select, in_progress{In progress} ready_for_pickup{Ready for pickup} cancelled{Cancelled} other{}}",
+  "@prescriptionStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  },
+  "orderReferral": "Order referral",
+  "referralToSpecialist": "Referral to specialist",
+  "selectSpecialist": "Select specialist",
+  "referralReason": "Reason for referral",
+  "referralReasonPlaceholder": "Describe your request so we can plan your appointment as well as possible.",
+  "cancelReferralConfirm": "Do you really want to cancel this referral request?",
+  "loadingReferral": "Loading referral…",
+  "referralStatus": "{status, select, in_progress{In progress} ready_for_pickup{Ready for pickup} cancelled{Cancelled} other{}}",
+  "@referralStatus": {
+    "placeholders": {
+      "status": {
+        "type": "string"
+      }
+    }
+  }
 }

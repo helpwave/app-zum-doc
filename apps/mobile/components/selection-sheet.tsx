@@ -1,5 +1,6 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { withAlpha } from "@/theme/azd-theme"
 import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
@@ -53,6 +54,9 @@ export function SelectionSheet({
     <Modal
       visible={visible}
       transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      presentationStyle="overFullScreen"
       animationType="fade"
       onRequestClose={revertAndCancel}
     >
@@ -61,10 +65,10 @@ export function SelectionSheet({
           flex: 1,
           justifyContent: "center",
           paddingHorizontal: theme.spacing.lg + theme.spacing.sm,
-          backgroundColor: theme.semantics.withAppearance({
-            color: "#000000",
-            appearance: "faded",
-          }),
+          backgroundColor: withAlpha(
+            "#000000",
+            theme.config.appearancePercentages.faded,
+          ),
         }}
         onPress={revertAndCancel}
       >
@@ -80,7 +84,7 @@ export function SelectionSheet({
           <Text
             style={{
               ...theme.typography.heading.md,
-              fontWeight: theme.typography.fontWeights.bold,
+              fontWeight: theme.fontWeights.bold,
               textAlign: "center",
               marginBottom: theme.spacing.md + theme.spacing.sm,
               paddingHorizontal: theme.spacing.lg,
@@ -106,7 +110,7 @@ export function SelectionSheet({
                     flexDirection: "row",
                     alignItems: "center",
                     gap: theme.spacing.md,
-                    minHeight: theme.elements.control.md.size,
+                    minHeight: theme.semantics.control.md.size,
                     paddingHorizontal: theme.spacing.md + theme.spacing.sm,
                     borderRadius: theme.borderRadius.md,
                   }}
@@ -135,7 +139,7 @@ export function SelectionSheet({
           <View
             style={{
               flexDirection: "row",
-              borderTopWidth: theme.border.thin,
+              borderTopWidth: theme.borderWidth.thin,
               borderTopColor: theme.components.tabBar.border,
             }}
           >
