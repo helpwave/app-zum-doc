@@ -24,7 +24,6 @@ export type AppZumDocTranslationEntries = {
   'appName': string,
   'appointmentNote': string,
   'appointmentNotePlaceholder': string,
-  'appointmentStatus': (values: { status: string }) => string,
   'appointmentTime': string,
   'appointmentTitle': string,
   'back': string,
@@ -111,6 +110,7 @@ export type AppZumDocTranslationEntries = {
   'orderReferral': string,
   'ourServices': string,
   'patient': string,
+  'patientRequestStatus': (values: { status: string }) => string,
   'personalData': string,
   'personalInformation': string,
   'phone': string,
@@ -120,7 +120,6 @@ export type AppZumDocTranslationEntries = {
   'practiceDetails': string,
   'practiceSection': string,
   'prescriptionNotePlaceholder': string,
-  'prescriptionStatus': (values: { status: string }) => string,
   'privacyAndInformation': string,
   'privacyPolicy': string,
   'profileSelf': (values: { name: string }) => string,
@@ -128,7 +127,6 @@ export type AppZumDocTranslationEntries = {
   'recentRequests': string,
   'referralReason': string,
   'referralReasonPlaceholder': string,
-  'referralStatus': (values: { status: string }) => string,
   'referralToSpecialist': string,
   'removeDoctor': string,
   'removeDoctorConfirm': string,
@@ -190,13 +188,6 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'appName': `App zum Doc`,
     'appointmentNote': `Hinweis`,
     'appointmentNotePlaceholder': `Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.`,
-    'appointmentStatus': ({ status }): string => {
-      return TranslationGen.resolveSelect(status, {
-        'requested': `Angefragt`,
-        'confirmed': `Bestätigt`,
-        'cancelled': `Storniert`,
-      })
-    },
     'appointmentTime': `Uhrzeit`,
     'appointmentTitle': `Termin`,
     'back': `Zurück`,
@@ -294,6 +285,16 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'orderReferral': `Überweisung bestellen`,
     'ourServices': `Unsere Leistungen`,
     'patient': `Patient`,
+    'patientRequestStatus': ({ status }): string => {
+      return TranslationGen.resolveSelect(status, {
+        'requested': `Angefragt`,
+        'inProgress': `In Bearbeitung`,
+        'confirmed': `Bestätigt`,
+        'readyForPickup': `Abholbereit`,
+        'completed': `Abgeschlossen`,
+        'cancelled': `Storniert`,
+      })
+    },
     'personalData': `Persönliche Daten`,
     'personalInformation': `Persönliche Angaben`,
     'phone': `Telefon`,
@@ -303,13 +304,6 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'practiceDetails': `Praxisdetails`,
     'practiceSection': `Praxis`,
     'prescriptionNotePlaceholder': `Beschreiben Sie uns Ihr Anliegen, damit wir Ihr Rezept optimal vorbereiten können.`,
-    'prescriptionStatus': ({ status }): string => {
-      return TranslationGen.resolveSelect(status, {
-        'in_progress': `In Bearbeitung`,
-        'ready_for_pickup': `Abholbereit`,
-        'cancelled': `Storniert`,
-      })
-    },
     'privacyAndInformation': `Datenschutz und Informationen`,
     'privacyPolicy': `Datenschutz`,
     'profileSelf': ({ name }): string => {
@@ -319,13 +313,6 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'recentRequests': `Aktuelle Anfragen`,
     'referralReason': `Grund für die Überweisung`,
     'referralReasonPlaceholder': `Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.`,
-    'referralStatus': ({ status }): string => {
-      return TranslationGen.resolveSelect(status, {
-        'in_progress': `In Bearbeitung`,
-        'ready_for_pickup': `Abholbereit`,
-        'cancelled': `Storniert`,
-      })
-    },
     'referralToSpecialist': `Überweisung zu Facharzt`,
     'removeDoctor': `Arzt entfernen`,
     'removeDoctorConfirm': `Möchten Sie diesen Arzt wirklich aus „Meine Ärzte“ entfernen?`,
@@ -397,13 +384,6 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'appName': `App zum Doc`,
     'appointmentNote': `Note`,
     'appointmentNotePlaceholder': `Describe your concern so we can plan your appointment as well as possible.`,
-    'appointmentStatus': ({ status }): string => {
-      return TranslationGen.resolveSelect(status, {
-        'requested': `Requested`,
-        'confirmed': `Confirmed`,
-        'cancelled': `Cancelled`,
-      })
-    },
     'appointmentTime': `Time`,
     'appointmentTitle': `Appointment`,
     'back': `Back`,
@@ -501,6 +481,16 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'orderReferral': `Order referral`,
     'ourServices': `Our services`,
     'patient': `Patient`,
+    'patientRequestStatus': ({ status }): string => {
+      return TranslationGen.resolveSelect(status, {
+        'requested': `Requested`,
+        'inProgress': `In progress`,
+        'confirmed': `Confirmed`,
+        'readyForPickup': `Ready for pickup`,
+        'completed': `Completed`,
+        'cancelled': `Cancelled`,
+      })
+    },
     'personalData': `Personal data`,
     'personalInformation': `Personal information`,
     'phone': `Phone`,
@@ -510,13 +500,6 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'practiceDetails': `Practice details`,
     'practiceSection': `Practice`,
     'prescriptionNotePlaceholder': `Describe your request so we can prepare your prescription as well as possible.`,
-    'prescriptionStatus': ({ status }): string => {
-      return TranslationGen.resolveSelect(status, {
-        'in_progress': `In progress`,
-        'ready_for_pickup': `Ready for pickup`,
-        'cancelled': `Cancelled`,
-      })
-    },
     'privacyAndInformation': `Privacy and information`,
     'privacyPolicy': `Privacy policy`,
     'profileSelf': ({ name }): string => {
@@ -526,13 +509,6 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'recentRequests': `Current requests`,
     'referralReason': `Reason for referral`,
     'referralReasonPlaceholder': `Describe your request so we can plan your appointment as well as possible.`,
-    'referralStatus': ({ status }): string => {
-      return TranslationGen.resolveSelect(status, {
-        'in_progress': `In progress`,
-        'ready_for_pickup': `Ready for pickup`,
-        'cancelled': `Cancelled`,
-      })
-    },
     'referralToSpecialist': `Referral to specialist`,
     'removeDoctor': `Remove doctor`,
     'removeDoctorConfirm': `Do you really want to remove this doctor from My doctors?`,

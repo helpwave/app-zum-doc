@@ -23,6 +23,8 @@ export function StructuredCard({
   const { theme } = useAzdTheme()
   const colors = theme.components.structuredCard
   const tonalPrimary = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
+  const showActions =
+    !message.selectedActionId && message.actions && message.actions.length > 0
 
   return (
     <ChatMessageBubble
@@ -52,20 +54,24 @@ export function StructuredCard({
           {message.detail}
         </Text>
       </View>
-      { message.actions && message.actions.length > 0 && ( 
+      {showActions && (
         <View style={{flexDirection: "row", alignItems: "flex-end"}}>
-          {message.actions.map((action) => (
-            <Button
-              key={action.id}
-              color={action.variant === "primary" ? theme.colors.primary : theme.colors.neutral}
-              variant={action.variant === "primary" ? "filled" : "tonal"}
-              disabled={isActionPending}
-              onPress={() => onAction?.(action.id)}
-              style={{ flex: 1 }}
-            >
-              {action.label}
-            </Button>
-          ))}
+          {message.actions!.map((action) => {
+            const isMainAction = action.id === message.mainActionId
+
+            return (
+              <Button
+                key={action.id}
+                color={theme.colors.primary}
+                variant={isMainAction ? "filled" : "tonal"}
+                disabled={isActionPending}
+                onPress={() => onAction?.(action.id)}
+                style={{ flex: 1 }}
+              >
+                {action.label}
+              </Button>
+            )
+          })}
         </View>
       )}
     </ChatMessageBubble>

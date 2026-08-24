@@ -148,12 +148,11 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       subtitle: "Besprechung Blutwerte · 30 Min",
       primary: "Mi. 8. Juli 2026",
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
-      status: "pending",
-      statusLabel: "AUSSTEHEND",
+      mainActionId: "accept",
       timeLabel: "09:15",
       actions: [
-        { id: "accept", label: "Zusagen", variant: "primary" },
-        { id: "decline", label: "Ablehnen", variant: "secondary" },
+        { id: "accept", label: "Zusagen" },
+        { id: "decline", label: "Ablehnen" },
       ],
     },
     {
@@ -507,7 +506,7 @@ export function buildHomeSummary(): HomeSummary {
         title: "Limptar N Filmtabletten, 80 St",
         kind: "prescription",
         kindLabel: "Rezept",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "In Bearbeitung",
       },
       {
@@ -517,7 +516,7 @@ export function buildHomeSummary(): HomeSummary {
         title: "Aciclovir 800 Heumann",
         kind: "prescription",
         kindLabel: "Rezept",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "In Bearbeitung",
       },
       {
@@ -527,7 +526,7 @@ export function buildHomeSummary(): HomeSummary {
         title: "Floxal EDO 3 mg/ml Augentropfen",
         kind: "prescription",
         kindLabel: "Rezept",
-        status: "ready_for_pickup",
+        status: "readyForPickup",
         statusLabel: "Abholbereit",
       },
       {
@@ -537,7 +536,7 @@ export function buildHomeSummary(): HomeSummary {
         title: "Dr. Anton Willendorfer",
         kind: "referral",
         kindLabel: "Überweisung",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "In Bearbeitung",
       },
       {
@@ -547,7 +546,7 @@ export function buildHomeSummary(): HomeSummary {
         title: "Vorsorgeuntersuchung",
         kind: "appointment",
         kindLabel: "Termin",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "Angefragt",
       },
       {
@@ -622,7 +621,7 @@ export const prescriptionsSeed: Prescription[] = [
       { id: "rx-med-paracetamol", name: "Paracetamol", size: "n2" },
       { id: "rx-med-zip", name: "1-KAM Zip-Kompresse", size: "n1" },
     ],
-    status: "in_progress",
+    status: "inProgress",
   },
   {
     id: "req-aciclovir",
@@ -637,7 +636,7 @@ export const prescriptionsSeed: Prescription[] = [
     medications: [
       { id: "rx-med-aciclovir", name: "Amoxicillin", size: "n1" },
     ],
-    status: "in_progress",
+    status: "inProgress",
   },
   {
     id: "req-floxal",
@@ -652,7 +651,7 @@ export const prescriptionsSeed: Prescription[] = [
     medications: [
       { id: "rx-med-floxal", name: "Ibuprofen", size: "n3" },
     ],
-    status: "ready_for_pickup",
+    status: "readyForPickup",
   },
 ]
 
@@ -669,6 +668,6 @@ export const referralsSeed: Referral[] = [
     specialistName: "Dr. Anton Willendorfer",
     reason:
       "Anhaltendes Unwohlsein und starke Schmerzen im unteren Rücken.",
-    status: "in_progress",
+    status: "inProgress",
   },
 ]

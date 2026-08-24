@@ -182,19 +182,9 @@ export async function resolveCardAction(
       }
 
       const card = message as StructuredCardMessage
-      if (actionId === "accept") {
-        return {
-          ...card,
-          status: "confirmed",
-          statusLabel: "BESTÄTIGT",
-          actions: undefined,
-        }
-      }
-
       return {
         ...card,
-        status: "declined",
-        statusLabel: "ABGELEHNT",
+        selectedActionId: actionId,
         actions: undefined,
       }
     })
@@ -303,7 +293,7 @@ export async function createAppointment(
         title: appointment.time,
         kind: "appointment",
         kindLabel: "Termin",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "Angefragt",
       },
       ...recentRequestsState,
@@ -406,7 +396,7 @@ export async function createPrescription(
         name: medication.name,
         size: medication.size,
       })),
-      status: "in_progress",
+      status: "inProgress",
     }
     prescriptionsState = [prescription, ...prescriptionsState]
     recentRequestsState = [
@@ -417,7 +407,7 @@ export async function createPrescription(
         title: prescription.medications.map((item) => item.name).join(", "),
         kind: "prescription",
         kindLabel: "Rezept",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "In Bearbeitung",
       },
       ...recentRequestsState,
@@ -522,7 +512,7 @@ export async function createReferral(
       specialistDoctorsOfficeId: specialist.id,
       specialistName: specialist.name,
       reason: input.reason,
-      status: "in_progress",
+      status: "inProgress",
     }
     referralsState = [referral, ...referralsState]
     recentRequestsState = [
@@ -533,7 +523,7 @@ export async function createReferral(
         title: referral.specialistName,
         kind: "referral",
         kindLabel: "Überweisung",
-        status: "in_progress",
+        status: "inProgress",
         statusLabel: "In Bearbeitung",
       },
       ...recentRequestsState,

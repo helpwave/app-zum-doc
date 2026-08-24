@@ -160,7 +160,7 @@ export default function AppointmentDetailScreen() {
                     >
                       <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
                       <ThemedText>
-                        {t("appointmentStatus", { status: appointment.status })}
+                        {t("patientRequestStatus", { status: appointment.status })}
                       </ThemedText>
                     </View>
                   </Chip>

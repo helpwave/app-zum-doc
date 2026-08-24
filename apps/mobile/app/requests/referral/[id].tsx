@@ -145,7 +145,7 @@ export default function ReferralDetailScreen() {
                     size="sm"
                     variant="tonal"
                     color={
-                      referral.status === "in_progress"
+                      referral.status === "inProgress"
                         ? theme.colors.warning
                         : referral.status === "cancelled"
                           ? theme.colors.negative
@@ -161,7 +161,7 @@ export default function ReferralDetailScreen() {
                     >
                       <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
                       <ThemedText>
-                        {t("referralStatus", { status: referral.status })}
+                        {t("patientRequestStatus", { status: referral.status })}
                       </ThemedText>
                     </View>
                   </Chip>

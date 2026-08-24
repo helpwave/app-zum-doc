@@ -165,8 +165,8 @@
   "loadingAppointment": "Termin wird geladen…",
   "openChat": "Chat öffnen",
   "noTimeSlots": "Keine Termine an diesem Tag.",
-  "appointmentStatus": "{status, select, requested{Angefragt} confirmed{Bestätigt} cancelled{Storniert} other{}}",
-  "@appointmentStatus": {
+  "patientRequestStatus": "{status, select, requested{Angefragt} inProgress{In Bearbeitung} confirmed{Bestätigt} readyForPickup{Abholbereit} completed{Abgeschlossen} cancelled{Storniert} other{}}",
+  "@patientRequestStatus": {
     "placeholders": {
       "status": {
         "type": "string"
@@ -195,27 +195,11 @@
       }
     }
   },
-  "prescriptionStatus": "{status, select, in_progress{In Bearbeitung} ready_for_pickup{Abholbereit} cancelled{Storniert} other{}}",
-  "@prescriptionStatus": {
-    "placeholders": {
-      "status": {
-        "type": "string"
-      }
-    }
-  },
   "orderReferral": "Überweisung bestellen",
   "referralToSpecialist": "Überweisung zu Facharzt",
   "selectSpecialist": "Facharzt wählen",
   "referralReason": "Grund für die Überweisung",
   "referralReasonPlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.",
   "cancelReferralConfirm": "Möchten Sie diese Überweisungsanfrage wirklich stornieren?",
-  "loadingReferral": "Überweisung wird geladen…",
-  "referralStatus": "{status, select, in_progress{In Bearbeitung} ready_for_pickup{Abholbereit} cancelled{Storniert} other{}}",
-  "@referralStatus": {
-    "placeholders": {
-      "status": {
-        "type": "string"
-      }
-    }
-  }
+  "loadingReferral": "Überweisung wird geladen…"
 }

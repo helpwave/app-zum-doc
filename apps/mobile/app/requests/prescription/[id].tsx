@@ -146,7 +146,7 @@ export default function PrescriptionDetailScreen() {
                     size="sm"
                     variant="tonal"
                     color={
-                      prescription.status === "in_progress"
+                      prescription.status === "inProgress"
                         ? theme.colors.warning
                         : prescription.status === "cancelled"
                           ? theme.colors.negative
@@ -162,7 +162,7 @@ export default function PrescriptionDetailScreen() {
                     >
                       <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
                       <ThemedText>
-                        {t("prescriptionStatus", { status: prescription.status })}
+                        {t("patientRequestStatus", { status: prescription.status })}
                       </ThemedText>
                     </View>
                   </Chip>

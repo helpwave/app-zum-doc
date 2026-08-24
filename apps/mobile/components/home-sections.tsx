@@ -198,7 +198,7 @@ type RequestTileProps = {
 export function RequestTile({ request, onPress }: RequestTileProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
-  const isWarning = request.status === "in_progress"
+  const isWarning = request.status === "inProgress"
   const KindIcon =
     request.kind === "prescription"
       ? Pill

@@ -4,19 +4,13 @@ import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { hrefForRequest } from "@/lib/request-routes"
-import { toAppLocale, type RequestKind } from "@app-zum-doc/utils/api"
+import { PatientRequestTypeUtils, toAppLocale, type PatientRequestType } from "@app-zum-doc/utils/api"
 import { useDoctorsOffice, useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useMemo, useState } from "react"
 import { ScrollView, View } from "react-native"
-
-const requestTypeFilters: RequestKind[] = [
-  "appointment",
-  "prescription",
-  "referral",
-]
 
 function RequestTypeChip({
   label,
@@ -64,9 +58,9 @@ export default function RequestsScreen() {
   const doctorId = typeof doctorIdParam === "string" ? doctorIdParam : ""
   const homeQuery = useHomeSummary(locale)
   const doctorQuery = useDoctorsOffice(doctorId, locale)
-  const [selectedKind, setSelectedKind] = useState<RequestKind | null>(null)
+  const [selectedKind, setSelectedKind] = useState<PatientRequestType | null>(null)
 
-  const typeLabels: Record<RequestKind, string> = {
+  const typeLabels: Record<PatientRequestType, string> = {
     appointment: t("filterAppointments"),
     prescription: t("filterPrescriptions"),
     referral: t("filterReferrals"),
@@ -128,7 +122,7 @@ export default function RequestsScreen() {
               gap: theme.spacing.md,
             }}
           >
-            {requestTypeFilters.map((kind) => (
+            {PatientRequestTypeUtils.array.map((kind) => (
               <RequestTypeChip
                 key={kind}
                 label={typeLabels[kind]}
