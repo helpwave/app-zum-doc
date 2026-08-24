@@ -9,8 +9,8 @@ import { hrefForRequest } from "@/lib/request-routes"
 import { Snackbar } from "@/components/snackbar"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toAppLocale } from "@app-zum-doc/utils/api"
-import { useAddMyDoctor, useDoctorsOffice, useHomeSummary, useRemoveMyDoctor } from "@app-zum-doc/utils/hooks"
+import { isMyDoctorsOffice, toAppLocale } from "@app-zum-doc/utils/api"
+import { useAddMyDoctor, useDoctorsOffice, useHomeSummary, useMyDoctors, useRemoveMyDoctor } from "@app-zum-doc/utils/hooks"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { useCallback, useState } from "react"
@@ -26,10 +26,14 @@ export default function DoctorDetailScreen() {
   const locale = toAppLocale(localizationLocale)
   const router = useRouter()
   const officeQuery = useDoctorsOffice(doctorsOfficeId, locale)
+  const myDoctorsQuery = useMyDoctors()
   const homeQuery = useHomeSummary(locale)
   const addMyDoctor = useAddMyDoctor()
   const removeMyDoctor = useRemoveMyDoctor()
   const office = officeQuery.data
+  const isMyDoctor = myDoctorsQuery.data
+    ? isMyDoctorsOffice(myDoctorsQuery.data, doctorsOfficeId)
+    : false
   const doctorRequests = (homeQuery.data?.recentRequests ?? []).filter(
     (request) => request.doctorsOfficeId === doctorsOfficeId,
   )
@@ -64,13 +68,14 @@ export default function DoctorDetailScreen() {
           >
             <DoctorDetailHero
               office={office}
+              isMyDoctor={isMyDoctor}
               isAddingDoctor={addMyDoctor.isPending}
               isRemovingDoctor={removeMyDoctor.isPending}
               onRemoveDoctor={() => {
                 if (removeMyDoctor.isPending) {
                   return
                 }
-                removeMyDoctor.mutate({ doctorsOfficeId: office.id, locale }, {
+                removeMyDoctor.mutate({ doctorsOfficeId: office.id }, {
                   onError: () => {
                     setSnackbarMessage(t("errorTitle"))
                   },
@@ -80,35 +85,33 @@ export default function DoctorDetailScreen() {
                 if (addMyDoctor.isPending) {
                   return
                 }
-                addMyDoctor.mutate({ doctorsOfficeId: office.id, locale }, {
+                addMyDoctor.mutate({ doctorsOfficeId: office.id }, {
                   onError: () => {
                     setSnackbarMessage(t("errorTitle"))
                   },
                 })
               }}
-              onQuickActionPress={(action) => {
-                if (action.id === "appointment") {
+              onQuickActionPress={(actionId) => {
+                if (actionId === "appointment") {
                   router.push({
                     pathname: "/requests/appointment/create",
                     params: { doctorId: office.id },
                   } as Href)
                   return
                 }
-                if (action.id === "prescription") {
+                if (actionId === "prescription") {
                   router.push({
                     pathname: "/requests/prescription/create",
                     params: { doctorId: office.id },
                   } as Href)
                   return
                 }
-                if (action.id === "referral") {
+                if (actionId === "referral") {
                   router.push({
                     pathname: "/requests/referral/create",
                     params: { doctorId: office.id },
                   } as Href)
-                  return
                 }
-                router.push(action.href as Href)
               }}
             />
 
@@ -118,7 +121,7 @@ export default function DoctorDetailScreen() {
                 gap: theme.spacing.lg,
               }}
             >
-              {office.isMyDoctor && doctorRequests.length > 0 ? (
+              {isMyDoctor && doctorRequests.length > 0 ? (
                 <DoctorRequestsSection
                   requests={doctorRequests.slice(0, 3)}
                   onShowAll={() => {

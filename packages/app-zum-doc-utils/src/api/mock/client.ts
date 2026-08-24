@@ -13,6 +13,8 @@ import {
   referralsSeed,
   specializationsSeed,
   type DoctorsOfficeSeed,
+  type LocalizedDoctorSeed,
+  type LocalizedDoctorServiceSeed,
 } from "./data"
 import {
   WeekdayUtils,
@@ -33,6 +35,7 @@ import {
   type MedicationSize,
   type Message,
   type MessagePreview,
+  type MyDoctors,
   type PatientProfile,
   type PatientProfileSummary,
   type Prescription,
@@ -42,6 +45,7 @@ import {
   type StructuredCardMessage,
   type TextMessage,
 } from "../types"
+import { doctorsOfficeStatusFromOpeningHours } from "../openingHours"
 import {
   formatPatientDateOfBirth,
   patientProfileFullName,
@@ -257,7 +261,6 @@ export async function fetchAppointment(
         ? localizedSpecialty(office, locale)
         : appointment.doctorSpecialty,
       doctorImageUri: office?.imageUri ?? appointment.doctorImageUri,
-      doctorInitials: office?.initials ?? appointment.doctorInitials,
     }
   })
 }
@@ -283,8 +286,7 @@ export async function createAppointment(
       doctorsOfficeId: office.id,
       doctorName: office.name,
       doctorSpecialty: localizedSpecialty(office, locale),
-      doctorImageUri: office.imageUri,
-      doctorInitials: office.initials,
+      doctorImageUri: office.imageUri ?? null,
       profileId: profile.id,
       patientName: patientProfileFullName(profile),
       patientDateOfBirth: formatPatientDateOfBirth(profile.dateOfBirth, locale),
@@ -366,7 +368,6 @@ export async function fetchPrescription(
         ? localizedSpecialty(office, locale)
         : prescription.doctorSpecialty,
       doctorImageUri: office?.imageUri ?? prescription.doctorImageUri,
-      doctorInitials: office?.initials ?? prescription.doctorInitials,
     }
   })
 }
@@ -395,8 +396,7 @@ export async function createPrescription(
       doctorsOfficeId: office.id,
       doctorName: office.name,
       doctorSpecialty: localizedSpecialty(office, locale),
-      doctorImageUri: office.imageUri,
-      doctorInitials: office.initials,
+      doctorImageUri: office.imageUri ?? null,
       profileId: profile.id,
       patientName: patientProfileFullName(profile),
       shipByMail: input.shipByMail,
@@ -484,7 +484,6 @@ export async function fetchReferral(
         ? localizedSpecialty(office, locale)
         : referral.doctorSpecialty,
       doctorImageUri: office?.imageUri ?? referral.doctorImageUri,
-      doctorInitials: office?.initials ?? referral.doctorInitials,
       specialistName: specialist?.name ?? referral.specialistName,
     }
   })
@@ -515,8 +514,7 @@ export async function createReferral(
       doctorsOfficeId: office.id,
       doctorName: office.name,
       doctorSpecialty: localizedSpecialty(office, locale),
-      doctorImageUri: office.imageUri,
-      doctorInitials: office.initials,
+      doctorImageUri: office.imageUri ?? null,
       profileId: profile.id,
       patientName: patientProfileFullName(profile),
       specialistDoctorsOfficeId: specialist.id,
@@ -641,10 +639,32 @@ export async function removePatientMedication(
 
 function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): string {
   return (
-    office.specialty?.[locale]
+    office.specialization?.[locale]
     ?? specializationsSeed.find((item) => item.id === office.specializationId)?.labels[locale]
     ?? ""
   )
+}
+
+function localizedDoctorServices(
+  services: LocalizedDoctorServiceSeed[],
+  locale: AppLocale,
+) {
+  return services.map((service) => ({
+    id: service.id,
+    name: service.name[locale],
+    description: service.description[locale],
+  }))
+}
+
+function localizedDoctors(
+  doctors: LocalizedDoctorSeed[],
+  locale: AppLocale,
+) {
+  return doctors.map((doctor) => ({
+    id: doctor.id,
+    name: doctor.name[locale],
+    imageUri: doctor.imageUri,
+  }))
 }
 
 function cloneOpeningHours(
@@ -664,10 +684,9 @@ function toHomeDoctorCard(
     id: office.id,
     name: office.name,
     specialty: localizedSpecialty(office, locale),
-    phone: office.phone,
-    imageUri: office.imageUri,
-    initials: office.initials,
-    status: office.status,
+    phone: office.phoneNumber ?? "",
+    imageUri: office.imageUri ?? null,
+    status: doctorsOfficeStatusFromOpeningHours(office.openingHours),
   }
 }
 
@@ -678,20 +697,31 @@ function toDoctorsOffice(
   return {
     id: office.id,
     name: office.name,
-    specialty: localizedSpecialty(office, locale),
-    phone: office.phone,
-    imageUri: office.imageUri,
-    initials: office.initials,
-    status: office.status,
-    isMyDoctor: myDoctorIds.has(office.id),
-    services: (office.services ?? []).map((label) => label[locale]),
-    addressLine1: office.addressLine1,
-    addressLine2: office.addressLine2,
-    websiteLabel: office.websiteLabel,
+    specialization: localizedSpecialty(office, locale),
+    phoneNumber: office.phoneNumber,
+    ...(office.imageUri ? { imageUri: office.imageUri } : {}),
+    services: localizedDoctorServices(office.services ?? [], locale),
+    offers: localizedDoctorServices(office.offers ?? [], locale),
+    doctors: localizedDoctors(
+      office.doctors ?? [
+        {
+          id: `${office.id}-doctor`,
+          name: { "de-DE": office.name, "en-US": office.name },
+          imageUri: office.imageUri ?? undefined,
+        },
+      ],
+      locale,
+    ),
+    address: { ...office.address },
     websiteUrl: office.websiteUrl,
-    additionalOfferLabel: office.additionalOffer?.[locale] ?? "",
     openingHours: cloneOpeningHours(office.openingHours),
   }
+}
+
+export async function fetchMyDoctors(): Promise<MyDoctors> {
+  return withMockLatency(() => ({
+    doctorIds: [...myDoctorIds],
+  }))
 }
 
 export async function fetchDoctorsOffice(
@@ -707,31 +737,25 @@ export async function fetchDoctorsOffice(
   })
 }
 
-export async function addMyDoctor(
-  doctorsOfficeId: string,
-  locale: AppLocale,
-): Promise<DoctorsOffice> {
+export async function addMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
     myDoctorIds.add(office.id)
-    return toDoctorsOffice(office, locale)
+    return { doctorIds: [...myDoctorIds] }
   })
 }
 
-export async function removeMyDoctor(
-  doctorsOfficeId: string,
-  locale: AppLocale,
-): Promise<DoctorsOffice> {
+export async function removeMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
     myDoctorIds.delete(office.id)
-    return toDoctorsOffice(office, locale)
+    return { doctorIds: [...myDoctorIds] }
   })
 }
 

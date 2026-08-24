@@ -197,9 +197,10 @@ export default function ReferralDetailScreen() {
                 </View>
               ) : null}
 
-              <View style={{ gap: theme.spacing.md }}>
+              <View style={{ gap: theme.spacing.md, justifyContent: "flex-end", flexDirection: "row" }}>
                 <Button
                   leadingIcon={RotateCw}
+                  variant="tonal"
                   onPress={() => {
                     router.push({
                       pathname: "/requests/referral/create",

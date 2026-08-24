@@ -1,14 +1,14 @@
+import {
+  AzdAvatarImage,
+  contactAvatarImage,
+} from "@/components/azd-avatar-image"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { HomeDoctorCard } from "@app-zum-doc/utils/api"
-import { ThemedPressable } from "@helpwave/hightide-native/components"
+import { Avatar, ThemedPressable } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
-import { Image, ImageStyle } from "expo-image"
 import { Phone } from "lucide-react-native"
 import { Text, View, ViewStyle } from "react-native"
-
-const doctorPortrait = require("../assets/images/doctor-portrait.png")
-const practiceLogo = require("../assets/images/practice-logo.png")
 
 type DoctorCardProps = {
   doctor: HomeDoctorCard
@@ -20,17 +20,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
-  const imageSource =
-    doctor.imageUri === "practice-logo"
-      ? practiceLogo
-      : doctor.imageUri === "doctor-portrait"
-        ? doctorPortrait
-        : null
-  const photoStyle: ViewStyle & ImageStyle = {
-    width: theme.semantics.container.md.size * 2,
-    borderRadius: theme.borderRadius.md,
-    alignSelf: "stretch"
-  }
+  const avatarSize = theme.semantics.container.md.size * 2
 
   return (
     <ThemedPressable
@@ -52,32 +42,15 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
         ...style,
       }}
     >
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={photoStyle}
-          contentFit="cover"
-        />
-      ) : (
-        <View
-          style={{
-            ...photoStyle,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.avatarBackground,
-          }}
-        >
-          <Text
-            style={{
-              ...theme.typography.heading.lg,
-              fontWeight: theme.fontWeights.semibold,
-              color: colors.avatarText,
-            }}
-          >
-            {doctor.initials ?? doctor.name.slice(0, 2).toUpperCase()}
-          </Text>
-        </View>
-      )}
+      <Avatar
+        name={doctor.name}
+        image={contactAvatarImage(doctor.imageUri, doctor.name)}
+        ImageComponent={AzdAvatarImage}
+        size={avatarSize}
+        style={{ alignSelf: "stretch" }}
+        avatarStyle={{ borderRadius: theme.borderRadius.md }}
+        imageStyle={{ borderRadius: theme.borderRadius.md }}
+      />
       <View
         style={{
           flex: 1,

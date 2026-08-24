@@ -185,20 +185,27 @@ export default function PrescriptionDetailScreen() {
                     padding: theme.spacing.lg,
                     gap: theme.spacing.sm,
                     backgroundColor: theme.semantics.coloringColorVariant({
-                      colorPair: theme.colors.neutral,
-                      variant: "tonal",
+                      colorPair: theme.colors.surface,
+                      variant: "normal",
                     }).color,
                   }}
                 >
-                  <ThemedText
-                    appearance="description"
-                    style={theme.typography.body.sm}
+                  <ContentThemeOverrideProvider 
+                    foreground={theme.semantics.coloringColorVariant({
+                      colorPair: theme.colors.surface,
+                      variant: "normal",
+                    }).onColor}
                   >
-                    {t("appointmentNote")}
-                  </ThemedText>
-                  <ThemedText style={theme.typography.body.md}>
-                    {prescription.note}
-                  </ThemedText>
+                    <ThemedText
+                      appearance="description"
+                      style={theme.typography.body.sm}
+                    >
+                      {t("appointmentNote")}
+                    </ThemedText>
+                    <ThemedText style={theme.typography.body.md}>
+                      {prescription.note}
+                    </ThemedText>
+                  </ContentThemeOverrideProvider>
                 </View>
               ) : null}
 
@@ -221,9 +228,10 @@ export default function PrescriptionDetailScreen() {
                 ))}
               </View>
 
-              <View style={{ gap: theme.spacing.md }}>
+              <View style={{ gap: theme.spacing.md, justifyContent: "flex-end", flexDirection: "row" }}>
                 <Button
                   leadingIcon={RotateCw}
+                  variant="tonal"
                   onPress={() => {
                     router.push({
                       pathname: "/requests/prescription/create",

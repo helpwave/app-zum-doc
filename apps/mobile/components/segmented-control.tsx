@@ -38,6 +38,7 @@ export function SegmentedControl<T extends string>({
             key={option.id}
             size="sm"
             variant={selected ? "filled" : "foreground"}
+            color={selected ? theme.colors.primary : theme.colors.surfaceInverse}
             onPress={() => {
               onChange(option.id)
             }}

@@ -249,6 +249,7 @@ export default function AppointmentDetailScreen() {
                       ],
                     )
                   }}
+                  style={{ alignSelf: "flex-end" }}
                 >
                   {t("cancelAppointmentRequest")}
                 </Button>

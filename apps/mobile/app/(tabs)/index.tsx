@@ -1,6 +1,7 @@
 import { RequestTile, StartDoctorCard, StartHero } from "@/components/home-sections"
 import { QueryState } from "@/components/query-state"
 import { hrefForRequest } from "@/lib/request-routes"
+import { homeQuickActions } from "@/lib/quick-actions"
 import { Section } from "@/components/section"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -73,12 +74,14 @@ export default function HomeScreen() {
             showsVerticalScrollIndicator={false}
           >
             <StartHero
-              quickActions={homeQuery.data.quickActions}
               onSearchPress={() => {
                 router.push("/doctor-search" as Href)
               }}
-              onQuickActionPress={(action) => {
-                router.push(action.href as Href)
+              onQuickActionPress={(actionId) => {
+                const action = homeQuickActions.find((item) => item.id === actionId)
+                if (action) {
+                  router.push(action.href as Href)
+                }
               }}
             />
 

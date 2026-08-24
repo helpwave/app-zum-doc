@@ -5,6 +5,7 @@ export {
   fetchDoctors,
   fetchDoctorsOffice,
   fetchHomeSummary,
+  fetchMyDoctors,
   fetchMessages,
   fetchAppointment,
   fetchPatientMedications,

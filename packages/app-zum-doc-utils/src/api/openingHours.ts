@@ -1,8 +1,5 @@
-import {
-  WeekdayUtils,
-  type DoctorsOfficeOpeningHours,
-  type Weekday,
-} from "./types"
+import type { DoctorsOfficeOpeningHours } from "./doctorsOffice"
+import { WeekdayUtils, type DoctorsOfficeStatus, type Weekday } from "./enums"
 
 const slotStepMinutes = 30
 const afternoonStartMinutes = 13 * 60
@@ -88,6 +85,30 @@ export function timeSlotsOnDate(
   }
 
   return [...new Set(slots)]
+}
+
+export function isDoctorsOfficeOpenNow(
+  openingHours: DoctorsOfficeOpeningHours,
+  date: Date = new Date(),
+): boolean {
+  const ranges = openingHours[weekdayFromDate(date)] ?? []
+  const nowMinutes = date.getHours() * 60 + date.getMinutes()
+
+  for (const range of ranges) {
+    const parsed = parseTimeRange(range)
+    if (parsed && nowMinutes >= parsed.start && nowMinutes < parsed.end) {
+      return true
+    }
+  }
+
+  return false
+}
+
+export function doctorsOfficeStatusFromOpeningHours(
+  openingHours: DoctorsOfficeOpeningHours,
+  date: Date = new Date(),
+): DoctorsOfficeStatus {
+  return isDoctorsOfficeOpenNow(openingHours, date) ? "open" : "closed"
 }
 
 export function isMorningSlot(time: string): boolean {

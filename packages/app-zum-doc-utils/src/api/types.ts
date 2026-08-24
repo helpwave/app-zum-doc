@@ -4,19 +4,14 @@ import type {
   MedicationSize,
   PatientRequestStatus,
   PatientRequestType,
-  Weekday,
 } from "./enums"
 
+export * from "./address"
+export * from "./doctorsOffice"
 export * from "./enums"
 export * from "./insurance"
 export * from "./message"
 export * from "./patientProfile"
-
-export type HomeQuickAction = {
-  id: PatientRequestType
-  label: string
-  href: string
-}
 
 export type HomeDoctorCard = {
   id: string
@@ -24,7 +19,6 @@ export type HomeDoctorCard = {
   specialty: string
   phone: string
   imageUri: string | null
-  initials?: string
   status: DoctorsOfficeStatus
 }
 
@@ -40,7 +34,6 @@ export type HomeRequest = {
 }
 
 export type HomeSummary = {
-  quickActions: HomeQuickAction[]
   myDoctors: HomeDoctorCard[]
   recentRequests: HomeRequest[]
 }
@@ -54,26 +47,6 @@ export type Medication = {
   id: string
   name: string
   size: MedicationSize
-}
-
-export type DoctorsOfficeOpeningHours = Record<Weekday, string[]>
-
-export type DoctorsOffice = {
-  id: string
-  name: string
-  specialty: string
-  phone: string
-  imageUri: string | null
-  initials?: string
-  status: DoctorsOfficeStatus
-  isMyDoctor: boolean
-  openingHours: DoctorsOfficeOpeningHours
-  services: string[]
-  addressLine1: string
-  addressLine2: string
-  websiteLabel: string
-  websiteUrl: string
-  additionalOfferLabel: string
 }
 
 export type SearchCity = {
