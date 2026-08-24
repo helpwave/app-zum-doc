@@ -1,11 +1,16 @@
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { StructuredCardMessage } from "@app-zum-doc/utils/api"
+import {
+  formatMessageTime,
+  toAppLocale,
+  type StructuredCardMessage,
+} from "@app-zum-doc/utils/api"
 import {
   Button,
   ChatMessageBubble,
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { CalendarDays } from "lucide-react-native"
 import { Text, View } from "react-native"
 
@@ -22,6 +27,8 @@ export function StructuredCard({
 }: StructuredCardProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.structuredCard
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
   const tonalPrimary = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
   const showActions =
     !message.selectedActionId && message.actions && message.actions.length > 0
@@ -29,7 +36,7 @@ export function StructuredCard({
   return (
     <ChatMessageBubble
       direction={message.direction}
-      timestamp={message.timeLabel}
+      timestamp={formatMessageTime(message.time, locale)}
     >
       <View style={{flexDirection: "row", alignItems: "center", gap: theme.spacing.md}}>
         <View style={{...theme.semantics.container.sm, backgroundColor: tonalPrimary.color}}>

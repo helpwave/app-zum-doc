@@ -1,7 +1,13 @@
 import { SelectionSheet } from "@/components/selection-sheet"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { PatientProfile } from "@app-zum-doc/utils/api"
+import {
+  findInsuranceCompany,
+  formatPatientDateOfBirth,
+  patientProfileFullName,
+  toAppLocale,
+  type PatientProfile,
+} from "@app-zum-doc/utils/api"
 import {
   ListActionItem,
   ThemedIcon
@@ -21,6 +27,9 @@ type ProfileHeaderProps = {
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.profileSections
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
+  const insuranceCompany = findInsuranceCompany(profile.insurance.insuranceProviderId)
 
   return (
     <View
@@ -46,19 +55,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           marginTop: theme.spacing.md,
         }}
       >
-        {profile.fullName}
-      </Text>
-      <Text
-        style={{
-          ...theme.typography.body.sm,
-          fontFamily: theme.fontFamilies.default,
-          textAlign: "center",
-          paddingHorizontal: theme.spacing.lg,
-          color: colors.meta,
-        }}
-      >
-        geb. {profile.dateOfBirth} · Vers.-Nr. {profile.insuranceNumber} ·{" "}
-        {profile.insuranceType}
+        {patientProfileFullName(profile)}
       </Text>
     </View>
   )

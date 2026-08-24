@@ -1,6 +1,7 @@
 export * from "./appLocale"
 export * from "./chatMessageType"
 export * from "./doctorsOfficeStatus"
+export * from "./insuranceType"
 export * from "./medicationSize"
 export * from "./messageDirection"
 export * from "./messageStatus"

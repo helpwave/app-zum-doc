@@ -18,8 +18,7 @@ import {
   WeekdayUtils,
   type Appointment,
   type AppLocale,
-  type ChatMessage,
-  type Conversation,
+  type ConversationPreview,
   type CreateAppointmentInput,
   type CreatePrescriptionInput,
   type CreateReferralInput,
@@ -32,6 +31,8 @@ import {
   type Medication,
   type MedicationCatalogItem,
   type MedicationSize,
+  type Message,
+  type MessagePreview,
   type PatientProfile,
   type PatientProfileSummary,
   type Prescription,
@@ -41,11 +42,15 @@ import {
   type StructuredCardMessage,
   type TextMessage,
 } from "../types"
+import {
+  formatPatientDateOfBirth,
+  patientProfileFullName,
+} from "../patientProfile"
 
 const delayMs = 550
 
-let conversationsState: Conversation[] = structuredClone(conversationsSeed)
-let messagesState: Record<string, ChatMessage[]> = structuredClone(
+let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
+let messagesState: Record<string, Message[]> = structuredClone(
   messagesByConversation,
 )
 let myDoctorIds = new Set(
@@ -87,7 +92,7 @@ async function withMockLatency<T>(
   return work()
 }
 
-export async function fetchConversations(): Promise<Conversation[]> {
+export async function fetchConversations(): Promise<ConversationPreview[]> {
   return withMockLatency(() =>
     conversationsState.map((conversation) => ({ ...conversation })),
   )
@@ -95,7 +100,7 @@ export async function fetchConversations(): Promise<Conversation[]> {
 
 export async function fetchConversation(
   conversationId: string,
-): Promise<Conversation> {
+): Promise<ConversationPreview> {
   return withMockLatency(() => {
     const conversation = conversationsState.find(
       (item) => item.id === conversationId,
@@ -109,7 +114,7 @@ export async function fetchConversation(
 
 export async function fetchMessages(
   conversationId: string,
-): Promise<ChatMessage[]> {
+): Promise<Message[]> {
   return withMockLatency(() => {
     const messages = messagesState[conversationId] ?? []
     return messages.map((message) => ({ ...message }))
@@ -118,7 +123,7 @@ export async function fetchMessages(
 
 export async function markConversationRead(
   conversationId: string,
-): Promise<Conversation[]> {
+): Promise<ConversationPreview[]> {
   return withMockLatency(() => {
     conversationsState = conversationsState.map((conversation) => {
       if (conversation.id !== conversationId) {
@@ -133,17 +138,16 @@ export async function markConversationRead(
 export async function sendMessage(
   conversationId: string,
   body: string,
-): Promise<ChatMessage[]> {
+): Promise<Message[]> {
   return withMockLatency(() => {
     const now = new Date()
-    const timeLabel = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
     const message: TextMessage = {
       id: `msg-local-${Date.now()}`,
       type: "text",
       direction: "outgoing",
+      status: "sent",
       body,
-      timeLabel,
-      receipt: "sent",
+      time: now,
     }
 
     const existing = messagesState[conversationId] ?? []
@@ -152,16 +156,22 @@ export async function sendMessage(
       [conversationId]: [...existing, message],
     }
 
+    const lastMessage: MessagePreview = {
+      id: message.id,
+      preview: body,
+      time: now,
+      direction: "outgoing",
+      status: "sent",
+    }
+
     conversationsState = conversationsState.map((conversation) => {
       if (conversation.id !== conversationId) {
         return conversation
       }
       return {
         ...conversation,
-        lastMessage: body,
-        timeLabel,
+        lastMessage,
         unreadCount: 0,
-        sentByMe: true,
       }
     })
 
@@ -173,10 +183,10 @@ export async function resolveCardAction(
   conversationId: string,
   messageId: string,
   actionId: string,
-): Promise<ChatMessage[]> {
+): Promise<Message[]> {
   return withMockLatency(() => {
     const existing = messagesState[conversationId] ?? []
-    const next: ChatMessage[] = existing.map((message) => {
+    const next: Message[] = existing.map((message) => {
       if (message.id !== messageId || message.type !== "card") {
         return message
       }
@@ -276,8 +286,8 @@ export async function createAppointment(
       doctorImageUri: office.imageUri,
       doctorInitials: office.initials,
       profileId: profile.id,
-      patientName: profile.fullName,
-      patientDateOfBirth: profile.dateOfBirth,
+      patientName: patientProfileFullName(profile),
+      patientDateOfBirth: formatPatientDateOfBirth(profile.dateOfBirth, locale),
       date: input.date,
       time: input.time,
       isEmergency: input.isEmergency,
@@ -388,7 +398,7 @@ export async function createPrescription(
       doctorImageUri: office.imageUri,
       doctorInitials: office.initials,
       profileId: profile.id,
-      patientName: profile.fullName,
+      patientName: patientProfileFullName(profile),
       shipByMail: input.shipByMail,
       note: input.note,
       medications: input.medications.map((medication, index) => ({
@@ -508,7 +518,7 @@ export async function createReferral(
       doctorImageUri: office.imageUri,
       doctorInitials: office.initials,
       profileId: profile.id,
-      patientName: profile.fullName,
+      patientName: patientProfileFullName(profile),
       specialistDoctorsOfficeId: specialist.id,
       specialistName: specialist.name,
       reason: input.reason,

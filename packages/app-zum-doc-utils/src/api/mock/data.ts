@@ -1,17 +1,32 @@
 import type {
   Appointment,
-  ChatMessage,
-  Conversation,
+  ConversationPreview,
   DoctorsOffice,
   DoctorsOfficeOpeningHours,
   HomeSummary,
   Medication,
   MedicationCatalogItem,
+  Message,
   PatientProfile,
   PatientProfileSummary,
   Prescription,
   Referral,
 } from "../types"
+import {
+  formatPatientDateOfBirth,
+  patientProfileFullName,
+  toPatientProfileSummary,
+} from "../patientProfile"
+
+function chatTime(
+  year: number,
+  month: number,
+  day: number,
+  hours: number,
+  minutes: number,
+): Date {
+  return new Date(year, month - 1, day, hours, minutes)
+}
 
 export type LocalizedLabel = {
   "de-DE": string
@@ -68,88 +83,101 @@ export const specializationsSeed: {
   { id: "orthopedics", labels: { "de-DE": "Orthopädie", "en-US": "Orthopedics" } },
 ]
 
-export const conversationsSeed: Conversation[] = [
+export const conversationsSeed: ConversationPreview[] = [
   {
     id: "conv-sophie",
-    contact: {
-      id: "contact-sophie",
+    user: {
+      id: "user-sophie",
       name: "Dr. med. Sophie Vogt",
-      subtitle: "Hausarztpraxis Altstadt",
-      initials: "SV",
-      presence: "online",
+      status: "online",
     },
-    lastMessage: "Wir haben die Ergebnisse Ihrer Blut…",
-    timeLabel: "09:12",
+    lastMessage: {
+      id: "msg-text-1",
+      preview: "Wir haben die Ergebnisse Ihrer Blut…",
+      time: chatTime(2026, 7, 8, 9, 12),
+      direction: "incoming",
+      status: "received",
+    },
     unreadCount: 1,
-    sentByMe: false,
   },
   {
     id: "conv-altstadt",
-    contact: {
-      id: "contact-altstadt",
+    user: {
+      id: "user-altstadt",
       name: "Hausarztpraxis Altstadt",
-      subtitle: "Praxis-Team",
       imageUri: "practice-logo",
-      presence: "offline",
+      status: "offline",
     },
-    lastMessage: "Ihr Rezept liegt zur Abholung bereit.",
-    timeLabel: "Gestern",
+    lastMessage: {
+      id: "msg-alt-2",
+      preview: "Vielen Dank, ich hole es morgen ab.",
+      time: chatTime(2026, 7, 7, 16, 50),
+      direction: "outgoing",
+      status: "read",
+    },
     unreadCount: 0,
-    sentByMe: true,
   },
   {
     id: "conv-klein",
-    contact: {
-      id: "contact-klein",
+    user: {
+      id: "user-klein",
       name: "Zahnarztpraxis Dr. Klein",
-      initials: "KL",
-      presence: "offline",
+      status: "offline",
     },
-    lastMessage: "Bitte kommen Sie 10 Minuten früher.",
-    timeLabel: "Mo",
+    lastMessage: {
+      id: "msg-klein-1",
+      preview: "Bitte kommen Sie 10 Minuten früher.",
+      time: chatTime(2026, 7, 7, 10, 5),
+      direction: "incoming",
+      status: "received",
+    },
     unreadCount: 0,
-    sentByMe: false,
   },
   {
     id: "conv-kern",
-    contact: {
-      id: "contact-kern",
+    user: {
+      id: "user-kern",
       name: "Radiologie Dr. Kern",
-      initials: "RK",
-      presence: "offline",
+      status: "offline",
     },
-    lastMessage: "Überweisung erhalten, vielen Dank.",
-    timeLabel: "24. Juni",
+    lastMessage: {
+      id: "msg-kern-1",
+      preview: "Überweisung erhalten, vielen Dank.",
+      time: chatTime(2026, 6, 24, 11, 20),
+      direction: "outgoing",
+      status: "sent",
+    },
     unreadCount: 0,
-    sentByMe: false,
   },
 ]
 
-export const messagesByConversation: Record<string, ChatMessage[]> = {
+export const messagesByConversation: Record<string, Message[]> = {
   "conv-sophie": [
     {
       id: "msg-date-1",
       type: "date",
-      label: "Heute · 09:10",
+      date: chatTime(2026, 7, 8, 9, 10),
     },
     {
       id: "msg-text-1",
       type: "text",
       direction: "incoming",
+      status: "received",
       body: "Guten Tag Herr Wellermann, wir haben die Ergebnisse Ihrer Blutuntersuchung erhalten und würden die Werte gerne mit Ihnen besprechen.",
-      timeLabel: "09:12",
+      time: chatTime(2026, 7, 8, 9, 12),
     },
     {
       id: "msg-card-1",
       type: "card",
       direction: "incoming",
+      status: "received",
       kind: "appointment",
       title: "Terminvorschlag",
       subtitle: "Besprechung Blutwerte · 30 Min",
       primary: "Mi. 8. Juli 2026",
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
       mainActionId: "accept",
-      timeLabel: "09:15",
+      time: chatTime(2026, 7, 8, 9, 15),
       actions: [
         { id: "accept", label: "Zusagen" },
         { id: "decline", label: "Ablehnen" },
@@ -159,47 +187,50 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       id: "msg-text-2",
       type: "text",
       direction: "outgoing",
+      status: "sent",
       body: "Vielen Dank. 15:00 Uhr passt mir gut – ich komme vorbei.",
-      timeLabel: "09:20",
+      time: chatTime(2026, 7, 8, 9, 20),
     },
     {
       id: "msg-att-1",
       type: "attachment",
       direction: "incoming",
+      status: "received",
       fileName: "Befund_Blutbild.pdf",
       fileType: "PDF",
       fileSize: "196 KB",
-      timeLabel: "09:21",
+      time: chatTime(2026, 7, 8, 9, 21),
     },
     {
       id: "msg-text-3",
       type: "text",
       direction: "outgoing",
+      status: "read",
       body: "Perfekt, ich habe den Befund erhalten. Bis Mittwoch!",
-      timeLabel: "09:24",
-      receipt: "read",
+      time: chatTime(2026, 7, 8, 9, 24),
     },
   ],
   "conv-altstadt": [
     {
       id: "msg-alt-date",
       type: "date",
-      label: "Gestern · 16:40",
+      date: chatTime(2026, 7, 7, 16, 40),
     },
     {
       id: "msg-alt-1",
       type: "text",
       direction: "incoming",
+      status: "received",
       body: "Ihr Rezept liegt zur Abholung bereit.",
-      timeLabel: "16:42",
+      time: chatTime(2026, 7, 7, 16, 42),
     },
     {
       id: "msg-alt-2",
       type: "text",
       direction: "outgoing",
+      status: "read",
       body: "Vielen Dank, ich hole es morgen ab.",
-      timeLabel: "16:50",
-      receipt: "read",
+      time: chatTime(2026, 7, 7, 16, 50),
     },
   ],
   "conv-klein": [
@@ -207,8 +238,9 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       id: "msg-klein-1",
       type: "text",
       direction: "incoming",
+      status: "received",
       body: "Bitte kommen Sie 10 Minuten früher.",
-      timeLabel: "10:05",
+      time: chatTime(2026, 7, 7, 10, 5),
     },
   ],
   "conv-kern": [
@@ -216,9 +248,9 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       id: "msg-kern-1",
       type: "text",
       direction: "outgoing",
+      status: "sent",
       body: "Überweisung erhalten, vielen Dank.",
-      timeLabel: "11:20",
-      receipt: "sent",
+      time: chatTime(2026, 6, 24, 11, 20),
     },
   ],
 }
@@ -249,19 +281,16 @@ export const patientMedicationsSeed: Medication[] = [
 
 export const patientProfileSeed: PatientProfile = {
   id: "patient-wellermann",
-  fullName: "Jonas Wellermann",
   firstName: "Jonas",
   lastName: "Wellermann",
-  dateOfBirth: "14.03.1989",
-  insuranceNumber: "A123456789",
-  insuranceType: "GKV",
-  insuranceProviderId: "tk",
-  federalStateId: "nordrhein-westfalen",
+  dateOfBirth: new Date(1989, 2, 14),
   email: "jonas.wellermann@mail.de",
   phone: "+49 170 1234567",
-  practiceName: "Hausarztpraxis Altstadt",
-  practiceAddress: "Markt 12, 52062 Aachen",
-  notificationsEnabled: true,
+  insurance: {
+    insuranceProviderId: "techniker-krankenkasse",
+    insuranceNumber: "A123456789",
+  },
+  medicationList: patientMedicationsSeed,
 }
 
 export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
@@ -564,11 +593,7 @@ export function buildHomeSummary(): HomeSummary {
 }
 
 export const patientProfilesSeed: PatientProfileSummary[] = [
-  {
-    id: patientProfileSeed.id,
-    fullName: patientProfileSeed.fullName,
-    dateOfBirth: patientProfileSeed.dateOfBirth,
-  },
+  toPatientProfileSummary(patientProfileSeed),
 ]
 
 export const appointmentsSeed: Appointment[] = [
@@ -579,8 +604,8 @@ export const appointmentsSeed: Appointment[] = [
     doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
     doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
-    patientDateOfBirth: patientProfileSeed.dateOfBirth,
+    patientName: patientProfileFullName(patientProfileSeed),
+    patientDateOfBirth: formatPatientDateOfBirth(patientProfileSeed.dateOfBirth, "de-DE"),
     date: "2025-06-22",
     time: "14:00",
     isEmergency: false,
@@ -596,8 +621,8 @@ export const appointmentsSeed: Appointment[] = [
     doctorImageUri: null,
     doctorInitials: "HM",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
-    patientDateOfBirth: patientProfileSeed.dateOfBirth,
+    patientName: patientProfileFullName(patientProfileSeed),
+    patientDateOfBirth: formatPatientDateOfBirth(patientProfileSeed.dateOfBirth, "de-DE"),
     date: "2025-06-21",
     time: "10:00",
     isEmergency: false,
@@ -614,7 +639,7 @@ export const prescriptionsSeed: Prescription[] = [
     doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
     doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
+    patientName: patientProfileFullName(patientProfileSeed),
     shipByMail: true,
     note: "Wenn möglich bitte zwei kleine Packungen Paracetamol. Vielen Dank und lieben Gruß.",
     medications: [
@@ -630,7 +655,7 @@ export const prescriptionsSeed: Prescription[] = [
     doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
     doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
+    patientName: patientProfileFullName(patientProfileSeed),
     shipByMail: false,
     note: "",
     medications: [
@@ -645,7 +670,7 @@ export const prescriptionsSeed: Prescription[] = [
     doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
     doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
+    patientName: patientProfileFullName(patientProfileSeed),
     shipByMail: true,
     note: "",
     medications: [
@@ -663,7 +688,7 @@ export const referralsSeed: Referral[] = [
     doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
     doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
+    patientName: patientProfileFullName(patientProfileSeed),
     specialistDoctorsOfficeId: "office-willendorfer",
     specialistName: "Dr. Anton Willendorfer",
     reason:

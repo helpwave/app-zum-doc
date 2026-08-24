@@ -1,91 +1,16 @@
 import type {
   AppLocale,
-  ChatMessageType,
   DoctorsOfficeStatus,
   MedicationSize,
-  MessageDirection,
-  MessageStatus,
   PatientRequestStatus,
   PatientRequestType,
-  UserStatus,
   Weekday,
 } from "./enums"
 
 export * from "./enums"
-
-export type Contact = {
-  id: string
-  name: string
-  subtitle?: string
-  initials?: string
-  imageUri?: string | null
-  presence: UserStatus
-}
-
-export type Conversation = {
-  id: string
-  contact: Contact
-  lastMessage: string
-  timeLabel: string
-  unreadCount: number
-  sentByMe: boolean
-}
-
-export type TextMessage = {
-  id: string
-  type: Extract<ChatMessageType, "text">
-  direction: MessageDirection
-  body: string
-  timeLabel: string
-  receipt?: MessageStatus
-}
-
-export type DateDividerMessage = {
-  id: string
-  type: Extract<ChatMessageType, "date">
-  label: string
-}
-
-export type SystemMessage = {
-  id: string
-  type: Extract<ChatMessageType, "system">
-  body: string
-}
-
-export type StructuredCardMessage = {
-  id: string
-  type: Extract<ChatMessageType, "card">
-  direction: MessageDirection
-  kind: PatientRequestType
-  title: string
-  subtitle: string
-  primary: string
-  detail: string
-  mainActionId?: string
-  selectedActionId?: string
-  timeLabel: string
-  actions?: {
-    id: string
-    label: string
-  }[]
-}
-
-export type AttachmentMessage = {
-  id: string
-  type: Extract<ChatMessageType, "attachment">
-  direction: MessageDirection
-  fileName: string
-  fileType: string
-  fileSize: string
-  timeLabel: string
-}
-
-export type ChatMessage =
-  | TextMessage
-  | DateDividerMessage
-  | SystemMessage
-  | StructuredCardMessage
-  | AttachmentMessage
+export * from "./insurance"
+export * from "./message"
+export * from "./patientProfile"
 
 export type HomeQuickAction = {
   id: PatientRequestType
@@ -118,23 +43,6 @@ export type HomeSummary = {
   quickActions: HomeQuickAction[]
   myDoctors: HomeDoctorCard[]
   recentRequests: HomeRequest[]
-}
-
-export type PatientProfile = {
-  id: string
-  fullName: string
-  firstName: string
-  lastName: string
-  dateOfBirth: string
-  insuranceNumber: string
-  insuranceType: string
-  insuranceProviderId: string
-  federalStateId: string
-  email: string
-  phone: string
-  practiceName: string
-  practiceAddress: string
-  notificationsEnabled: boolean
 }
 
 export type MedicationCatalogItem = {
@@ -183,12 +91,6 @@ export type DoctorSearchFilters = {
   cityId?: string
   specializationId?: string
   locale: AppLocale
-}
-
-export type PatientProfileSummary = {
-  id: string
-  fullName: string
-  dateOfBirth: string
 }
 
 export type Appointment = {

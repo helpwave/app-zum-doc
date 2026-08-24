@@ -3,7 +3,7 @@ import { NavigationHeader } from "@/components/navigation-header"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toAppLocale } from "@app-zum-doc/utils/api"
+import { patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
 import {
   useCreateReferral,
   useDoctorSearch,
@@ -77,7 +77,7 @@ export default function CreateReferralScreen() {
     () =>
       profiles.map((profile) => ({
         id: profile.id,
-        label: t("profileSelf", { name: profile.fullName }),
+        label: t("profileSelf", { name: patientProfileFullName(profile) }),
       })),
     [profiles, t],
   )

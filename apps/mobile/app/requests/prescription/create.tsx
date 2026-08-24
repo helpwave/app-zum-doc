@@ -8,6 +8,7 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
   toAppLocale,
+  patientProfileFullName,
   type MedicationSize,
 } from "@app-zum-doc/utils/api"
 import {
@@ -187,7 +188,7 @@ export default function CreatePrescriptionScreen() {
                 <ListItem
                   title={
                     selectedProfile
-                      ? t("profileSelf", { name: selectedProfile.fullName })
+                      ? t("profileSelf", { name: patientProfileFullName(selectedProfile) })
                       : t("patient")
                   }
                 />
@@ -195,7 +196,7 @@ export default function CreatePrescriptionScreen() {
                 <ListNavigationItem
                   title={
                     selectedProfile
-                      ? t("profileSelf", { name: selectedProfile.fullName })
+                      ? t("profileSelf", { name: patientProfileFullName(selectedProfile) })
                       : t("patient")
                   }
                   onPress={() => {
@@ -313,7 +314,7 @@ export default function CreatePrescriptionScreen() {
         title={t("patient")}
         options={profiles.map((profile) => ({
           id: profile.id,
-          label: t("profileSelf", { name: profile.fullName }),
+          label: t("profileSelf", { name: patientProfileFullName(profile) }),
         }))}
         value={profileId}
         onChange={setProfileId}

@@ -11,6 +11,7 @@ import {
   parseIsoDate,
   timeSlotsOnDate,
   toAppLocale,
+  patientProfileFullName,
 } from "@app-zum-doc/utils/api"
 import {
   useCreateAppointment,
@@ -173,11 +174,11 @@ export default function RequestAppointmentScreen() {
             <Card>
               {profileReadonly ? (
                 <ListItem
-                  title={selectedProfile?.fullName ?? t("selectProfile")}
+                  title={selectedProfile ? patientProfileFullName(selectedProfile) : t("selectProfile")}
                 />
               ) : (
                 <ListNavigationItem
-                  title={selectedProfile?.fullName ?? t("selectProfile")}
+                  title={selectedProfile ? patientProfileFullName(selectedProfile) : t("selectProfile")}
                   onPress={() => {
                     setOpenSheet("profile")
                   }}
@@ -277,7 +278,7 @@ export default function RequestAppointmentScreen() {
         title={t("selectProfile")}
         options={profiles.map((profile) => ({
           id: profile.id,
-          label: profile.fullName,
+          label: patientProfileFullName(profile),
         }))}
         value={profileId}
         onChange={setProfileId}
