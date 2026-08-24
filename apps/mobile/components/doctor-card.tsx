@@ -8,9 +8,12 @@ import {
   doctorsOfficeStatusFromOpeningHours,
   type DoctorsOffice,
 } from "@app-zum-doc/utils/api"
+import { ColorPairToken } from "@helpwave/hightide-design/theme-tokens"
+import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import { Avatar, ThemedPressable } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Phone } from "lucide-react-native"
+import { useMemo } from "react"
 import { Text, View, ViewStyle } from "react-native"
 
 type DoctorCardProps = {
@@ -25,6 +28,13 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const colors = theme.components.homeSections
   const avatarSize = theme.semantics.container.md.size * 2
   const status = doctorsOfficeStatusFromOpeningHours(doctor.openingHours)
+  const avatarColor: ColorPairToken = useMemo(() => {
+    const coloring = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
+    return {
+      color: HexColorUtils.resolveColorToken(coloring.color),
+      onColor: HexColorUtils.resolveColorToken(coloring.onColor),
+    }
+  }, [theme.colors.primary, theme.semantics])
 
   return (
     <ThemedPressable
@@ -34,32 +44,50 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
       coloringStyle="filled"
       style={{
         height: theme.semantics.container.md.size * 3,
-        borderRadius: theme.borderRadius.md,
         flexDirection: "row",
         alignContent: "stretch",
         alignSelf: "stretch",
-        gap: theme.spacing.md,
-        padding: theme.padding.xl,
-        paddingInlineEnd: theme.padding.xl + theme.spacing.md,
+        gap: theme.spacing.lg,
+        ...StyleAdapterUtils.borderRadius({
+          type: "all",
+          value: theme.borderRadius.xl,
+        }),
+        ...StyleAdapterUtils.padding({
+          type: "all",
+          value: theme.padding.lg,
+        }),
         backgroundColor: colors.cardBackground,
         boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
         ...style,
+      }}
+      stateLayerStyle={{
+        ...StyleAdapterUtils.borderRadius({
+          type: "all",
+          value: theme.borderRadius.xl,
+        }),
       }}
     >
       <Avatar
         name={doctor.name}
         image={contactAvatarImage(doctor.imageUri, doctor.name)}
         ImageComponent={AzdAvatarImage}
-        size={avatarSize}
-        style={{ alignSelf: "stretch" }}
-        avatarStyle={{ borderRadius: theme.borderRadius.md }}
-        imageStyle={{ borderRadius: theme.borderRadius.md }}
+        color={avatarColor}
+        style={{ 
+          alignSelf: "stretch",
+          minWidth: avatarSize,
+          minHeight: avatarSize,
+          width: "auto",
+          height: "auto",
+          maxWidth: "auto", 
+          maxHeight: "auto" 
+        }}
+        avatarStyle={{ borderRadius: theme.borderRadius.md, width: "100%", height: "100%" }}
+        imageStyle={{ borderRadius: theme.borderRadius.md, width: "100%", height: "100%" }}
       />
       <View
         style={{
           flex: 1,
-          justifyContent: "space-between",
-          paddingVertical: theme.spacing.md,
+          justifyContent: "space-around",
           alignSelf: "stretch",
         }}
       >

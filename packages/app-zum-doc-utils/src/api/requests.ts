@@ -48,15 +48,14 @@ export type CreatePrescriptionInput = {
 }
 
 export type Referral = RequestBase & {
-  specialistDoctorsOfficeId: string
-  specialistName: string
+  specialization: string
   reason: string
 }
 
 export type CreateReferralInput = {
   doctorsOfficeId: string
   profileId: string
-  specialistDoctorsOfficeId: string
+  specialization: string
   reason: string
 }
 

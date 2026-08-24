@@ -47,7 +47,11 @@ import {
   type StructuredCardMessage,
   type TextMessage,
 } from "../types"
-import { parseIsoDate } from "../openingHours"
+import {
+  formatAppointmentRequestTitle,
+  formatPrescriptionRequestTitle,
+  formatReferralRequestTitle,
+} from "../requestTitle"
 
 type HomeSummary = {
   myDoctors: DoctorsOffice[]
@@ -260,42 +264,6 @@ function resolveDoctorsOffice(
   return toDoctorsOffice(office, locale)
 }
 
-function formatRequestDate(isoDate: string, locale: AppLocale): string {
-  return parseIsoDate(isoDate).toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-}
-
-function appointmentTitle(record: AppointmentRecord, locale: AppLocale): string {
-  const date = formatRequestDate(record.date, locale)
-  if (locale === "de-DE") {
-    return `Terminanfrage (${date})`
-  }
-  return `Appointment request (${date})`
-}
-
-function prescriptionTitle(record: PrescriptionRecord, locale: AppLocale): string {
-  const medicationNames = record.medications
-    .map((medication) => medication.name)
-    .join(", ")
-  if (locale === "de-DE") {
-    return `Rezeptanfrage (${medicationNames})`
-  }
-  return `Prescription request (${medicationNames})`
-}
-
-function referralTitle(record: ReferralRecord, locale: AppLocale): string {
-  const specialist =
-    doctorsOfficesSeed[record.specialistDoctorsOfficeId]?.name
-    ?? record.specialistName
-  if (locale === "de-DE") {
-    return `Überweisung an ${specialist}`
-  }
-  return `Referral to ${specialist}`
-}
-
 function buildRecentRequests(locale: AppLocale): PatientRequest[] {
   return [
     ...prescriptionsState.map((record) => toPrescription(record, locale)),
@@ -312,7 +280,7 @@ function toAppointment(
   return {
     ...rest,
     kind: "appointment",
-    title: appointmentTitle(record, locale),
+    title: formatAppointmentRequestTitle(record.date, record.time, locale),
     doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
   }
 }
@@ -322,10 +290,11 @@ function toPrescription(
   locale: AppLocale,
 ): Prescription {
   const { doctorsOfficeId, ...rest } = record
+  const medicationNames = record.medications.map((medication) => medication.name)
   return {
     ...rest,
     kind: "prescription",
-    title: prescriptionTitle(record, locale),
+    title: formatPrescriptionRequestTitle(medicationNames),
     doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
     medications: rest.medications.map((medication) => ({ ...medication })),
   }
@@ -333,13 +302,11 @@ function toPrescription(
 
 function toReferral(record: ReferralRecord, locale: AppLocale): Referral {
   const { doctorsOfficeId, ...rest } = record
-  const specialist = doctorsOfficesSeed[rest.specialistDoctorsOfficeId]
   return {
     ...rest,
     kind: "referral",
-    title: referralTitle(record, locale),
+    title: formatReferralRequestTitle(record.specialization),
     doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
-    specialistName: specialist?.name ?? rest.specialistName,
   }
 }
 
@@ -499,23 +466,21 @@ export async function createReferral(
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
-    const specialist = doctorsOfficesSeed[input.specialistDoctorsOfficeId]
-    if (!specialist) {
-      throw new Error("Facharzt nicht gefunden.")
-    }
     const profile =
       patientProfilesSeed.find((item) => item.id === input.profileId)
       ?? patientProfilesSeed[0]
     if (!profile) {
       throw new Error("Profil nicht gefunden.")
     }
+    if (input.specialization.trim().length === 0) {
+      throw new Error("Bitte wählen Sie eine Fachrichtung aus.")
+    }
 
     const referral: ReferralRecord = {
       id: `req-referral-${Date.now()}`,
       doctorsOfficeId: office.id,
       profileId: profile.id,
-      specialistDoctorsOfficeId: specialist.id,
-      specialistName: specialist.name,
+      specialization: input.specialization.trim(),
       reason: input.reason,
       status: "inProgress",
     }

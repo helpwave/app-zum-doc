@@ -178,7 +178,7 @@ export default function ReferralDetailScreen() {
                 <Divider />
                 <DetailRow
                   label={t("referralToSpecialist")}
-                  value={referral.specialistName}
+                  value={referral.specialization}
                 />
               </View>
 

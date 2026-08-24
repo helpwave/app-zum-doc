@@ -238,8 +238,8 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           <Text
             style={{
               ...theme.typography.body.md,
-              fontWeight: theme.fontWeights.medium,
-              color: colors.requestDoctor,
+              fontWeight: theme.fontWeights.semibold,
+              color: colors.requestDoctor
             }}
           >
             {request.doctorsOffice.name}

@@ -6,11 +6,11 @@ import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
 import {
   useCreateReferral,
-  useDoctorSearch,
   useDoctorsOffice,
   useHomeSummary,
   usePatientProfiles,
   useReferral,
+  useSpecializations,
 } from "@app-zum-doc/utils/hooks"
 import {
   Button,
@@ -41,7 +41,7 @@ export default function CreateReferralScreen() {
 
   const homeQuery = useHomeSummary(locale)
   const profilesQuery = usePatientProfiles()
-  const doctorsQuery = useDoctorSearch({ locale })
+  const specializationsQuery = useSpecializations("", locale)
   const reorderQuery = useReferral(reorderFrom, locale)
   const createReferral = useCreateReferral()
   const profiles = useMemo(
@@ -51,12 +51,11 @@ export default function CreateReferralScreen() {
 
   const [doctorId, setDoctorId] = useState(initialDoctorId)
   const [profileId, setProfileId] = useState("")
-  const [specialistId, setSpecialistId] = useState("")
+  const [specialization, setSpecialization] = useState("")
   const [reason, setReason] = useState("")
   const [didPrefillReorder, setDidPrefillReorder] = useState(false)
 
   const officeQuery = useDoctorsOffice(doctorId, locale)
-  const specialistQuery = useDoctorsOffice(specialistId, locale)
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({
       id: doctor.id,
@@ -81,25 +80,14 @@ export default function CreateReferralScreen() {
       })),
     [profiles, t],
   )
-  const specialistOptions = useMemo(() => {
-    const options = (doctorsQuery.data ?? [])
-      .filter((doctor) => doctor.id !== doctorId)
-      .map((doctor) => ({
-        id: doctor.id,
-        label: doctor.name,
-      }))
-    if (
-      specialistQuery.data
-      && specialistQuery.data.id !== doctorId
-      && !options.some((option) => option.id === specialistQuery.data.id)
-    ) {
-      return [
-        { id: specialistQuery.data.id, label: specialistQuery.data.name },
-        ...options,
-      ]
-    }
-    return options
-  }, [doctorId, doctorsQuery.data, specialistQuery.data])
+  const specializationOptions = useMemo(
+    () =>
+      (specializationsQuery.data ?? []).map((item) => ({
+        id: item.label,
+        label: item.label,
+      })),
+    [specializationsQuery.data],
+  )
 
   useEffect(() => {
     if (initialDoctorId) {
@@ -114,19 +102,13 @@ export default function CreateReferralScreen() {
   }, [profiles])
 
   useEffect(() => {
-    if (specialistId && specialistId === doctorId) {
-      setSpecialistId("")
-    }
-  }, [doctorId, specialistId])
-
-  useEffect(() => {
     if (didPrefillReorder || !reorderQuery.data) {
       return
     }
     const referral = reorderQuery.data
     setDoctorId(referral.doctorsOffice.id)
     setProfileId(referral.profileId)
-    setSpecialistId(referral.specialistDoctorsOfficeId)
+    setSpecialization(referral.specialization)
     setReason(referral.reason)
     setDidPrefillReorder(true)
   }, [didPrefillReorder, reorderQuery.data])
@@ -134,14 +116,14 @@ export default function CreateReferralScreen() {
   const canSubmit =
     doctorId.length > 0
     && profileId.length > 0
-    && specialistId.length > 0
+    && specialization.trim().length > 0
     && reason.trim().length > 0
     && !createReferral.isPending
 
   const isPending =
     homeQuery.isPending
     || profilesQuery.isPending
-    || doctorsQuery.isPending
+    || specializationsQuery.isPending
     || (reorderFrom.length > 0 && reorderQuery.isPending && !didPrefillReorder)
 
   return (
@@ -172,19 +154,19 @@ export default function CreateReferralScreen() {
         isError={
           homeQuery.isError
           || profilesQuery.isError
-          || doctorsQuery.isError
+          || specializationsQuery.isError
           || reorderQuery.isError
         }
         error={
           homeQuery.error
           ?? profilesQuery.error
-          ?? doctorsQuery.error
+          ?? specializationsQuery.error
           ?? reorderQuery.error
         }
         onRetry={() => {
           void homeQuery.refetch()
           void profilesQuery.refetch()
-          void doctorsQuery.refetch()
+          void specializationsQuery.refetch()
           if (reorderFrom.length > 0) {
             void reorderQuery.refetch()
           }
@@ -224,10 +206,10 @@ export default function CreateReferralScreen() {
 
           <LabeledField label={t("referralToSpecialist")}>
             <Select
-              options={specialistOptions}
-              value={specialistId || undefined}
-              onValueChange={setSpecialistId}
-              placeholder={t("selectSpecialist")}
+              options={specializationOptions}
+              value={specialization || undefined}
+              onValueChange={setSpecialization}
+              placeholder={t("selectSpecialization")}
               style={{ width: "100%" }}
             />
           </LabeledField>
@@ -255,7 +237,7 @@ export default function CreateReferralScreen() {
                 input: {
                   doctorsOfficeId: doctorId,
                   profileId,
-                  specialistDoctorsOfficeId: specialistId,
+                  specialization,
                   reason,
                 },
               }).then((referral) => {

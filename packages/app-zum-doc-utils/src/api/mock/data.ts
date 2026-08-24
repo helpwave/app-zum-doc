@@ -691,8 +691,7 @@ export const referralsSeed: ReferralRecord[] = [
     id: "req-radiologie",
     doctorsOfficeId: "office-moser",
     profileId: patientProfileSeed.id,
-    specialistDoctorsOfficeId: "office-willendorfer",
-    specialistName: "Dr. Anton Willendorfer",
+    specialization: "Radiologie",
     reason:
       "Anhaltendes Unwohlsein und starke Schmerzen im unteren Rücken.",
     status: "inProgress",

@@ -15,10 +15,12 @@ import { ScrollView, View } from "react-native"
 function RequestTypeChip({
   label,
   selected,
+  type,
   onPress,
 }: {
   label: string
-  selected: boolean
+  selected: boolean,
+  type: PatientRequestType,
   onPress: () => void
 }) {
   const { theme } = useAzdTheme()
@@ -28,7 +30,7 @@ function RequestTypeChip({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      color={selected ? theme.colors.primary : theme.colors.surface}
+      color={selected ? theme.colors[type] : theme.colors.surface}
       coloringStyle="filled"
       size="sm"
       stateLayerStyle={{
@@ -58,7 +60,7 @@ export default function RequestsScreen() {
   const doctorId = typeof doctorIdParam === "string" ? doctorIdParam : ""
   const homeQuery = useHomeSummary(locale)
   const doctorQuery = useDoctorsOffice(doctorId, locale)
-  const [selectedKind, setSelectedKind] = useState<PatientRequestType | null>(null)
+  const [selectedRequestType, setSelectedRequestType] = useState<PatientRequestType | null>(null)
 
   const typeLabels: Record<PatientRequestType, string> = {
     appointment: t("filterAppointments"),
@@ -71,11 +73,11 @@ export default function RequestsScreen() {
     const byDoctor = doctorId
       ? allRequests.filter((request) => request.doctorsOffice.id === doctorId)
       : allRequests
-    if (!selectedKind) {
+    if (!selectedRequestType) {
       return byDoctor
     }
-    return byDoctor.filter((request) => request.kind === selectedKind)
-  }, [doctorId, homeQuery.data?.recentRequests, selectedKind])
+    return byDoctor.filter((request) => request.kind === selectedRequestType)
+  }, [doctorId, homeQuery.data?.recentRequests, selectedRequestType])
 
   const title = doctorId
     ? doctorQuery.data?.name
@@ -122,13 +124,14 @@ export default function RequestsScreen() {
               gap: theme.spacing.md,
             }}
           >
-            {PatientRequestTypeUtils.array.map((kind) => (
+            {PatientRequestTypeUtils.array.map((type) => (
               <RequestTypeChip
-                key={kind}
-                label={typeLabels[kind]}
-                selected={selectedKind === kind}
+                key={type}
+                label={typeLabels[type]}
+                type={type}
+                selected={selectedRequestType === type}
                 onPress={() => {
-                  setSelectedKind((current) => (current === kind ? null : kind))
+                  setSelectedRequestType((current) => (current === type ? null : type))
                 }}
               />
             ))}
