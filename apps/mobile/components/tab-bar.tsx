@@ -110,10 +110,10 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
                 backgroundColor: selected ? colors.activeBackground : "#FFFFFF00",
               }}
             >
-                <Icon
-                  size={theme.icongraphy.sizes.md}
-                  color={selected ? colors.activeForeground : colors.inactive}
-                />
+              <Icon
+                size={theme.icongraphy.sizes.md}
+                color={selected ? colors.activeForeground : colors.inactive}
+              />
             </View>
             <Text
               style={{

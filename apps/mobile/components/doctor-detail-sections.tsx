@@ -114,95 +114,95 @@ export function DoctorDetailHero({
   return (
     <>
       <LinearGradient
-      colors={[colors.heroStart, colors.heroEnd]}
-      start={{ x: 0.05, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        paddingHorizontal: theme.spacing.lg,
-        paddingTop: insets.top + theme.spacing.md + theme.spacing.sm,
-        paddingBottom: theme.spacing.lg + theme.spacing.sm,
-        gap: theme.spacing.lg,
-        overflow: "hidden",
-      }}
-    >
-      <ContentThemeOverrideProvider foreground={colors.heroIcon}>
-        <AppBar
-          trailing={
-            office.isMyDoctor ? (
-              <View ref={moreButtonRef} collapsable={false}>
-                <Pressable
-                  accessibilityLabel={t("moreOptions")}
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
-                  disabled={isRemovingDoctor}
-                  hitSlop={theme.spacing.md}
-                  onPress={openMenu}
-                >
-                  {isRemovingDoctor ? (
-                    <ActivityIndicator size="small" color={colors.heroIcon} />
-                  ) : (
-                    <Ellipsis size={theme.icongraphy.sizes.sm} color={colors.heroIcon} />
-                  )}
-                </Pressable>
-              </View>
-            ) : null
-          }
-        />
-      </ContentThemeOverrideProvider>
+        colors={[colors.heroStart, colors.heroEnd]}
+        start={{ x: 0.05, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.md + theme.spacing.sm,
+          paddingBottom: theme.spacing.lg + theme.spacing.sm,
+          gap: theme.spacing.lg,
+          overflow: "hidden",
+        }}
+      >
+        <ContentThemeOverrideProvider foreground={colors.heroIcon}>
+          <AppBar
+            trailing={
+              office.isMyDoctor ? (
+                <View ref={moreButtonRef} collapsable={false}>
+                  <Pressable
+                    accessibilityLabel={t("moreOptions")}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
+                    disabled={isRemovingDoctor}
+                    hitSlop={theme.spacing.md}
+                    onPress={openMenu}
+                  >
+                    {isRemovingDoctor ? (
+                      <ActivityIndicator size="small" color={colors.heroIcon} />
+                    ) : (
+                      <Ellipsis size={theme.icongraphy.sizes.sm} color={colors.heroIcon} />
+                    )}
+                  </Pressable>
+                </View>
+              ) : null
+            }
+          />
+        </ContentThemeOverrideProvider>
 
-      <DoctorSummaryCard office={office} />
+        <DoctorSummaryCard office={office} />
 
-      {office.isMyDoctor ? (
-        <View
-          style={{
-            flexDirection: "row",
-            gap: theme.spacing.md + theme.spacing.sm,
-          }}
-        >
-          {addedQuickActions.map((action) => (
-            <StartQuickActionCard
-              key={action.id}
-              action={action}
-              onPress={() => onQuickActionPress(action)}
-            />
-          ))}
-        </View>
-      ) : (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isAddingDoctor, busy: isAddingDoctor }}
-          disabled={isAddingDoctor}
-          onPress={onAddDoctor}
-          style={{
-            height: theme.semantics.control.md.size,
-            borderRadius: 9999,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: theme.spacing.md,
-            backgroundColor: colors.ctaBackground,
-            opacity: isAddingDoctor ? 0.7 : 1,
-          }}
-        >
-          {isAddingDoctor ? (
-            <ActivityIndicator
-              size="small"
-              color={colors.ctaText}
-            />
-          ) : (
-            <Plus size={theme.icongraphy.sizes.sm} color={colors.ctaText} strokeWidth={2.2} />
-          )}
-          <Text
+        {office.isMyDoctor ? (
+          <View
             style={{
-              ...theme.typography.body.md,
-              fontWeight: theme.fontWeights.medium,
-              color: colors.ctaText,
+              flexDirection: "row",
+              gap: theme.spacing.md + theme.spacing.sm,
             }}
           >
-            {t("addAsMyDoctor")}
-          </Text>
-        </Pressable>
-      )}
+            {addedQuickActions.map((action) => (
+              <StartQuickActionCard
+                key={action.id}
+                action={action}
+                onPress={() => onQuickActionPress(action)}
+              />
+            ))}
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isAddingDoctor, busy: isAddingDoctor }}
+            disabled={isAddingDoctor}
+            onPress={onAddDoctor}
+            style={{
+              height: theme.semantics.control.md.size,
+              borderRadius: 9999,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: theme.spacing.md,
+              backgroundColor: colors.ctaBackground,
+              opacity: isAddingDoctor ? 0.7 : 1,
+            }}
+          >
+            {isAddingDoctor ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.ctaText}
+              />
+            ) : (
+              <Plus size={theme.icongraphy.sizes.sm} color={colors.ctaText} strokeWidth={2.2} />
+            )}
+            <Text
+              style={{
+                ...theme.typography.body.md,
+                fontWeight: theme.fontWeights.medium,
+                color: colors.ctaText,
+              }}
+            >
+              {t("addAsMyDoctor")}
+            </Text>
+          </Pressable>
+        )}
       </LinearGradient>
       <Modal
         visible={menuOpen}

@@ -10,28 +10,28 @@ export interface SectionProps extends ViewProps {
 }
 
 export const Section = ({title, titleStyle, trailing, children, ...restProps}: SectionProps) => {
-    const { theme } = useAzdTheme()
-    return (
-        <View {...restProps} style={[{ gap: theme.spacing.md }, restProps.style]}>
-            <View
-                style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <ThemedText 
-                    style={[
-                        {...theme.typography.body.md, fontWeight: theme.fontWeights.bold},
-                        titleStyle,
-                    ]} 
-                    appearance="description"
-                >
-                    {title}
-                </ThemedText>
-                {trailing}
-            </View>
-            {children}
-        </View>
-    )
+  const { theme } = useAzdTheme()
+  return (
+    <View {...restProps} style={[{ gap: theme.spacing.md }, restProps.style]}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <ThemedText 
+          style={[
+            {...theme.typography.body.md, fontWeight: theme.fontWeights.bold},
+            titleStyle,
+          ]} 
+          appearance="description"
+        >
+          {title}
+        </ThemedText>
+        {trailing}
+      </View>
+      {children}
+    </View>
+  )
 }

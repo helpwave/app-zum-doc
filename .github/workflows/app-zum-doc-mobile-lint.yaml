@@ -1,0 +1,36 @@
+name: app-zum-doc Lint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/mobile/**"
+      - "packages/app-zum-doc-utils/**"
+      - ".github/workflows/app-zum-doc-mobile-lint.yaml"
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "packages/app-zum-doc-utils/**"
+      - ".github/workflows/app-zum-doc-mobile-lint.yaml"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @app-zum-doc/utils run init
+      - run: pnpm --filter @app-zum-doc/mobile run init
+      - run: pnpm --filter @app-zum-doc/mobile lint
