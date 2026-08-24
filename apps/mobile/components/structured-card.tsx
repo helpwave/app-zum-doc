@@ -1,10 +1,10 @@
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { StructuredCardMessage } from "@app-zum-doc/utils/api"
 import {
-    Button,
-    ChatMessageBubble,
-    ThemedIcon,
-    ThemedText,
+  Button,
+  ChatMessageBubble,
+  ThemedIcon,
+  ThemedText,
 } from "@helpwave/hightide-native/components"
 import { CalendarDays } from "lucide-react-native"
 import { Text, View } from "react-native"
@@ -52,22 +52,22 @@ export function StructuredCard({
           {message.detail}
         </Text>
       </View>
-     { message.actions && message.actions.length > 0 && ( 
-      <View style={{flexDirection: "row", alignItems: "flex-end"}}>
+      { message.actions && message.actions.length > 0 && ( 
+        <View style={{flexDirection: "row", alignItems: "flex-end"}}>
           {message.actions.map((action) => (
-              <Button
-                key={action.id}
-                color={action.variant === "primary" ? theme.colors.primary : theme.colors.neutral}
-                variant={action.variant === "primary" ? "filled" : "tonal"}
-                disabled={isActionPending}
-                onPress={() => onAction?.(action.id)}
-                style={{ flex: 1 }}
-              >
-                {action.label}
-              </Button>
-            ))}
-      </View>
-    )}
+            <Button
+              key={action.id}
+              color={action.variant === "primary" ? theme.colors.primary : theme.colors.neutral}
+              variant={action.variant === "primary" ? "filled" : "tonal"}
+              disabled={isActionPending}
+              onPress={() => onAction?.(action.id)}
+              style={{ flex: 1 }}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </View>
+      )}
     </ChatMessageBubble>
   )
 }

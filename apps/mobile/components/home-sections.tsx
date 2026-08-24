@@ -299,18 +299,18 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         }}
         color={theme.colors[request.kind]}
       >
-          <ThemedIcon size={theme.icongraphy.sizes.xs} icon={KindIcon} />
-          <ThemedText
-            style={{
-              flexShrink: 1,
-              ...theme.typography.body.sm,
-              fontWeight: theme.fontWeights.medium,
-            }}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {request.kindLabel}
-          </ThemedText>
+        <ThemedIcon size={theme.icongraphy.sizes.xs} icon={KindIcon} />
+        <ThemedText
+          style={{
+            flexShrink: 1,
+            ...theme.typography.body.sm,
+            fontWeight: theme.fontWeights.medium,
+          }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {request.kindLabel}
+        </ThemedText>
       </Chip>
     </ThemedPressable>
   )

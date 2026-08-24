@@ -19,23 +19,23 @@ export function ChatMessageItem({
   isCardActionPending = false,
 }: ChatMessageItemProps) {
   switch (message.type) {
-    case "date":
-      return <ChatDateDivider>{message.label}</ChatDateDivider>
-    case "system":
-      return <ChatSystemLine>{message.body}</ChatSystemLine>
-    case "text":
-      return <MessageBubble message={message} />
-    case "card":
-      return (
-        <StructuredCard
-          message={message}
-          isActionPending={isCardActionPending}
-          onAction={(actionId) => onCardAction?.(message.id, actionId)}
-        />
-      )
-    case "attachment":
-      return <AttachmentCard message={message} />
-    default:
-      return null
+  case "date":
+    return <ChatDateDivider>{message.label}</ChatDateDivider>
+  case "system":
+    return <ChatSystemLine>{message.body}</ChatSystemLine>
+  case "text":
+    return <MessageBubble message={message} />
+  case "card":
+    return (
+      <StructuredCard
+        message={message}
+        isActionPending={isCardActionPending}
+        onAction={(actionId) => onCardAction?.(message.id, actionId)}
+      />
+    )
+  case "attachment":
+    return <AttachmentCard message={message} />
+  default:
+    return null
   }
 }

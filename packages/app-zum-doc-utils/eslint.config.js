@@ -1,10 +1,9 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
-const expoConfig = require('eslint-config-expo/flat');
 const config = require('@helpwave/eslint-config');
 
 module.exports = defineConfig([
-  expoConfig,
+  config.recommended,
   {
     ignores: ['dist/*'],
   },

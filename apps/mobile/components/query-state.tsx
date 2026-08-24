@@ -3,11 +3,11 @@ import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { Button, Card } from "@helpwave/hightide-native/components"
 import type { ReactNode } from "react"
 import {
-    ActivityIndicator,
-    Text,
-    View,
-    type StyleProp,
-    type ViewStyle,
+  ActivityIndicator,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native"
 
 type QueryStateProps = {
