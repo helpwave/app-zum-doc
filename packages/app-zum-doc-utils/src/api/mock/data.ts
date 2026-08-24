@@ -1,24 +1,20 @@
 import type {
   Address,
-  Appointment,
+  AppointmentRecord,
   ConversationPreview,
   DoctorsOffice,
   DoctorsOfficeOpeningHours,
-  HomeSummary,
   Medication,
   MedicationCatalogItem,
   Message,
   PatientProfile,
   PatientProfileSummary,
-  Prescription,
-  Referral,
+  PrescriptionRecord,
+  ReferralRecord,
 } from "../types"
-import {
-  formatPatientDateOfBirth,
-  patientProfileFullName,
-  toPatientProfileSummary,
-} from "../patientProfile"
-import { doctorsOfficeStatusFromOpeningHours } from "../openingHours"
+import { toPatientProfileSummary } from "../patientProfile"
+
+export const initialMyDoctorIds = ["office-moser", "office-haumann"] as const
 
 function chatTime(
   year: number,
@@ -625,108 +621,15 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   },
 }
 
-export function buildHomeSummary(): HomeSummary {
-  const moser = doctorsOfficesSeed["office-moser"]
-  const haumann = doctorsOfficesSeed["office-haumann"]
-
-  return {
-    myDoctors: [
-      {
-        id: moser.id,
-        name: moser.name,
-        specialty: moser.specialization?.["de-DE"] ?? "",
-        phone: moser.phoneNumber ?? "",
-        imageUri: moser.imageUri ?? null,
-        status: doctorsOfficeStatusFromOpeningHours(moser.openingHours),
-      },
-      {
-        id: haumann.id,
-        name: haumann.name,
-        specialty: haumann.specialization?.["de-DE"] ?? "",
-        phone: haumann.phoneNumber ?? "",
-        imageUri: haumann.imageUri ?? null,
-        status: doctorsOfficeStatusFromOpeningHours(haumann.openingHours),
-      },
-    ],
-    recentRequests: [
-      {
-        id: "req-limptar",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Limptar N Filmtabletten, 80 St",
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "inProgress",
-        statusLabel: "In Bearbeitung",
-      },
-      {
-        id: "req-aciclovir",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Aciclovir 800 Heumann",
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "inProgress",
-        statusLabel: "In Bearbeitung",
-      },
-      {
-        id: "req-floxal",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Floxal EDO 3 mg/ml Augentropfen",
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "readyForPickup",
-        statusLabel: "Abholbereit",
-      },
-      {
-        id: "req-radiologie",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Dr. Anton Willendorfer",
-        kind: "referral",
-        kindLabel: "Überweisung",
-        status: "inProgress",
-        statusLabel: "In Bearbeitung",
-      },
-      {
-        id: "req-checkup",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Vorsorgeuntersuchung",
-        kind: "appointment",
-        kindLabel: "Termin",
-        status: "inProgress",
-        statusLabel: "Angefragt",
-      },
-      {
-        id: "req-haumann-vaccine",
-        doctorsOfficeId: haumann.id,
-        doctorName: haumann.name,
-        title: "Grippeimpfung",
-        kind: "appointment",
-        kindLabel: "Termin",
-        status: "confirmed",
-        statusLabel: "Bestätigt",
-      },
-    ],
-  }
-}
-
 export const patientProfilesSeed: PatientProfileSummary[] = [
   toPatientProfileSummary(patientProfileSeed),
 ]
 
-export const appointmentsSeed: Appointment[] = [
+export const appointmentsSeed: AppointmentRecord[] = [
   {
     id: "req-checkup",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileFullName(patientProfileSeed),
-    patientDateOfBirth: formatPatientDateOfBirth(patientProfileSeed.dateOfBirth, "de-DE"),
     date: "2025-06-22",
     time: "14:00",
     isEmergency: false,
@@ -737,12 +640,7 @@ export const appointmentsSeed: Appointment[] = [
   {
     id: "req-haumann-vaccine",
     doctorsOfficeId: "office-haumann",
-    doctorName: "Dr. Haumann",
-    doctorSpecialty: "Allgemeinmedizin",
-    doctorImageUri: null,
     profileId: patientProfileSeed.id,
-    patientName: patientProfileFullName(patientProfileSeed),
-    patientDateOfBirth: formatPatientDateOfBirth(patientProfileSeed.dateOfBirth, "de-DE"),
     date: "2025-06-21",
     time: "10:00",
     isEmergency: false,
@@ -751,15 +649,11 @@ export const appointmentsSeed: Appointment[] = [
   },
 ]
 
-export const prescriptionsSeed: Prescription[] = [
+export const prescriptionsSeed: PrescriptionRecord[] = [
   {
     id: "req-limptar",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileFullName(patientProfileSeed),
     shipByMail: true,
     note: "Wenn möglich bitte zwei kleine Packungen Paracetamol. Vielen Dank und lieben Gruß.",
     medications: [
@@ -771,11 +665,7 @@ export const prescriptionsSeed: Prescription[] = [
   {
     id: "req-aciclovir",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileFullName(patientProfileSeed),
     shipByMail: false,
     note: "",
     medications: [
@@ -786,11 +676,7 @@ export const prescriptionsSeed: Prescription[] = [
   {
     id: "req-floxal",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileFullName(patientProfileSeed),
     shipByMail: true,
     note: "",
     medications: [
@@ -800,15 +686,11 @@ export const prescriptionsSeed: Prescription[] = [
   },
 ]
 
-export const referralsSeed: Referral[] = [
+export const referralsSeed: ReferralRecord[] = [
   {
     id: "req-radiologie",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileFullName(patientProfileSeed),
     specialistDoctorsOfficeId: "office-willendorfer",
     specialistName: "Dr. Anton Willendorfer",
     reason:

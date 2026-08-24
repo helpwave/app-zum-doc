@@ -112,7 +112,7 @@ export default function CreatePrescriptionScreen() {
       return
     }
     const prescription = reorderQuery.data
-    setDoctorId(prescription.doctorsOfficeId)
+    setDoctorId(prescription.doctorsOffice.id)
     setProfileId(prescription.profileId)
     setShipByMail(prescription.shipByMail)
     setNote(prescription.note)

@@ -35,7 +35,7 @@ export default function DoctorDetailScreen() {
     ? isMyDoctorsOffice(myDoctorsQuery.data, doctorsOfficeId)
     : false
   const doctorRequests = (homeQuery.data?.recentRequests ?? []).filter(
-    (request) => request.doctorsOfficeId === doctorsOfficeId,
+    (request) => request.doctorsOffice.id === doctorsOfficeId,
   )
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
   const dismissSnackbar = useCallback(() => {

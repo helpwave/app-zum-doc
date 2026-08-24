@@ -17,6 +17,7 @@ export const homeKeys = {
 export const profileKeys = {
   all: ["profile"] as const,
   patient: ["profile", "patient"] as const,
+  byId: (profileId: string) => ["profile", "detail", profileId] as const,
 }
 
 export const doctorsOfficeKeys = {

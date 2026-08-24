@@ -4,14 +4,17 @@ import {
 } from "@/components/azd-avatar-image"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { HomeDoctorCard } from "@app-zum-doc/utils/api"
+import {
+  doctorsOfficeStatusFromOpeningHours,
+  type DoctorsOffice,
+} from "@app-zum-doc/utils/api"
 import { Avatar, ThemedPressable } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Phone } from "lucide-react-native"
 import { Text, View, ViewStyle } from "react-native"
 
 type DoctorCardProps = {
-  doctor: HomeDoctorCard
+  doctor: DoctorsOffice
   onPress: () => void,
   style?: ViewStyle,
 }
@@ -21,6 +24,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
   const avatarSize = theme.semantics.container.md.size * 2
+  const status = doctorsOfficeStatusFromOpeningHours(doctor.openingHours)
 
   return (
     <ThemedPressable
@@ -75,7 +79,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
             }}
             numberOfLines={2}
           >
-            {doctor.specialty}
+            {doctor.specialization}
           </Text>
         </View>
         <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
@@ -99,7 +103,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
                   width: 12,
                   height: 12,
                   borderRadius: 9999,
-                  backgroundColor: doctor.status === "open"
+                  backgroundColor: status === "open"
                     ? colors.openDot
                     : colors.closedDot,
                 }}
@@ -116,7 +120,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
               }}
               numberOfLines={1}
             >
-              {t("officeStatus", { status: doctor.status })}
+              {t("officeStatus", { status })}
             </Text>
           </View>
           <View
@@ -147,7 +151,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
               }}
               numberOfLines={1}
             >
-              {doctor.phone}
+              {doctor.phoneNumber}
             </Text>
           </View>
         </View>

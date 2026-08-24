@@ -2,7 +2,7 @@ import { AppBar } from "@/components/app-bar"
 import { RequestTile, StartQuickActionCard } from "@/components/home-sections"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { WeekdayUtils, doctorsOfficeStatusFromOpeningHours, formatAddress, formatAddressLines, hasAddressContent, type DoctorsOffice, type HomeRequest, type PatientRequestType } from "@app-zum-doc/utils/api"
+import { WeekdayUtils, doctorsOfficeStatusFromOpeningHours, formatAddress, formatAddressLines, hasAddressContent, type DoctorsOffice, type RequestBase, type PatientRequestType } from "@app-zum-doc/utils/api"
 import { homeQuickActions } from "@/lib/quick-actions"
 import { Button, Card, Divider, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
 import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
@@ -327,7 +327,7 @@ export function DoctorSummaryCard({
 }
 
 type DoctorRequestsSectionProps = {
-  requests: HomeRequest[]
+  requests: RequestBase[]
   onShowAll: () => void
   onRequestPress: (requestId: string) => void
 }

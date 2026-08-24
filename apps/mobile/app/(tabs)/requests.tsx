@@ -69,7 +69,7 @@ export default function RequestsScreen() {
   const requests = useMemo(() => {
     const allRequests = homeQuery.data?.recentRequests ?? []
     const byDoctor = doctorId
-      ? allRequests.filter((request) => request.doctorsOfficeId === doctorId)
+      ? allRequests.filter((request) => request.doctorsOffice.id === doctorId)
       : allRequests
     if (!selectedKind) {
       return byDoctor
@@ -80,7 +80,7 @@ export default function RequestsScreen() {
   const title = doctorId
     ? doctorQuery.data?.name
       ?? homeQuery.data?.myDoctors.find((doctor) => doctor.id === doctorId)?.name
-      ?? requests[0]?.doctorName
+      ?? requests[0]?.doctorsOffice.name
       ?? ""
     : t("allRequests")
 

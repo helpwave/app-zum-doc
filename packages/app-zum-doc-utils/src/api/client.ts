@@ -10,6 +10,7 @@ export {
   fetchAppointment,
   fetchPatientMedications,
   fetchPatientProfile,
+  fetchPatientProfileById,
   fetchPatientProfiles,
   fetchPrescription,
   fetchReferral,

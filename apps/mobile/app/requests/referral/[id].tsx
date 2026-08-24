@@ -2,8 +2,8 @@ import { AppBar } from "@/components/app-bar"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toAppLocale } from "@app-zum-doc/utils/api"
-import { useCancelReferral, useReferral } from "@app-zum-doc/utils/hooks"
+import { patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
+import { useCancelReferral, usePatientProfileById, useReferral } from "@app-zum-doc/utils/hooks"
 import {
   Button,
   Card,
@@ -38,14 +38,19 @@ export default function ReferralDetailScreen() {
   const referralQuery = useReferral(referralId, locale)
   const cancelReferral = useCancelReferral()
   const referral = referralQuery.data
+  const profileQuery = usePatientProfileById(referral?.profileId ?? "")
+  const doctorsOffice = referral?.doctorsOffice
   const imageSource =
-    referral?.doctorImageUri === "practice-logo"
+    doctorsOffice?.imageUri === "practice-logo"
       ? practiceLogo
-      : referral?.doctorImageUri === "doctor-portrait"
+      : doctorsOffice?.imageUri === "doctor-portrait"
         ? doctorPortrait
-        : referral?.doctorImageUri
-          ? { uri: referral.doctorImageUri }
+        : doctorsOffice?.imageUri
+          ? { uri: doctorsOffice.imageUri }
           : doctorPortrait
+  const patientName = profileQuery.data
+    ? patientProfileFullName(profileQuery.data)
+    : undefined
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.screenBackground }}>
@@ -124,22 +129,22 @@ export default function ReferralDetailScreen() {
                     contentFit="cover"
                   />
                   <View style={{ flex: 1, gap: theme.spacing.xs }}>
-                    <Text
+                    <ThemedText
                       style={{
                         ...theme.typography.heading.md,
                         color: colors.name,
                       }}
                     >
-                      {referral.doctorName}
-                    </Text>
-                    <Text
+                      {doctorsOffice?.name}
+                    </ThemedText>
+                    <ThemedText
                       style={{
                         ...theme.typography.body.sm,
                         color: colors.specialty,
                       }}
                     >
-                      {referral.doctorSpecialty}
-                    </Text>
+                      {doctorsOffice?.specialization}
+                    </ThemedText>
                   </View>
                   <Chip
                     size="sm"
@@ -169,7 +174,7 @@ export default function ReferralDetailScreen() {
               </Card>
 
               <View>
-                <DetailRow label={t("patient")} value={referral.patientName} />
+                <DetailRow label={t("patient")} value={patientName ?? "—"} />
                 <Divider />
                 <DetailRow
                   label={t("referralToSpecialist")}
@@ -205,7 +210,7 @@ export default function ReferralDetailScreen() {
                     router.push({
                       pathname: "/requests/referral/create",
                       params: {
-                        doctorId: referral.doctorsOfficeId,
+                        doctorId: referral.doctorsOffice.id,
                         reorderFrom: referral.id,
                       },
                     } as Href)

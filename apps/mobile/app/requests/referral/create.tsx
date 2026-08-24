@@ -124,7 +124,7 @@ export default function CreateReferralScreen() {
       return
     }
     const referral = reorderQuery.data
-    setDoctorId(referral.doctorsOfficeId)
+    setDoctorId(referral.doctorsOffice.id)
     setProfileId(referral.profileId)
     setSpecialistId(referral.specialistDoctorsOfficeId)
     setReason(referral.reason)

@@ -6,8 +6,8 @@ import {
   quickActionTranslationKeys,
 } from "@/lib/quick-actions"
 import type {
-  HomeDoctorCard,
-  HomeRequest,
+  DoctorsOffice,
+  RequestBase,
   PatientRequestType,
 } from "@app-zum-doc/utils/api"
 import { OKLCHUtils } from "@helpwave/hightide-design/utils"
@@ -180,7 +180,7 @@ export function StartQuickActionCard({
 }
 
 type StartDoctorCardProps = {
-  doctor: HomeDoctorCard
+  doctor: DoctorsOffice
   onPress: () => void
 }
 
@@ -193,11 +193,12 @@ export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
 }
 
 type RequestTileProps = {
-  request: HomeRequest
+  request: RequestBase
   onPress: () => void
 }
 
 export function RequestTile({ request, onPress }: RequestTileProps) {
+  const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
   const isWarning = request.status === "inProgress"
@@ -241,7 +242,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
               color: colors.requestDoctor,
             }}
           >
-            {request.doctorName}
+            {request.doctorsOffice.name}
           </Text>
           <Text
             style={{
@@ -290,7 +291,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            {request.statusLabel}
+            {t("patientRequestStatus", { status: request.status })}
           </Text>
         </View>
       </View>
@@ -311,7 +312,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           numberOfLines={1}
           ellipsizeMode="tail"
         >
-          {request.kindLabel}
+          {t(quickActionTranslationKeys[request.kind])}
         </ThemedText>
       </Chip>
     </ThemedPressable>

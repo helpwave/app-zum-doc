@@ -1,6 +1,6 @@
 import type { AppLocale } from "./enums/appLocale"
 import type { PatientInsuranceInformation } from "./insurance"
-import type { Medication } from "./types"
+import type { Medication } from "./medication"
 
 export type PatientProfile = {
   id: string
