@@ -3,6 +3,7 @@ import {
   ChatMessageComposer,
   IconButton,
 } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Camera, Plus } from "lucide-react-native"
 import { Text, ViewStyle } from "react-native"
 
@@ -50,8 +51,8 @@ export function Composer({
             icon={Plus}
             size="sm"
             color={theme.colors.neutral}
-            style={{ borderRadius: 9999 }}
-            stateLayerStyle={{ borderRadius: 9999 }}
+            style={{ ...StyleAdapterUtils.borderRadius({ type: "all", value: 9999 }) }}
+            stateLayerStyle={{ ...StyleAdapterUtils.borderRadius({ type: "all", value: 9999 }) }}
           />
         }
         trailing={
@@ -60,8 +61,8 @@ export function Composer({
             icon={Camera}
             size="sm"
             color={theme.colors.neutral}
-            style={{marginInlineEnd: theme.spacing.sm, borderRadius: 9999 }}
-            stateLayerStyle={{ borderRadius: 9999 }}
+            style={{marginInlineEnd: theme.spacing.sm, ...StyleAdapterUtils.borderRadius({ type: "all", value: 9999 }) }}
+            stateLayerStyle={{ ...StyleAdapterUtils.borderRadius({ type: "all", value: 9999 }) }}
           />
         }
         style={style}

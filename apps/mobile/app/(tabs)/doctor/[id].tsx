@@ -45,7 +45,10 @@ export default function DoctorDetailScreen() {
   return (
     <View
       style={[
-        { flex: 1 },
+        { 
+          flex: 1,
+          backgroundColor: theme.colors.background.color
+        },
       ]}
     >
       <QueryState
@@ -56,7 +59,6 @@ export default function DoctorDetailScreen() {
           officeQuery.refetch()
         }}
         loadingLabel={t("loadingDoctor")}
-        style={{ backgroundColor: colors.screenBackground }}
       >
         {office ? (
           <ScrollView

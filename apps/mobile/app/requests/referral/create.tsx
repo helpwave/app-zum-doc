@@ -17,6 +17,8 @@ import {
   IconButton,
   Input,
   Select,
+  SelectOption,
+  Textarea,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
@@ -137,17 +139,6 @@ export default function CreateReferralScreen() {
       <NavigationHeader
         title={t("orderReferral")}
         onBack={() => router.back()}
-        trailing={
-          <IconButton
-            icon={Ellipsis}
-            size="sm"
-            variant="foreground"
-            accessibilityLabel={t("moreOptions")}
-            onPress={() => {
-              Alert.alert(t("orderReferral"), t("placeholderComingSoon"))
-            }}
-          />
-        }
       />
       <QueryState
         isPending={isPending}
@@ -185,47 +176,48 @@ export default function CreateReferralScreen() {
         >
           <LabeledField label={t("doctor")}>
             <Select
-              options={doctorOptions}
               value={doctorId || undefined}
               onValueChange={setDoctorId}
               placeholder={t("selectPractice")}
               style={{ width: "100%" }}
-            />
+            >
+              {doctorOptions.map((option) => (
+                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("patient")}>
             <Select
-              options={profileOptions}
               value={profileId || undefined}
               onValueChange={setProfileId}
               placeholder={t("patient")}
-              showSearch={false}
               style={{ width: "100%" }}
-            />
+            >
+              {profileOptions.map((option) => (
+                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("referralToSpecialist")}>
             <Select
-              options={specializationOptions}
               value={specialization || undefined}
               onValueChange={setSpecialization}
               placeholder={t("selectSpecialization")}
               style={{ width: "100%" }}
-            />
+            >
+              {specializationOptions.map((option) => (
+                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("referralReason")}>
-            <Input
+            <Textarea
               value={reason}
               onValueChange={setReason}
               placeholder={t("referralReasonPlaceholder")}
-              multiline
-              numberOfLines={4}
-              style={{
-                width: "100%",
-                minHeight: theme.semantics.control.lg.size * 2,
-                textAlignVertical: "top",
-              }}
             />
           </LabeledField>
 

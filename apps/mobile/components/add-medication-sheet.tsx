@@ -8,6 +8,7 @@ import {
   type MedicationSize,
 } from "@app-zum-doc/utils/api"
 import { useMedicationSearch } from "@app-zum-doc/utils/hooks"
+import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import {
   ListActionItem,
   SearchBar,
@@ -118,10 +119,10 @@ export function AddMedicationSheet({
         style={{
           flex: 1,
           justifyContent: "flex-end",
-          backgroundColor: theme.semantics.withAppearance({
-            colorPair: theme.colors.surface,
-            appearance: "faded",
-          }),
+          backgroundColor: HexColorUtils.hexWithAlpha(
+            "#000000",
+            0.5  
+          ),
         }}
         onPress={close}
       >

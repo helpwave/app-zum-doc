@@ -1,7 +1,9 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { toIsoDate } from "@app-zum-doc/utils/api"
+import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import { IconButton, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { ChevronLeft, ChevronRight, X } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
 import { Modal, Pressable, View } from "react-native"
@@ -11,6 +13,8 @@ type DatePickerSheetProps = {
   visible: boolean
   title: string
   value?: string
+  startDate?: string
+  endDate?: string
   isDateEnabled: (date: Date) => boolean
   onSelect: (isoDate: string) => void
   onClose: () => void
@@ -27,7 +31,7 @@ function monthGrid(year: number, month: number): (Date | null)[] {
   for (let day = 1; day <= daysInMonth; day += 1) {
     cells.push(new Date(year, month, day))
   }
-  while (cells.length % 7 !== 0) {
+  while (cells.length < 42) {
     cells.push(null)
   }
   return cells
@@ -37,6 +41,8 @@ export function DatePickerSheet({
   visible,
   title,
   value,
+  startDate,
+  endDate,
   isDateEnabled,
   onSelect,
   onClose,
@@ -45,18 +51,46 @@ export function DatePickerSheet({
   const { theme } = useAzdTheme()
   const insets = useSafeAreaInsets()
   const today = startOfToday()
+  const rangeStart = startDate ? parseIsoLocal(startDate) : today
+  const rangeEnd = endDate ? parseIsoLocal(endDate) : undefined
   const initial = value ? parseIsoLocal(value) : today
   const [visibleMonth, setVisibleMonth] = useState(
-    () => new Date(initial.getFullYear(), initial.getMonth(), 1),
+    () => clampMonthToRange(
+      new Date(initial.getFullYear(), initial.getMonth(), 1),
+      rangeStart,
+      rangeEnd,
+    ),
   )
 
   useEffect(() => {
     if (!visible) {
       return
     }
-    const next = value ? parseIsoLocal(value) : startOfToday()
-    setVisibleMonth(new Date(next.getFullYear(), next.getMonth(), 1))
-  }, [value, visible])
+    const nextToday = startOfToday()
+    const start = startDate ? parseIsoLocal(startDate) : nextToday
+    const end = endDate ? parseIsoLocal(endDate) : undefined
+    const next = value ? parseIsoLocal(value) : nextToday
+    setVisibleMonth(
+      clampMonthToRange(
+        new Date(next.getFullYear(), next.getMonth(), 1),
+        start,
+        end,
+      ),
+    )
+  }, [endDate, startDate, value, visible])
+
+  const canGoToPreviousMonth = monthIntersectsRange(
+    visibleMonth.getFullYear(),
+    visibleMonth.getMonth() - 1,
+    rangeStart,
+    rangeEnd,
+  )
+  const canGoToNextMonth = monthIntersectsRange(
+    visibleMonth.getFullYear(),
+    visibleMonth.getMonth() + 1,
+    rangeStart,
+    rangeEnd,
+  )
 
   const weekdayLabels = useMemo(
     () => weekdayShortLabels(),
@@ -81,10 +115,10 @@ export function DatePickerSheet({
         style={{
           flex: 1,
           justifyContent: "flex-end",
-          backgroundColor: theme.semantics.withAppearance({
-            colorPair: theme.colors.surface,
-            appearance: "faded",
-          }),
+          backgroundColor: HexColorUtils.hexWithAlpha(
+            "#000000",
+            0.5
+          ),
         }}
         onPress={onClose}
       >
@@ -119,6 +153,7 @@ export function DatePickerSheet({
             </ThemedText>
             <IconButton
               icon={X}
+              color={theme.colors.surfaceInverse}
               size="sm"
               variant="foreground"
               accessibilityLabel={t("cancel")}
@@ -137,6 +172,7 @@ export function DatePickerSheet({
               icon={ChevronLeft}
               size="sm"
               variant="foreground"
+              disabled={!canGoToPreviousMonth}
               accessibilityLabel={t("back")}
               onPress={() => {
                 setVisibleMonth(
@@ -156,6 +192,7 @@ export function DatePickerSheet({
               icon={ChevronRight}
               size="sm"
               variant="foreground"
+              disabled={!canGoToNextMonth}
               accessibilityLabel={t("next")}
               onPress={() => {
                 setVisibleMonth(
@@ -177,7 +214,7 @@ export function DatePickerSheet({
                 style={{
                   flex: 1,
                   textAlign: "center",
-                  ...theme.typography.body.sm,
+                  ...theme.typography.body.md,
                 }}
               >
                 {label}
@@ -196,7 +233,8 @@ export function DatePickerSheet({
               }
               const iso = toIsoDate(date)
               const selected = value === iso
-              const enabled = date >= today && isDateEnabled(date)
+              const enabled = isDateInRange(date, rangeStart, rangeEnd)
+                && isDateEnabled(date)
               return (
                 <View
                   key={iso}
@@ -211,14 +249,17 @@ export function DatePickerSheet({
                     onPress={() => {
                       onSelect(iso)
                     }}
-                    color={selected ? theme.colors.primary : theme.colors.surface}
+                    color={selected ? theme.colors.primary : theme.colors.neutral}
                     coloringStyle="filled"
                     style={{
                       flex: 1,
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: 9999,
+                      ...StyleAdapterUtils.borderRadius({ type: "all",value: 9999 }),
                       opacity: enabled ? 1 : theme.config.appearancePercentages.faded,
+                    }}
+                    stateLayerStyle={{
+                      ...StyleAdapterUtils.borderRadius({ type: "all",value: 9999 }),
                     }}
                   >
                     <ThemedText
@@ -245,6 +286,50 @@ export function DatePickerSheet({
 function startOfToday(): Date {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+}
+
+function isDateInRange(date: Date, start?: Date, end?: Date): boolean {
+  if (start && date < start) {
+    return false
+  }
+  if (end && date > end) {
+    return false
+  }
+  return true
+}
+
+function monthIntersectsRange(
+  year: number,
+  month: number,
+  start?: Date,
+  end?: Date,
+): boolean {
+  const monthStart = new Date(year, month, 1)
+  const monthEnd = new Date(year, month + 1, 0)
+  if (start && monthEnd < start) {
+    return false
+  }
+  if (end && monthStart > end) {
+    return false
+  }
+  return true
+}
+
+function clampMonthToRange(date: Date, start?: Date, end?: Date): Date {
+  const month = new Date(date.getFullYear(), date.getMonth(), 1)
+  if (start) {
+    const startMonth = new Date(start.getFullYear(), start.getMonth(), 1)
+    if (month < startMonth) {
+      return startMonth
+    }
+  }
+  if (end) {
+    const endMonth = new Date(end.getFullYear(), end.getMonth(), 1)
+    if (month > endMonth) {
+      return endMonth
+    }
+  }
+  return month
 }
 
 function parseIsoLocal(value: string): Date {

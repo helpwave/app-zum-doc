@@ -17,6 +17,7 @@ import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import {
   Input,
   Select,
+  SelectOption,
   ThemedIcon,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
@@ -155,12 +156,15 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("insuranceProvider")}>
         <Select
-          options={insuranceOptions}
           value={insuranceProviderId}
           onValueChange={setInsuranceProviderId}
           placeholder={t("insuranceProvider")}
           style={{ width: "100%" }}
-        />
+        >
+          {insuranceOptions.map((option) => (
+            <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+          ))}
+        </Select>
       </LabeledField>
 
       <LabeledField label={t("insuranceNumberOptional")}>

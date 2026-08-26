@@ -23,36 +23,25 @@ type ConversationRowProps = {
 }
 
 export function ConversationRow({ conversation, onPress }: ConversationRowProps) {
-  const unread = conversation.unreadCount > 0
   const user = conversation.user
   const lastMessage = conversation.lastMessage
   const { theme } = useAzdTheme()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
   const safeAreaInsets = useSafeAreaInsets()
-  const sentByMe = lastMessage.direction === "outgoing"
 
   return (
     <ChatConversationRow
       onPress={onPress}
-      avatar={
-        <AvatarWithStatus
-          name={user.name}
-          image={contactAvatarImage(user.imageUri, user.name)}
-          ImageComponent={AzdAvatarImage}
-          status={user.status}
-          size={40}
-        />
-      }
+      avatarProps={{
+        name: user.name,
+        image: contactAvatarImage(user.imageUri, user.name),
+      }}
       title={user.name}
       timestamp={formatConversationPreviewTime(lastMessage.time, locale)}
       preview={lastMessage.preview}
       unreadCount={conversation.unreadCount}
-      sentIndicator={
-        sentByMe && !unread && showsSentIndicator(lastMessage.status)
-          ? "sentAndReceived"
-          : undefined
-      }
+      messageStatus={lastMessage.status}
       style={{
         ...StyleAdapterUtils.padding({
           type: "physicalSide",

@@ -1,3 +1,4 @@
+import { AppBar } from "@/components/app-bar"
 import { DoctorCard } from "@/components/doctor-card"
 import { FilterChip } from "@/components/filter-chip"
 import { FilterSearchSheet } from "@/components/filter-search-sheet"
@@ -81,45 +82,12 @@ export default function DoctorSearchScreen() {
         backgroundColor: colors.background,
       }}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.lg - theme.spacing.xs,
-          paddingBottom: theme.spacing.lg - theme.spacing.xs,
-          borderBottomWidth: theme.borderWidth.thin,
-          borderBottomColor: headerColors.border,
-          backgroundColor: headerColors.background,
-        }}
-      >
-        <IconButton
-          icon={ChevronLeft}
-          accessibilityRole="button"
-          accessibilityLabel={t("back")}
-          onPress={() => router.back()}
-          variant="foreground"
-        />
-        <Text
-          style={{
-            ...theme.typography.heading.md,
-            color: headerColors.title,
-          }}
-        >
-          {t("searchDoctor")}
-        </Text>
-        <View
-          style={{
-            width: theme.semantics.control.xs.size,
-          }}
-        />
-      </View>
+      <AppBar title={t("searchDoctor")} />
 
       <View
         style={{
           paddingHorizontal: theme.spacing.lg,
-          paddingTop: theme.spacing.md,
+          paddingTop: theme.spacing.lg,
           paddingBottom: theme.spacing.lg,
           gap: theme.spacing.lg,
         }}
@@ -204,7 +172,8 @@ export default function DoctorSearchScreen() {
                 gap: theme.spacing.md,
                 paddingHorizontal: theme.spacing.lg,
                 paddingBottom: theme.spacing.md + insets.bottom,
-                alignItems: "stretch"
+                alignItems: "stretch",
+                justifyContent: "flex-start",
               }}
               renderItem={({ item }) => (
                 <DoctorCard

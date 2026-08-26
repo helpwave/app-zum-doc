@@ -27,7 +27,9 @@ import {
   ListItem,
   ListNavigationItem,
   Select,
+  SelectOption,
   Switch,
+  Textarea,
   ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
@@ -162,12 +164,19 @@ export default function RequestAppointmentScreen() {
         >
           <LabeledField label={t("practice")}>
             <Select
-              options={doctorOptions}
               value={doctorId}
               onValueChange={setDoctorId}
               placeholder={t("selectPractice")}
-              style={{ width: "100%" }}
-            />
+            >
+              {doctorOptions.map((option) => (
+                <SelectOption
+                  key={option.id}
+                  id={option.id}
+                  value={option.id}
+                  label={option.label}
+                />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("selectProfile")}>
@@ -229,17 +238,10 @@ export default function RequestAppointmentScreen() {
           </Card>
 
           <LabeledField label={t("appointmentNote")}>
-            <Input
+            <Textarea
               value={note}
               onValueChange={setNote}
               placeholder={t("appointmentNotePlaceholder")}
-              multiline
-              numberOfLines={4}
-              style={{
-                width: "100%",
-                minHeight: theme.semantics.control.lg.size * 2,
-                textAlignVertical: "top",
-              }}
             />
           </LabeledField>
 

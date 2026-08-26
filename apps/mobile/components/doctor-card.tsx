@@ -29,12 +29,11 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const avatarSize = theme.semantics.container.md.size * 2
   const status = doctorsOfficeStatusFromOpeningHours(doctor.openingHours)
   const avatarColor: ColorPairToken = useMemo(() => {
-    const coloring = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
     return {
-      color: HexColorUtils.resolveColorToken(coloring.color),
-      onColor: HexColorUtils.resolveColorToken(coloring.onColor),
+      color: HexColorUtils.hexWithAlpha(theme.colors.primary.color, 0.7),
+      onColor: HexColorUtils.hexWithAlpha(theme.colors.primary.onColor, 0.7),
     }
-  }, [theme.colors.primary, theme.semantics])
+  }, [theme.colors.primary])
 
   return (
     <ThemedPressable
