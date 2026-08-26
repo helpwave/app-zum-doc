@@ -4,7 +4,7 @@ import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { hrefForRequest } from "@/lib/request-routes"
-import { toAppLocale, type RequestKind } from "@app-zum-doc/utils/api"
+import { PatientRequestTypeUtils, toAppLocale, type PatientRequestType } from "@app-zum-doc/utils/api"
 import { useDoctorsOffice, useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
@@ -12,19 +12,15 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { useMemo, useState } from "react"
 import { ScrollView, View } from "react-native"
 
-const requestTypeFilters: RequestKind[] = [
-  "appointment",
-  "prescription",
-  "referral",
-]
-
 function RequestTypeChip({
   label,
   selected,
+  type,
   onPress,
 }: {
   label: string
-  selected: boolean
+  selected: boolean,
+  type: PatientRequestType,
   onPress: () => void
 }) {
   const { theme } = useAzdTheme()
@@ -34,7 +30,7 @@ function RequestTypeChip({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      color={selected ? theme.colors.primary : theme.colors.surface}
+      color={selected ? theme.colors[type] : theme.colors.surface}
       coloringStyle="filled"
       size="sm"
       stateLayerStyle={{
@@ -64,9 +60,9 @@ export default function RequestsScreen() {
   const doctorId = typeof doctorIdParam === "string" ? doctorIdParam : ""
   const homeQuery = useHomeSummary(locale)
   const doctorQuery = useDoctorsOffice(doctorId, locale)
-  const [selectedKind, setSelectedKind] = useState<RequestKind | null>(null)
+  const [selectedRequestType, setSelectedRequestType] = useState<PatientRequestType | null>(null)
 
-  const typeLabels: Record<RequestKind, string> = {
+  const typeLabels: Record<PatientRequestType, string> = {
     appointment: t("filterAppointments"),
     prescription: t("filterPrescriptions"),
     referral: t("filterReferrals"),
@@ -75,18 +71,18 @@ export default function RequestsScreen() {
   const requests = useMemo(() => {
     const allRequests = homeQuery.data?.recentRequests ?? []
     const byDoctor = doctorId
-      ? allRequests.filter((request) => request.doctorsOfficeId === doctorId)
+      ? allRequests.filter((request) => request.doctorsOffice.id === doctorId)
       : allRequests
-    if (!selectedKind) {
+    if (!selectedRequestType) {
       return byDoctor
     }
-    return byDoctor.filter((request) => request.kind === selectedKind)
-  }, [doctorId, homeQuery.data?.recentRequests, selectedKind])
+    return byDoctor.filter((request) => request.kind === selectedRequestType)
+  }, [doctorId, homeQuery.data?.recentRequests, selectedRequestType])
 
   const title = doctorId
     ? doctorQuery.data?.name
       ?? homeQuery.data?.myDoctors.find((doctor) => doctor.id === doctorId)?.name
-      ?? requests[0]?.doctorName
+      ?? requests[0]?.doctorsOffice.name
       ?? ""
     : t("allRequests")
 
@@ -128,13 +124,14 @@ export default function RequestsScreen() {
               gap: theme.spacing.md,
             }}
           >
-            {requestTypeFilters.map((kind) => (
+            {PatientRequestTypeUtils.array.map((type) => (
               <RequestTypeChip
-                key={kind}
-                label={typeLabels[kind]}
-                selected={selectedKind === kind}
+                key={type}
+                label={typeLabels[type]}
+                type={type}
+                selected={selectedRequestType === type}
                 onPress={() => {
-                  setSelectedKind((current) => (current === kind ? null : kind))
+                  setSelectedRequestType((current) => (current === type ? null : type))
                 }}
               />
             ))}

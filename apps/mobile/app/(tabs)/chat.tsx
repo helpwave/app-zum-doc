@@ -1,8 +1,8 @@
-import { ConversationRow } from "@/components/conversation-row"
 import { QueryState } from "@/components/query-state"
 import { ScreenHeader } from "@/components/screen-header"
+import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { Conversation } from "@app-zum-doc/utils/api"
+import type { ConversationPreview } from "@app-zum-doc/utils/api"
 import { useConversations } from "@app-zum-doc/utils/hooks"
 import {
   ChatConversationList,
@@ -11,17 +11,16 @@ import {
 import { useRouter } from "expo-router"
 import { useMemo, useState } from "react"
 import { View } from "react-native"
-import { useAppTranslation } from "../../hooks/useAppTranslation"
+import { ConversationRow } from "@/components/conversation-row"
 
-function conversationMatchesSearch(conversation: Conversation, query: string) {
+function conversationMatchesSearch(conversation: ConversationPreview, query: string) {
   if (query.length === 0) {
     return true
   }
 
   const haystack = [
-    conversation.contact.name,
-    conversation.contact.subtitle ?? "",
-    conversation.lastMessage,
+    conversation.user.name,
+    conversation.lastMessage.preview,
   ]
     .join(" ")
     .toLowerCase()

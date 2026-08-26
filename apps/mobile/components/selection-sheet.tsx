@@ -2,6 +2,7 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { withAlpha } from "@/theme/azd-theme"
 import { Button, ListActionItem } from "@helpwave/hightide-native/components"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
@@ -152,10 +153,10 @@ export function SelectionSheet({
               }}
               style={{
                 flex: 1,
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
+                ...StyleAdapterUtils.borderRadius({ type: "all", value: 0 }),
+              }}
+              stateLayerStyle={{
+                ...StyleAdapterUtils.borderRadius({ type: "all", value: 0 }),
               }}
             >
               {t("cancel")}
@@ -165,10 +166,10 @@ export function SelectionSheet({
               variant="foreground"
               style={{
                 flex: 1,
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
+                ...StyleAdapterUtils.borderRadius({ type: "all", value: 0 }),
+              }}
+              stateLayerStyle={{
+                ...StyleAdapterUtils.borderRadius({ type: "all", value: 0 }),
               }}
             >
               {t("done")}

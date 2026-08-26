@@ -3,8 +3,8 @@ import { PrescriptionMedicationCard } from "@/components/prescription-medication
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { toAppLocale } from "@app-zum-doc/utils/api"
-import { useCancelPrescription, usePrescription } from "@app-zum-doc/utils/hooks"
+import { patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
+import { useCancelPrescription, usePatientProfileById, usePrescription } from "@app-zum-doc/utils/hooks"
 import {
   Button,
   Card,
@@ -39,14 +39,19 @@ export default function PrescriptionDetailScreen() {
   const prescriptionQuery = usePrescription(prescriptionId, locale)
   const cancelPrescription = useCancelPrescription()
   const prescription = prescriptionQuery.data
+  const profileQuery = usePatientProfileById(prescription?.profileId ?? "")
+  const doctorsOffice = prescription?.doctorsOffice
   const imageSource =
-    prescription?.doctorImageUri === "practice-logo"
+    doctorsOffice?.imageUri === "practice-logo"
       ? practiceLogo
-      : prescription?.doctorImageUri === "doctor-portrait"
+      : doctorsOffice?.imageUri === "doctor-portrait"
         ? doctorPortrait
-        : prescription?.doctorImageUri
-          ? { uri: prescription.doctorImageUri }
+        : doctorsOffice?.imageUri
+          ? { uri: doctorsOffice.imageUri }
           : doctorPortrait
+  const patientName = profileQuery.data
+    ? patientProfileFullName(profileQuery.data)
+    : undefined
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.screenBackground }}>
@@ -125,28 +130,28 @@ export default function PrescriptionDetailScreen() {
                     contentFit="cover"
                   />
                   <View style={{ flex: 1, gap: theme.spacing.xs }}>
-                    <Text
+                    <ThemedText
                       style={{
                         ...theme.typography.heading.md,
                         color: colors.name,
                       }}
                     >
-                      {prescription.doctorName}
-                    </Text>
-                    <Text
+                      {doctorsOffice?.name}
+                    </ThemedText>
+                    <ThemedText
                       style={{
                         ...theme.typography.body.sm,
                         color: colors.specialty,
                       }}
                     >
-                      {prescription.doctorSpecialty}
-                    </Text>
+                      {doctorsOffice?.specialization}
+                    </ThemedText>
                   </View>
                   <Chip
                     size="sm"
                     variant="tonal"
                     color={
-                      prescription.status === "in_progress"
+                      prescription.status === "inProgress"
                         ? theme.colors.warning
                         : prescription.status === "cancelled"
                           ? theme.colors.negative
@@ -162,7 +167,7 @@ export default function PrescriptionDetailScreen() {
                     >
                       <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
                       <ThemedText>
-                        {t("prescriptionStatus", { status: prescription.status })}
+                        {t("patientRequestStatus", { status: prescription.status })}
                       </ThemedText>
                     </View>
                   </Chip>
@@ -170,7 +175,7 @@ export default function PrescriptionDetailScreen() {
               </Card>
 
               <View>
-                <DetailRow label={t("patient")} value={prescription.patientName} />
+                <DetailRow label={t("patient")} value={patientName ?? "—"} />
                 <Divider />
                 <DetailRow
                   label={t("shipByMail")}
@@ -185,20 +190,27 @@ export default function PrescriptionDetailScreen() {
                     padding: theme.spacing.lg,
                     gap: theme.spacing.sm,
                     backgroundColor: theme.semantics.coloringColorVariant({
-                      colorPair: theme.colors.neutral,
-                      variant: "tonal",
+                      colorPair: theme.colors.surface,
+                      variant: "normal",
                     }).color,
                   }}
                 >
-                  <ThemedText
-                    appearance="description"
-                    style={theme.typography.body.sm}
+                  <ContentThemeOverrideProvider 
+                    foreground={theme.semantics.coloringColorVariant({
+                      colorPair: theme.colors.surface,
+                      variant: "normal",
+                    }).onColor}
                   >
-                    {t("appointmentNote")}
-                  </ThemedText>
-                  <ThemedText style={theme.typography.body.md}>
-                    {prescription.note}
-                  </ThemedText>
+                    <ThemedText
+                      appearance="description"
+                      style={theme.typography.body.sm}
+                    >
+                      {t("appointmentNote")}
+                    </ThemedText>
+                    <ThemedText style={theme.typography.body.md}>
+                      {prescription.note}
+                    </ThemedText>
+                  </ContentThemeOverrideProvider>
                 </View>
               ) : null}
 
@@ -221,14 +233,15 @@ export default function PrescriptionDetailScreen() {
                 ))}
               </View>
 
-              <View style={{ gap: theme.spacing.md }}>
+              <View style={{ gap: theme.spacing.md, justifyContent: "flex-end", flexDirection: "row" }}>
                 <Button
                   leadingIcon={RotateCw}
+                  variant="tonal"
                   onPress={() => {
                     router.push({
                       pathname: "/requests/prescription/create",
                       params: {
-                        doctorId: prescription.doctorsOfficeId,
+                        doctorId: prescription.doctorsOffice.id,
                         reorderFrom: prescription.id,
                       },
                     } as Href)

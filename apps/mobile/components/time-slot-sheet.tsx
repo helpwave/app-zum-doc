@@ -1,6 +1,7 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { isMorningSlot } from "@app-zum-doc/utils/api"
+import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import { IconButton, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { X } from "lucide-react-native"
 import { Modal, Pressable, View } from "react-native"
@@ -42,10 +43,10 @@ export function TimeSlotSheet({
         style={{
           flex: 1,
           justifyContent: "flex-end",
-          backgroundColor: theme.semantics.withAppearance({
-            colorPair: theme.colors.surface,
-            appearance: "faded",
-          }),
+          backgroundColor: HexColorUtils.hexWithAlpha(
+            "#000000",
+            0.5
+          ),
         }}
         onPress={onClose}
       >
@@ -81,6 +82,7 @@ export function TimeSlotSheet({
             <IconButton
               icon={X}
               size="sm"
+              color={theme.colors.surfaceInverse}
               variant="foreground"
               accessibilityLabel={t("cancel")}
               onPress={onClose}
@@ -159,20 +161,14 @@ function TimeSlotGroup({
               onPress={() => {
                 onSelect(slot)
               }}
-              color={selected ? theme.colors.primary : theme.colors.surface}
+              color={selected ? theme.colors.primary : theme.colors.surfaceInverse}
               coloringStyle={selected ? "filled" : "foreground"}
               style={{
-                width: "22%",
+                width: "21%",
                 flexGrow: 1,
-                maxWidth: "23.5%",
+                maxWidth: "25%",
                 alignItems: "center",
                 justifyContent: "center",
-                paddingVertical: theme.spacing.md,
-                borderRadius: theme.borderRadius.md,
-                borderWidth: theme.borderWidth.thin,
-                borderColor: selected
-                  ? theme.colors.primary.color
-                  : theme.colors.neutral.color,
               }}
             >
               <ThemedText

@@ -1,9 +1,9 @@
 import {
   appointmentsSeed,
-  buildHomeSummary,
   citiesSeed,
   conversationsSeed,
   doctorsOfficesSeed,
+  initialMyDoctorIds,
   medicationCatalogSeed,
   messagesByConversation,
   patientMedicationsSeed,
@@ -13,51 +13,62 @@ import {
   referralsSeed,
   specializationsSeed,
   type DoctorsOfficeSeed,
+  type LocalizedDoctorSeed,
+  type LocalizedDoctorServiceSeed,
 } from "./data"
 import {
   WeekdayUtils,
   type Appointment,
+  type AppointmentRecord,
   type AppLocale,
-  type ChatMessage,
-  type Conversation,
+  type ConversationPreview,
   type CreateAppointmentInput,
   type CreatePrescriptionInput,
   type CreateReferralInput,
   type DoctorSearchFilters,
   type DoctorsOffice,
   type DoctorsOfficeOpeningHours,
-  type HomeDoctorCard,
-  type HomeRequest,
-  type HomeSummary,
   type Medication,
   type MedicationCatalogItem,
   type MedicationSize,
+  type Message,
+  type MessagePreview,
+  type MyDoctors,
   type PatientProfile,
   type PatientProfileSummary,
+  type PatientRequest,
   type Prescription,
+  type PrescriptionRecord,
   type Referral,
+  type ReferralRecord,
+  type RequestBase,
   type SearchCity,
   type SearchSpecialization,
   type StructuredCardMessage,
   type TextMessage,
 } from "../types"
+import {
+  formatAppointmentRequestTitle,
+  formatPrescriptionRequestTitle,
+  formatReferralRequestTitle,
+} from "../requestTitle"
+
+type HomeSummary = {
+  myDoctors: DoctorsOffice[]
+  recentRequests: RequestBase[]
+}
 
 const delayMs = 550
 
-let conversationsState: Conversation[] = structuredClone(conversationsSeed)
-let messagesState: Record<string, ChatMessage[]> = structuredClone(
+let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
+let messagesState: Record<string, Message[]> = structuredClone(
   messagesByConversation,
 )
-let myDoctorIds = new Set(
-  buildHomeSummary().myDoctors.map((doctor) => doctor.id),
-)
+let myDoctorIds = new Set<string>(initialMyDoctorIds)
 let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
-let recentRequestsState: HomeRequest[] = structuredClone(
-  buildHomeSummary().recentRequests,
-)
-let appointmentsState: Appointment[] = structuredClone(appointmentsSeed)
-let prescriptionsState: Prescription[] = structuredClone(prescriptionsSeed)
-let referralsState: Referral[] = structuredClone(referralsSeed)
+let appointmentsState: AppointmentRecord[] = structuredClone(appointmentsSeed)
+let prescriptionsState: PrescriptionRecord[] = structuredClone(prescriptionsSeed)
+let referralsState: ReferralRecord[] = structuredClone(referralsSeed)
 
 export const mockApiConfig = {
   forceFail: false,
@@ -87,7 +98,7 @@ async function withMockLatency<T>(
   return work()
 }
 
-export async function fetchConversations(): Promise<Conversation[]> {
+export async function fetchConversations(): Promise<ConversationPreview[]> {
   return withMockLatency(() =>
     conversationsState.map((conversation) => ({ ...conversation })),
   )
@@ -95,7 +106,7 @@ export async function fetchConversations(): Promise<Conversation[]> {
 
 export async function fetchConversation(
   conversationId: string,
-): Promise<Conversation> {
+): Promise<ConversationPreview> {
   return withMockLatency(() => {
     const conversation = conversationsState.find(
       (item) => item.id === conversationId,
@@ -109,7 +120,7 @@ export async function fetchConversation(
 
 export async function fetchMessages(
   conversationId: string,
-): Promise<ChatMessage[]> {
+): Promise<Message[]> {
   return withMockLatency(() => {
     const messages = messagesState[conversationId] ?? []
     return messages.map((message) => ({ ...message }))
@@ -118,7 +129,7 @@ export async function fetchMessages(
 
 export async function markConversationRead(
   conversationId: string,
-): Promise<Conversation[]> {
+): Promise<ConversationPreview[]> {
   return withMockLatency(() => {
     conversationsState = conversationsState.map((conversation) => {
       if (conversation.id !== conversationId) {
@@ -133,17 +144,16 @@ export async function markConversationRead(
 export async function sendMessage(
   conversationId: string,
   body: string,
-): Promise<ChatMessage[]> {
+): Promise<Message[]> {
   return withMockLatency(() => {
     const now = new Date()
-    const timeLabel = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
     const message: TextMessage = {
       id: `msg-local-${Date.now()}`,
       type: "text",
       direction: "outgoing",
+      status: "sent",
       body,
-      timeLabel,
-      receipt: "sent",
+      time: now,
     }
 
     const existing = messagesState[conversationId] ?? []
@@ -152,16 +162,22 @@ export async function sendMessage(
       [conversationId]: [...existing, message],
     }
 
+    const lastMessage: MessagePreview = {
+      id: message.id,
+      preview: body,
+      time: now,
+      direction: "outgoing",
+      status: "sent",
+    }
+
     conversationsState = conversationsState.map((conversation) => {
       if (conversation.id !== conversationId) {
         return conversation
       }
       return {
         ...conversation,
-        lastMessage: body,
-        timeLabel,
+        lastMessage,
         unreadCount: 0,
-        sentByMe: true,
       }
     })
 
@@ -173,28 +189,18 @@ export async function resolveCardAction(
   conversationId: string,
   messageId: string,
   actionId: string,
-): Promise<ChatMessage[]> {
+): Promise<Message[]> {
   return withMockLatency(() => {
     const existing = messagesState[conversationId] ?? []
-    const next: ChatMessage[] = existing.map((message) => {
+    const next: Message[] = existing.map((message) => {
       if (message.id !== messageId || message.type !== "card") {
         return message
       }
 
       const card = message as StructuredCardMessage
-      if (actionId === "accept") {
-        return {
-          ...card,
-          status: "confirmed",
-          statusLabel: "BESTÄTIGT",
-          actions: undefined,
-        }
-      }
-
       return {
         ...card,
-        status: "declined",
-        statusLabel: "ABGELEHNT",
+        selectedActionId: actionId,
         actions: undefined,
       }
     })
@@ -217,27 +223,91 @@ export async function resolveCardAction(
 }
 
 export async function fetchHomeSummary(locale: AppLocale): Promise<HomeSummary> {
-  return withMockLatency(() => {
-    const summary = buildHomeSummary()
-    return {
-      ...summary,
-      myDoctors: [...myDoctorIds].flatMap((id) => {
-        const office = doctorsOfficesSeed[id]
-        return office ? [toHomeDoctorCard(office, locale)] : []
-      }),
-      recentRequests: recentRequestsState.map((request) => ({ ...request })),
-    }
-  })
+  return withMockLatency(() => ({
+    myDoctors: [...myDoctorIds].flatMap((id) => {
+      const office = doctorsOfficesSeed[id]
+      return office ? [toDoctorsOffice(office, locale)] : []
+    }),
+    recentRequests: buildRecentRequests(locale),
+  }))
 }
 
 export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
 }
 
+export async function fetchPatientProfileById(
+  profileId: string,
+): Promise<PatientProfile> {
+  return withMockLatency(() => {
+    if (patientProfileSeed.id === profileId) {
+      return { ...patientProfileSeed }
+    }
+    throw new Error("Profil nicht gefunden.")
+  })
+}
+
 export async function fetchPatientProfiles(): Promise<PatientProfileSummary[]> {
   return withMockLatency(() =>
     patientProfilesSeed.map((profile) => ({ ...profile })),
   )
+}
+
+function resolveDoctorsOffice(
+  doctorsOfficeId: string,
+  locale: AppLocale,
+): DoctorsOffice {
+  const office = doctorsOfficesSeed[doctorsOfficeId]
+  if (!office) {
+    throw new Error("Arztpraxis nicht gefunden.")
+  }
+  return toDoctorsOffice(office, locale)
+}
+
+function buildRecentRequests(locale: AppLocale): PatientRequest[] {
+  return [
+    ...prescriptionsState.map((record) => toPrescription(record, locale)),
+    ...referralsState.map((record) => toReferral(record, locale)),
+    ...appointmentsState.map((record) => toAppointment(record, locale)),
+  ]
+}
+
+function toAppointment(
+  record: AppointmentRecord,
+  locale: AppLocale,
+): Appointment {
+  const { doctorsOfficeId, ...rest } = record
+  return {
+    ...rest,
+    kind: "appointment",
+    title: formatAppointmentRequestTitle(record.date, record.time, locale),
+    doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
+  }
+}
+
+function toPrescription(
+  record: PrescriptionRecord,
+  locale: AppLocale,
+): Prescription {
+  const { doctorsOfficeId, ...rest } = record
+  const medicationNames = record.medications.map((medication) => medication.name)
+  return {
+    ...rest,
+    kind: "prescription",
+    title: formatPrescriptionRequestTitle(medicationNames),
+    doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
+    medications: rest.medications.map((medication) => ({ ...medication })),
+  }
+}
+
+function toReferral(record: ReferralRecord, locale: AppLocale): Referral {
+  const { doctorsOfficeId, ...rest } = record
+  return {
+    ...rest,
+    kind: "referral",
+    title: formatReferralRequestTitle(record.specialization),
+    doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
+  }
 }
 
 export async function fetchAppointment(
@@ -249,16 +319,7 @@ export async function fetchAppointment(
     if (!appointment) {
       throw new Error("Termin nicht gefunden.")
     }
-    const office = doctorsOfficesSeed[appointment.doctorsOfficeId]
-    return {
-      ...appointment,
-      doctorName: office?.name ?? appointment.doctorName,
-      doctorSpecialty: office
-        ? localizedSpecialty(office, locale)
-        : appointment.doctorSpecialty,
-      doctorImageUri: office?.imageUri ?? appointment.doctorImageUri,
-      doctorInitials: office?.initials ?? appointment.doctorInitials,
-    }
+    return toAppointment(appointment, locale)
   })
 }
 
@@ -278,16 +339,10 @@ export async function createAppointment(
       throw new Error("Profil nicht gefunden.")
     }
 
-    const appointment: Appointment = {
+    const appointment: AppointmentRecord = {
       id: `req-appointment-${Date.now()}`,
       doctorsOfficeId: office.id,
-      doctorName: office.name,
-      doctorSpecialty: localizedSpecialty(office, locale),
-      doctorImageUri: office.imageUri,
-      doctorInitials: office.initials,
       profileId: profile.id,
-      patientName: profile.fullName,
-      patientDateOfBirth: profile.dateOfBirth,
       date: input.date,
       time: input.time,
       isEmergency: input.isEmergency,
@@ -295,20 +350,7 @@ export async function createAppointment(
       status: "requested",
     }
     appointmentsState = [appointment, ...appointmentsState]
-    recentRequestsState = [
-      {
-        id: appointment.id,
-        doctorsOfficeId: appointment.doctorsOfficeId,
-        doctorName: appointment.doctorName,
-        title: appointment.time,
-        kind: "appointment",
-        kindLabel: "Termin",
-        status: "in_progress",
-        statusLabel: "Angefragt",
-      },
-      ...recentRequestsState,
-    ]
-    return { ...appointment }
+    return toAppointment(appointment, locale)
   })
 }
 
@@ -321,30 +363,14 @@ export async function cancelAppointment(
     if (!existing) {
       throw new Error("Termin nicht gefunden.")
     }
-    const appointment: Appointment = {
+    const appointment: AppointmentRecord = {
       ...existing,
       status: "cancelled",
     }
     appointmentsState = appointmentsState.map((item) =>
       item.id === appointmentId ? appointment : item,
     )
-    recentRequestsState = recentRequestsState.map((request) => {
-      if (request.id !== appointmentId) {
-        return request
-      }
-      return {
-        ...request,
-        status: "cancelled",
-        statusLabel: "Storniert",
-      }
-    })
-    const office = doctorsOfficesSeed[appointment.doctorsOfficeId]
-    return {
-      ...appointment,
-      doctorSpecialty: office
-        ? localizedSpecialty(office, locale)
-        : appointment.doctorSpecialty,
-    }
+    return toAppointment(appointment, locale)
   })
 }
 
@@ -357,17 +383,7 @@ export async function fetchPrescription(
     if (!prescription) {
       throw new Error("Rezept nicht gefunden.")
     }
-    const office = doctorsOfficesSeed[prescription.doctorsOfficeId]
-    return {
-      ...prescription,
-      medications: prescription.medications.map((medication) => ({ ...medication })),
-      doctorName: office?.name ?? prescription.doctorName,
-      doctorSpecialty: office
-        ? localizedSpecialty(office, locale)
-        : prescription.doctorSpecialty,
-      doctorImageUri: office?.imageUri ?? prescription.doctorImageUri,
-      doctorInitials: office?.initials ?? prescription.doctorInitials,
-    }
+    return toPrescription(prescription, locale)
   })
 }
 
@@ -390,15 +406,10 @@ export async function createPrescription(
       throw new Error("Bitte fügen Sie mindestens ein Medikament hinzu.")
     }
 
-    const prescription: Prescription = {
+    const prescription: PrescriptionRecord = {
       id: `req-prescription-${Date.now()}`,
       doctorsOfficeId: office.id,
-      doctorName: office.name,
-      doctorSpecialty: localizedSpecialty(office, locale),
-      doctorImageUri: office.imageUri,
-      doctorInitials: office.initials,
       profileId: profile.id,
-      patientName: profile.fullName,
       shipByMail: input.shipByMail,
       note: input.note,
       medications: input.medications.map((medication, index) => ({
@@ -406,26 +417,10 @@ export async function createPrescription(
         name: medication.name,
         size: medication.size,
       })),
-      status: "in_progress",
+      status: "inProgress",
     }
     prescriptionsState = [prescription, ...prescriptionsState]
-    recentRequestsState = [
-      {
-        id: prescription.id,
-        doctorsOfficeId: prescription.doctorsOfficeId,
-        doctorName: prescription.doctorName,
-        title: prescription.medications.map((item) => item.name).join(", "),
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "in_progress",
-        statusLabel: "In Bearbeitung",
-      },
-      ...recentRequestsState,
-    ]
-    return {
-      ...prescription,
-      medications: prescription.medications.map((medication) => ({ ...medication })),
-    }
+    return toPrescription(prescription, locale)
   })
 }
 
@@ -438,31 +433,14 @@ export async function cancelPrescription(
     if (!existing) {
       throw new Error("Rezept nicht gefunden.")
     }
-    const prescription: Prescription = {
+    const prescription: PrescriptionRecord = {
       ...existing,
       status: "cancelled",
-      medications: existing.medications.map((medication) => ({ ...medication })),
     }
     prescriptionsState = prescriptionsState.map((item) =>
       item.id === prescriptionId ? prescription : item,
     )
-    recentRequestsState = recentRequestsState.map((request) => {
-      if (request.id !== prescriptionId) {
-        return request
-      }
-      return {
-        ...request,
-        status: "cancelled",
-        statusLabel: "Storniert",
-      }
-    })
-    const office = doctorsOfficesSeed[prescription.doctorsOfficeId]
-    return {
-      ...prescription,
-      doctorSpecialty: office
-        ? localizedSpecialty(office, locale)
-        : prescription.doctorSpecialty,
-    }
+    return toPrescription(prescription, locale)
   })
 }
 
@@ -475,18 +453,7 @@ export async function fetchReferral(
     if (!referral) {
       throw new Error("Überweisung nicht gefunden.")
     }
-    const office = doctorsOfficesSeed[referral.doctorsOfficeId]
-    const specialist = doctorsOfficesSeed[referral.specialistDoctorsOfficeId]
-    return {
-      ...referral,
-      doctorName: office?.name ?? referral.doctorName,
-      doctorSpecialty: office
-        ? localizedSpecialty(office, locale)
-        : referral.doctorSpecialty,
-      doctorImageUri: office?.imageUri ?? referral.doctorImageUri,
-      doctorInitials: office?.initials ?? referral.doctorInitials,
-      specialistName: specialist?.name ?? referral.specialistName,
-    }
+    return toReferral(referral, locale)
   })
 }
 
@@ -499,46 +466,26 @@ export async function createReferral(
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
-    const specialist = doctorsOfficesSeed[input.specialistDoctorsOfficeId]
-    if (!specialist) {
-      throw new Error("Facharzt nicht gefunden.")
-    }
     const profile =
       patientProfilesSeed.find((item) => item.id === input.profileId)
       ?? patientProfilesSeed[0]
     if (!profile) {
       throw new Error("Profil nicht gefunden.")
     }
+    if (input.specialization.trim().length === 0) {
+      throw new Error("Bitte wählen Sie eine Fachrichtung aus.")
+    }
 
-    const referral: Referral = {
+    const referral: ReferralRecord = {
       id: `req-referral-${Date.now()}`,
       doctorsOfficeId: office.id,
-      doctorName: office.name,
-      doctorSpecialty: localizedSpecialty(office, locale),
-      doctorImageUri: office.imageUri,
-      doctorInitials: office.initials,
       profileId: profile.id,
-      patientName: profile.fullName,
-      specialistDoctorsOfficeId: specialist.id,
-      specialistName: specialist.name,
+      specialization: input.specialization.trim(),
       reason: input.reason,
-      status: "in_progress",
+      status: "inProgress",
     }
     referralsState = [referral, ...referralsState]
-    recentRequestsState = [
-      {
-        id: referral.id,
-        doctorsOfficeId: referral.doctorsOfficeId,
-        doctorName: referral.doctorName,
-        title: referral.specialistName,
-        kind: "referral",
-        kindLabel: "Überweisung",
-        status: "in_progress",
-        statusLabel: "In Bearbeitung",
-      },
-      ...recentRequestsState,
-    ]
-    return { ...referral }
+    return toReferral(referral, locale)
   })
 }
 
@@ -551,32 +498,14 @@ export async function cancelReferral(
     if (!existing) {
       throw new Error("Überweisung nicht gefunden.")
     }
-    const referral: Referral = {
+    const referral: ReferralRecord = {
       ...existing,
       status: "cancelled",
     }
     referralsState = referralsState.map((item) =>
       item.id === referralId ? referral : item,
     )
-    recentRequestsState = recentRequestsState.map((request) => {
-      if (request.id !== referralId) {
-        return request
-      }
-      return {
-        ...request,
-        status: "cancelled",
-        statusLabel: "Storniert",
-      }
-    })
-    const office = doctorsOfficesSeed[referral.doctorsOfficeId]
-    const specialist = doctorsOfficesSeed[referral.specialistDoctorsOfficeId]
-    return {
-      ...referral,
-      doctorSpecialty: office
-        ? localizedSpecialty(office, locale)
-        : referral.doctorSpecialty,
-      specialistName: specialist?.name ?? referral.specialistName,
-    }
+    return toReferral(referral, locale)
   })
 }
 
@@ -641,10 +570,32 @@ export async function removePatientMedication(
 
 function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): string {
   return (
-    office.specialty?.[locale]
+    office.specialization?.[locale]
     ?? specializationsSeed.find((item) => item.id === office.specializationId)?.labels[locale]
     ?? ""
   )
+}
+
+function localizedDoctorServices(
+  services: LocalizedDoctorServiceSeed[],
+  locale: AppLocale,
+) {
+  return services.map((service) => ({
+    id: service.id,
+    name: service.name[locale],
+    description: service.description[locale],
+  }))
+}
+
+function localizedDoctors(
+  doctors: LocalizedDoctorSeed[],
+  locale: AppLocale,
+) {
+  return doctors.map((doctor) => ({
+    id: doctor.id,
+    name: doctor.name[locale],
+    imageUri: doctor.imageUri,
+  }))
 }
 
 function cloneOpeningHours(
@@ -656,21 +607,6 @@ function cloneOpeningHours(
   }, {} as DoctorsOfficeOpeningHours)
 }
 
-function toHomeDoctorCard(
-  office: DoctorsOfficeSeed,
-  locale: AppLocale,
-): HomeDoctorCard {
-  return {
-    id: office.id,
-    name: office.name,
-    specialty: localizedSpecialty(office, locale),
-    phone: office.phone,
-    imageUri: office.imageUri,
-    initials: office.initials,
-    status: office.status,
-  }
-}
-
 function toDoctorsOffice(
   office: DoctorsOfficeSeed,
   locale: AppLocale,
@@ -678,20 +614,31 @@ function toDoctorsOffice(
   return {
     id: office.id,
     name: office.name,
-    specialty: localizedSpecialty(office, locale),
-    phone: office.phone,
-    imageUri: office.imageUri,
-    initials: office.initials,
-    status: office.status,
-    isMyDoctor: myDoctorIds.has(office.id),
-    services: (office.services ?? []).map((label) => label[locale]),
-    addressLine1: office.addressLine1,
-    addressLine2: office.addressLine2,
-    websiteLabel: office.websiteLabel,
+    specialization: localizedSpecialty(office, locale),
+    phoneNumber: office.phoneNumber,
+    ...(office.imageUri ? { imageUri: office.imageUri } : {}),
+    services: localizedDoctorServices(office.services ?? [], locale),
+    offers: localizedDoctorServices(office.offers ?? [], locale),
+    doctors: localizedDoctors(
+      office.doctors ?? [
+        {
+          id: `${office.id}-doctor`,
+          name: { "de-DE": office.name, "en-US": office.name },
+          imageUri: office.imageUri ?? undefined,
+        },
+      ],
+      locale,
+    ),
+    address: { ...office.address },
     websiteUrl: office.websiteUrl,
-    additionalOfferLabel: office.additionalOffer?.[locale] ?? "",
     openingHours: cloneOpeningHours(office.openingHours),
   }
+}
+
+export async function fetchMyDoctors(): Promise<MyDoctors> {
+  return withMockLatency(() => ({
+    doctorIds: [...myDoctorIds],
+  }))
 }
 
 export async function fetchDoctorsOffice(
@@ -707,31 +654,25 @@ export async function fetchDoctorsOffice(
   })
 }
 
-export async function addMyDoctor(
-  doctorsOfficeId: string,
-  locale: AppLocale,
-): Promise<DoctorsOffice> {
+export async function addMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
     myDoctorIds.add(office.id)
-    return toDoctorsOffice(office, locale)
+    return { doctorIds: [...myDoctorIds] }
   })
 }
 
-export async function removeMyDoctor(
-  doctorsOfficeId: string,
-  locale: AppLocale,
-): Promise<DoctorsOffice> {
+export async function removeMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
       throw new Error("Arztpraxis nicht gefunden.")
     }
     myDoctorIds.delete(office.id)
-    return toDoctorsOffice(office, locale)
+    return { doctorIds: [...myDoctorIds] }
   })
 }
 
@@ -771,7 +712,7 @@ export async function fetchSpecializations(params: {
 
 export async function fetchDoctors(
   filters: DoctorSearchFilters,
-): Promise<HomeDoctorCard[]> {
+): Promise<DoctorsOffice[]> {
   return withMockLatency(() => {
     const query = filters.query?.trim().toLowerCase() ?? ""
     const cityById = new Map(citiesSeed.map((city) => [city.id, city]))
@@ -797,20 +738,15 @@ export async function fetchDoctors(
         const haystack = `${office.name} ${specializationLabel} ${cityLabel}`
         return matchesQuery(haystack, query)
       })
-      .map((office) => {
-        return toHomeDoctorCard(office, filters.locale)
-      })
+      .map((office) => toDoctorsOffice(office, filters.locale))
   }, { failKey: filters.query })
 }
 
 export function resetMockStore(): void {
   conversationsState = structuredClone(conversationsSeed)
   messagesState = structuredClone(messagesByConversation)
-  myDoctorIds = new Set(
-    buildHomeSummary().myDoctors.map((doctor) => doctor.id),
-  )
+  myDoctorIds = new Set<string>(initialMyDoctorIds)
   patientMedicationsState = structuredClone(patientMedicationsSeed)
-  recentRequestsState = structuredClone(buildHomeSummary().recentRequests)
   appointmentsState = structuredClone(appointmentsSeed)
   prescriptionsState = structuredClone(prescriptionsSeed)
   referralsState = structuredClone(referralsSeed)

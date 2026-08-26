@@ -59,7 +59,7 @@ export default function ChatThreadScreen() {
     void messagesQuery.refetch()
   }
 
-  const contact = conversationQuery.data?.contact
+  const user = conversationQuery.data?.user
   const { isVisible: isKeyboardVisible } = useKeyBoard()
 
   return (
@@ -86,14 +86,14 @@ export default function ChatThreadScreen() {
             />
           }
           avatar={
-            contact ? ({
-              name: contact.name,
-              image: contactAvatarImage(contact.imageUri, contact.name),
+            user ? ({
+              name: user.name,
+              image: contactAvatarImage(user.imageUri, user.name),
               ImageComponent: AzdAvatarImage,
             }) : undefined
           }
-          title={contact?.name ?? t("tabChats")}
-          subtitle={contact ? (contact.subtitle ?? t("practice")) : undefined}
+          title={user?.name ?? t("tabChats")}
+          subtitle={user ? t("practice") : undefined}
           rightActions={
             <IconButton
               accessibilityLabel={t("call")}

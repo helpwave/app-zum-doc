@@ -1,5 +1,7 @@
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { StructuredCardMessage } from "@app-zum-doc/utils/api"
+import {
+  type StructuredCardMessage,
+} from "@app-zum-doc/utils/api"
 import {
   Button,
   ChatMessageBubble,
@@ -23,25 +25,37 @@ export function StructuredCard({
   const { theme } = useAzdTheme()
   const colors = theme.components.structuredCard
   const tonalPrimary = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
+  const showActions =
+    !message.selectedActionId && message.actions && message.actions.length > 0
 
   return (
     <ChatMessageBubble
       direction={message.direction}
-      timestamp={message.timeLabel}
+      timestamp={message.time}
     >
-      <View style={{flexDirection: "row", alignItems: "center", gap: theme.spacing.md}}>
-        <View style={{...theme.semantics.container.sm, backgroundColor: tonalPrimary.color}}>
+      <View style={{flexDirection: "column", gap: theme.spacing.md}}>
+        <View style={{flexDirection: "row", alignItems: "center", gap: theme.spacing.md}}>
+        <View 
+          style={{
+           backgroundColor: tonalPrimary.color,
+           borderRadius: theme.borderRadius.md,
+           height: theme.semantics.container.md.size,
+           width: theme.semantics.container.md.size,
+           justifyContent: "center",
+           alignItems: "center",
+          }}
+        >
           <ThemedIcon color={tonalPrimary.onColor} icon={CalendarDays} size={theme.icongraphy.sizes.md}/>
         </View>
         <View style={{flexDirection: "column", gap: theme.spacing.xs}}>
-          <ThemedText style={{fontWeight: theme.fontWeights.semibold}}>{message.title}</ThemedText>
+          <ThemedText style={{...theme.typography.body.lg, fontWeight: theme.fontWeights.semibold}}>{message.title}</ThemedText>
           <ThemedText appearance="description">{message.subtitle}</ThemedText>
         </View>
       </View>
-      <View style={{ gap: theme.spacing.sm }}>
+      <View style={{ gap: theme.spacing.xs }}>
         <Text
           style={{
-            ...theme.typography.heading.md,
+            ...theme.typography.body.md,
             fontWeight: theme.fontWeights.bold,
             color: colors.title,
           }}
@@ -52,22 +66,27 @@ export function StructuredCard({
           {message.detail}
         </Text>
       </View>
-      { message.actions && message.actions.length > 0 && ( 
-        <View style={{flexDirection: "row", alignItems: "flex-end"}}>
-          {message.actions.map((action) => (
-            <Button
-              key={action.id}
-              color={action.variant === "primary" ? theme.colors.primary : theme.colors.neutral}
-              variant={action.variant === "primary" ? "filled" : "tonal"}
-              disabled={isActionPending}
-              onPress={() => onAction?.(action.id)}
-              style={{ flex: 1 }}
-            >
-              {action.label}
-            </Button>
-          ))}
+      {showActions && (
+        <View style={{flexDirection: "row", alignItems: "flex-end", gap: theme.spacing.md }}>
+          {message.actions!.map((action) => {
+            const isMainAction = action.id === message.mainActionId
+
+            return (
+              <Button
+                key={action.id}
+                color={theme.colors.primary}
+                variant={isMainAction ? "filled" : "tonal"}
+                disabled={isActionPending}
+                onPress={() => onAction?.(action.id)}
+                style={{ flex: 1 }}
+              >
+                {action.label}
+              </Button>
+            )
+          })}
         </View>
       )}
+      </View>
     </ChatMessageBubble>
   )
 }

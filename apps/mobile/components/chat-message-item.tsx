@@ -5,10 +5,15 @@ import {
 import { AttachmentCard } from "@/components/attachment-card"
 import { MessageBubble } from "@/components/message-bubble"
 import { StructuredCard } from "@/components/structured-card"
-import type { ChatMessage } from "@app-zum-doc/utils/api"
+import {
+  formatDateDivider,
+  toAppLocale,
+  type Message,
+} from "@app-zum-doc/utils/api"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 
 type ChatMessageItemProps = {
-  message: ChatMessage
+  message: Message
   onCardAction?: (messageId: string, actionId: string) => void
   isCardActionPending?: boolean
 }
@@ -18,9 +23,14 @@ export function ChatMessageItem({
   onCardAction,
   isCardActionPending = false,
 }: ChatMessageItemProps) {
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
+
   switch (message.type) {
   case "date":
-    return <ChatDateDivider>{message.label}</ChatDateDivider>
+    return (
+      <ChatDateDivider>{formatDateDivider(message.date, locale)}</ChatDateDivider>
+    )
   case "system":
     return <ChatSystemLine>{message.body}</ChatSystemLine>
   case "text":

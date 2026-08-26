@@ -1,11 +1,14 @@
 import { DoctorCard } from "@/components/doctor-card"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import {
+  homeQuickActions,
+  quickActionTranslationKeys,
+} from "@/lib/quick-actions"
 import type {
-  HomeDoctorCard,
-  HomeQuickAction,
-  HomeRequest,
-  HomeSummary,
+  DoctorsOffice,
+  RequestBase,
+  PatientRequestType,
 } from "@app-zum-doc/utils/api"
 import { OKLCHUtils } from "@helpwave/hightide-design/utils"
 import { Chip, ThemedIcon, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
@@ -26,13 +29,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type StartHeroProps = {
   onSearchPress: () => void
-  quickActions: HomeSummary["quickActions"]
-  onQuickActionPress: (action: HomeQuickAction) => void
+  onQuickActionPress: (actionId: PatientRequestType) => void
 }
 
 export function StartHero({
   onSearchPress,
-  quickActions,
   onQuickActionPress,
 }: StartHeroProps) {
   const t = useAppTranslation()
@@ -110,11 +111,11 @@ export function StartHero({
           gap: theme.spacing.md + theme.spacing.sm,
         }}
       >
-        {quickActions.map((action) => (
+        {homeQuickActions.map((action) => (
           <StartQuickActionCard
             key={action.id}
-            action={action}
-            onPress={() => onQuickActionPress(action)}
+            actionId={action.id}
+            onPress={() => onQuickActionPress(action.id)}
           />
         ))}
       </View>
@@ -123,7 +124,7 @@ export function StartHero({
 }
 
 type StartQuickActionCardProps = {
-  action: HomeQuickAction
+  actionId: PatientRequestType
   onPress: () => void
 }
 
@@ -134,12 +135,13 @@ const quickActionIcons = {
 } as const
 
 export function StartQuickActionCard({
-  action,
+  actionId,
   onPress,
 }: StartQuickActionCardProps) {
+  const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const color = theme.colors[action.id]
-  const Icon = quickActionIcons[action.id]
+  const color = theme.colors[actionId]
+  const Icon = quickActionIcons[actionId]
 
   return (
     <ThemedPressable
@@ -171,14 +173,14 @@ export function StartQuickActionCard({
           fontWeight: theme.fontWeights.semibold,
         }}
       >
-        {action.label}
+        {t(quickActionTranslationKeys[actionId])}
       </ThemedText>
     </ThemedPressable>
   )
 }
 
 type StartDoctorCardProps = {
-  doctor: HomeDoctorCard
+  doctor: DoctorsOffice
   onPress: () => void
 }
 
@@ -191,14 +193,15 @@ export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
 }
 
 type RequestTileProps = {
-  request: HomeRequest
+  request: RequestBase
   onPress: () => void
 }
 
 export function RequestTile({ request, onPress }: RequestTileProps) {
+  const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
-  const isWarning = request.status === "in_progress"
+  const isWarning = request.status === "inProgress"
   const KindIcon =
     request.kind === "prescription"
       ? Pill
@@ -235,11 +238,11 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           <Text
             style={{
               ...theme.typography.body.md,
-              fontWeight: theme.fontWeights.medium,
-              color: colors.requestDoctor,
+              fontWeight: theme.fontWeights.semibold,
+              color: colors.requestDoctor
             }}
           >
-            {request.doctorName}
+            {request.doctorsOffice.name}
           </Text>
           <Text
             style={{
@@ -288,7 +291,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            {request.statusLabel}
+            {t("patientRequestStatus", { status: request.status })}
           </Text>
         </View>
       </View>
@@ -309,7 +312,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           numberOfLines={1}
           ellipsizeMode="tail"
         >
-          {request.kindLabel}
+          {t(quickActionTranslationKeys[request.kind])}
         </ThemedText>
       </Chip>
     </ThemedPressable>

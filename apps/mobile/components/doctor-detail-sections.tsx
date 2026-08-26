@@ -2,8 +2,9 @@ import { AppBar } from "@/components/app-bar"
 import { RequestTile, StartQuickActionCard } from "@/components/home-sections"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { WeekdayUtils, type DoctorsOffice, type HomeQuickAction, type HomeRequest } from "@app-zum-doc/utils/api"
-import { Button, Card, Divider, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
+import { WeekdayUtils, doctorsOfficeStatusFromOpeningHours, formatAddress, formatAddressLines, hasAddressContent, type DoctorsOffice, type RequestBase, type PatientRequestType } from "@app-zum-doc/utils/api"
+import { homeQuickActions } from "@/lib/quick-actions"
+import { Button, Card, Divider, IconButton, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
 import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image } from "expo-image"
@@ -42,15 +43,17 @@ function hasText(value?: string): boolean {
 
 type DoctorDetailHeroProps = {
   office: DoctorsOffice
+  isMyDoctor: boolean
   onAddDoctor: () => void
   onRemoveDoctor: () => void
   isAddingDoctor?: boolean
   isRemovingDoctor?: boolean
-  onQuickActionPress: (action: HomeQuickAction) => void
+  onQuickActionPress: (actionId: PatientRequestType) => void
 }
 
 export function DoctorDetailHero({
   office,
+  isMyDoctor,
   onAddDoctor,
   onRemoveDoctor,
   isAddingDoctor = false,
@@ -65,23 +68,6 @@ export function DoctorDetailHero({
   const moreButtonRef = useRef<View>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 })
-  const addedQuickActions: HomeQuickAction[] = [
-    {
-      id: "prescription",
-      label: t("actionPrescription"),
-      href: "/requests/prescription/create",
-    },
-    {
-      id: "appointment",
-      label: t("actionAppointment"),
-      href: "/requests/appointment/create",
-    },
-    {
-      id: "referral",
-      label: t("actionReferral"),
-      href: "/requests/referral/create",
-    },
-  ]
 
   const closeMenu = () => {
     setMenuOpen(false)
@@ -118,91 +104,92 @@ export function DoctorDetailHero({
         start={{ x: 0.05, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.md + theme.spacing.sm,
           paddingBottom: theme.spacing.lg + theme.spacing.sm,
-          gap: theme.spacing.lg,
           overflow: "hidden",
         }}
       >
-        <ContentThemeOverrideProvider foreground={colors.heroIcon}>
-          <AppBar
-            trailing={
-              office.isMyDoctor ? (
-                <View ref={moreButtonRef} collapsable={false}>
-                  <Pressable
-                    accessibilityLabel={t("moreOptions")}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
-                    disabled={isRemovingDoctor}
-                    hitSlop={theme.spacing.md}
-                    onPress={openMenu}
-                  >
-                    {isRemovingDoctor ? (
-                      <ActivityIndicator size="small" color={colors.heroIcon} />
-                    ) : (
-                      <Ellipsis size={theme.icongraphy.sizes.sm} color={colors.heroIcon} />
-                    )}
-                  </Pressable>
-                </View>
-              ) : null
-            }
-          />
-        </ContentThemeOverrideProvider>
+        <AppBar
+          trailing={
+            isMyDoctor ? (
+              <View ref={moreButtonRef} collapsable={false}>
+                <IconButton
+                  icon={Ellipsis}
+                  accessibilityLabel={t("moreOptions")}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
+                  disabled={isRemovingDoctor}
+                  onPress={openMenu}
+                  variant="foreground"
+                  color={theme.colors.surfaceInverse}
+                />
+              </View>
+            ) : null
+          }
+          style={{
+            backgroundColor: "#FFFFFF00"
+          }}
+        />
 
-        <DoctorSummaryCard office={office} />
+        <View 
+          style={{
+            paddingHorizontal: theme.spacing.lg,
+            gap: theme.spacing.lg,
+          }}
+        >
+          <DoctorSummaryCard office={office} />
 
-        {office.isMyDoctor ? (
-          <View
-            style={{
-              flexDirection: "row",
-              gap: theme.spacing.md + theme.spacing.sm,
-            }}
-          >
-            {addedQuickActions.map((action) => (
-              <StartQuickActionCard
-                key={action.id}
-                action={action}
-                onPress={() => onQuickActionPress(action)}
-              />
-            ))}
-          </View>
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: isAddingDoctor, busy: isAddingDoctor }}
-            disabled={isAddingDoctor}
-            onPress={onAddDoctor}
-            style={{
-              height: theme.semantics.control.md.size,
-              borderRadius: 9999,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: theme.spacing.md,
-              backgroundColor: colors.ctaBackground,
-              opacity: isAddingDoctor ? 0.7 : 1,
-            }}
-          >
-            {isAddingDoctor ? (
-              <ActivityIndicator
-                size="small"
-                color={colors.ctaText}
-              />
-            ) : (
-              <Plus size={theme.icongraphy.sizes.sm} color={colors.ctaText} strokeWidth={2.2} />
-            )}
-            <Text
+          {isMyDoctor ? (
+            <View
               style={{
-                ...theme.typography.body.md,
-                fontWeight: theme.fontWeights.medium,
-                color: colors.ctaText,
+                flexDirection: "row",
+                gap: theme.spacing.md + theme.spacing.sm,
               }}
             >
-              {t("addAsMyDoctor")}
-            </Text>
-          </Pressable>
-        )}
+              {homeQuickActions.map((action) => (
+                <StartQuickActionCard
+                  key={action.id}
+                  actionId={action.id}
+                  onPress={() => onQuickActionPress(action.id)}
+                />
+              ))}
+            </View>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: isAddingDoctor, busy: isAddingDoctor }}
+              disabled={isAddingDoctor}
+              onPress={onAddDoctor}
+              style={{
+                height: theme.semantics.control.md.size,
+                borderRadius: 9999,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: theme.spacing.md,
+                backgroundColor: colors.ctaBackground,
+                opacity: isAddingDoctor ? 0.7 : 1,
+              }}
+            >
+              {isAddingDoctor ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.ctaText}
+                />
+              ) : (
+                <Plus size={theme.icongraphy.sizes.sm} color={colors.ctaText} strokeWidth={2.2} />
+              )}
+              <Text
+                style={{
+                  ...theme.typography.body.md,
+                  fontWeight: theme.fontWeights.medium,
+                  color: colors.ctaText,
+                }}
+              >
+                {t("addAsMyDoctor")}
+              </Text>
+            </Pressable>
+          )}
+        </View>
       </LinearGradient>
       <Modal
         visible={menuOpen}
@@ -251,6 +238,7 @@ export function DoctorSummaryCard({
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.doctorDetail
+  const status = doctorsOfficeStatusFromOpeningHours(office.openingHours)
   const imageSource =
     office.imageUri === "doctor-portrait"
       ? doctorPortrait
@@ -305,7 +293,7 @@ export function DoctorSummaryCard({
               color: colors.specialty,
             }}
           >
-            {office.specialty}
+            {office.specialization}
           </Text>
         </View>
         <View
@@ -320,7 +308,7 @@ export function DoctorSummaryCard({
               width: 12,
               height: 12,
               borderRadius: 9999,
-              backgroundColor: office.status === "open"
+              backgroundColor: status === "open"
                 ? colors.openDot
                 : colors.closedDot,
             }}
@@ -331,7 +319,7 @@ export function DoctorSummaryCard({
               color: colors.specialty,
             }}
           >
-            {t("officeStatus", { status: office.status })}
+            {t("officeStatus", { status })}
           </Text>
         </View>
       </View>
@@ -340,7 +328,7 @@ export function DoctorSummaryCard({
 }
 
 type DoctorRequestsSectionProps = {
-  requests: HomeRequest[]
+  requests: RequestBase[]
   onShowAll: () => void
   onRequestPress: (requestId: string) => void
 }
@@ -488,22 +476,26 @@ export function DoctorOfficeContactSections({
   onOffersPress: () => void
 }) {
   const t = useAppTranslation()
-  const hasAddress = hasText(office.addressLine1) || hasText(office.addressLine2)
+  const hasAddress = hasAddressContent(office.address)
   const hasServices = office.services.length > 0
-  const hasOffers = hasText(office.additionalOfferLabel)
-  const addressTitle = [office.addressLine1, office.addressLine2]
+  const hasOffers = office.offers.length > 0
+  const [addressLine1, addressLine2] = formatAddressLines(office.address)
+  const addressTitle = [addressLine1, addressLine2]
     .filter((line) => hasText(line))
     .join("\n")
+  const offersTitle = office.offers.length === 1
+    ? office.offers[0]!.name
+    : t("furtherOffers")
 
   return (
     <>
-      {hasText(office.phone) ? (
+      {office.phoneNumber ? (
         <Section title={t("phone")}>
           <DoctorOfficeActionCard
-            title={office.phone}
+            title={office.phoneNumber}
             icon={Phone}
             onPress={() => {
-              openDoctorsOfficePhone(office.phone)
+              openDoctorsOfficePhone(office.phoneNumber!)
             }}
           />
         </Section>
@@ -515,22 +507,19 @@ export function DoctorOfficeContactSections({
             title={addressTitle}
             icon={MapPin}
             onPress={() => {
-              openDoctorsOfficeNavigation(
-                office.addressLine1,
-                office.addressLine2,
-              )
+              openDoctorsOfficeNavigation(office.address)
             }}
           />
         </Section>
       ) : null}
 
-      {hasText(office.websiteLabel) || hasText(office.websiteUrl) ? (
+      {hasText(office.websiteUrl) ? (
         <Section title={t("website")}>
           <DoctorOfficeActionCard
-            title={hasText(office.websiteLabel) ? office.websiteLabel : office.websiteUrl}
+            title={office.websiteUrl!}
             icon={Globe}
             onPress={() => {
-              openDoctorsOfficeWebsite(office.websiteUrl)
+              openDoctorsOfficeWebsite(office.websiteUrl!)
             }}
           />
         </Section>
@@ -549,7 +538,7 @@ export function DoctorOfficeContactSections({
             {hasServices && hasOffers ? <Divider /> : null}
             {hasOffers ? (
               <DoctorOfficeActionItem
-                title={office.additionalOfferLabel}
+                title={offersTitle}
                 icon={Sparkles}
                 onPress={onOffersPress}
               />
@@ -570,12 +559,8 @@ export function openDoctorsOfficeWebsite(url: string): void {
   void Linking.openURL(url)
 }
 
-export function openDoctorsOfficeNavigation(
-  addressLine1: string,
-  addressLine2: string,
-): void {
-  const address = `${addressLine1}, ${addressLine2}`
-  const query = encodeURIComponent(address)
+export function openDoctorsOfficeNavigation(address: DoctorsOffice["address"]): void {
+  const query = encodeURIComponent(formatAddress(address))
   const url =
     Platform.OS === "ios"
       ? `http://maps.apple.com/?daddr=${query}`

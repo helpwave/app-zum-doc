@@ -1,17 +1,23 @@
+import {
+  AzdAvatarImage,
+  contactAvatarImage,
+} from "@/components/azd-avatar-image"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { HomeDoctorCard } from "@app-zum-doc/utils/api"
-import { ThemedPressable } from "@helpwave/hightide-native/components"
+import {
+  doctorsOfficeStatusFromOpeningHours,
+  type DoctorsOffice,
+} from "@app-zum-doc/utils/api"
+import { ColorPairToken } from "@helpwave/hightide-design/theme-tokens"
+import { HexColorUtils } from "@helpwave/hightide-design/utils"
+import { Avatar, ThemedPressable } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
-import { Image, ImageStyle } from "expo-image"
 import { Phone } from "lucide-react-native"
+import { useMemo } from "react"
 import { Text, View, ViewStyle } from "react-native"
 
-const doctorPortrait = require("../assets/images/doctor-portrait.png")
-const practiceLogo = require("../assets/images/practice-logo.png")
-
 type DoctorCardProps = {
-  doctor: HomeDoctorCard
+  doctor: DoctorsOffice
   onPress: () => void,
   style?: ViewStyle,
 }
@@ -20,17 +26,14 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.homeSections
-  const imageSource =
-    doctor.imageUri === "practice-logo"
-      ? practiceLogo
-      : doctor.imageUri === "doctor-portrait"
-        ? doctorPortrait
-        : null
-  const photoStyle: ViewStyle & ImageStyle = {
-    width: theme.semantics.container.md.size * 2,
-    borderRadius: theme.borderRadius.md,
-    alignSelf: "stretch"
-  }
+  const avatarSize = theme.semantics.container.md.size * 2
+  const status = doctorsOfficeStatusFromOpeningHours(doctor.openingHours)
+  const avatarColor: ColorPairToken = useMemo(() => {
+    return {
+      color: HexColorUtils.hexWithAlpha(theme.colors.primary.color, 0.7),
+      onColor: HexColorUtils.hexWithAlpha(theme.colors.primary.onColor, 0.7),
+    }
+  }, [theme.colors.primary])
 
   return (
     <ThemedPressable
@@ -40,49 +43,50 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
       coloringStyle="filled"
       style={{
         height: theme.semantics.container.md.size * 3,
-        borderRadius: theme.borderRadius.md,
         flexDirection: "row",
         alignContent: "stretch",
         alignSelf: "stretch",
-        gap: theme.spacing.md,
-        padding: theme.padding.xl,
-        paddingInlineEnd: theme.padding.xl + theme.spacing.md,
+        gap: theme.spacing.lg,
+        ...StyleAdapterUtils.borderRadius({
+          type: "all",
+          value: theme.borderRadius.xl,
+        }),
+        ...StyleAdapterUtils.padding({
+          type: "all",
+          value: theme.padding.lg,
+        }),
         backgroundColor: colors.cardBackground,
         boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
         ...style,
       }}
+      stateLayerStyle={{
+        ...StyleAdapterUtils.borderRadius({
+          type: "all",
+          value: theme.borderRadius.xl,
+        }),
+      }}
     >
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={photoStyle}
-          contentFit="cover"
-        />
-      ) : (
-        <View
-          style={{
-            ...photoStyle,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.avatarBackground,
-          }}
-        >
-          <Text
-            style={{
-              ...theme.typography.heading.lg,
-              fontWeight: theme.fontWeights.semibold,
-              color: colors.avatarText,
-            }}
-          >
-            {doctor.initials ?? doctor.name.slice(0, 2).toUpperCase()}
-          </Text>
-        </View>
-      )}
+      <Avatar
+        name={doctor.name}
+        image={contactAvatarImage(doctor.imageUri, doctor.name)}
+        ImageComponent={AzdAvatarImage}
+        color={avatarColor}
+        style={{ 
+          alignSelf: "stretch",
+          minWidth: avatarSize,
+          minHeight: avatarSize,
+          width: "auto",
+          height: "auto",
+          maxWidth: "auto", 
+          maxHeight: "auto" 
+        }}
+        avatarStyle={{ borderRadius: theme.borderRadius.md, width: "100%", height: "100%" }}
+        imageStyle={{ borderRadius: theme.borderRadius.md, width: "100%", height: "100%" }}
+      />
       <View
         style={{
           flex: 1,
-          justifyContent: "space-between",
-          paddingVertical: theme.spacing.md,
+          justifyContent: "space-around",
           alignSelf: "stretch",
         }}
       >
@@ -102,7 +106,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
             }}
             numberOfLines={2}
           >
-            {doctor.specialty}
+            {doctor.specialization}
           </Text>
         </View>
         <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
@@ -126,7 +130,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
                   width: 12,
                   height: 12,
                   borderRadius: 9999,
-                  backgroundColor: doctor.status === "open"
+                  backgroundColor: status === "open"
                     ? colors.openDot
                     : colors.closedDot,
                 }}
@@ -143,7 +147,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
               }}
               numberOfLines={1}
             >
-              {t("officeStatus", { status: doctor.status })}
+              {t("officeStatus", { status })}
             </Text>
           </View>
           <View
@@ -174,7 +178,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
               }}
               numberOfLines={1}
             >
-              {doctor.phone}
+              {doctor.phoneNumber}
             </Text>
           </View>
         </View>

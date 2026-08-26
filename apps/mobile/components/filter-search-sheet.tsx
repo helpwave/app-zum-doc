@@ -1,6 +1,7 @@
 import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import {
   IconButton,
   ListActionItem,
@@ -65,10 +66,10 @@ export function FilterSearchSheet({
         style={{
           flex: 1,
           justifyContent: "flex-end",
-          backgroundColor: theme.semantics.withAppearance({
-            colorPair: theme.colors.surface,
-            appearance: "faded",
-          }),
+          backgroundColor: HexColorUtils.hexWithAlpha(
+            "#000000",
+            0.5
+          ),
         }}
         onPress={onClose}
       >
@@ -79,7 +80,7 @@ export function FilterSearchSheet({
             borderTopLeftRadius: theme.borderRadius.xxl,
             borderTopRightRadius: theme.borderRadius.xxl,
             paddingBottom: insets.bottom + theme.spacing.lg,
-            maxHeight: "90%",
+            height: "60%",
           }}
         >
           <View

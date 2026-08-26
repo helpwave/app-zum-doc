@@ -7,8 +7,10 @@ import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
 import { useAppNotificationPermission } from "@/hooks/useAppNotificationPermission"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { formatPatientDateOfBirth, patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import { Button, Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon } from "@helpwave/hightide-native/components"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
 import { Bell, ChevronRight, LogOut, Pill, Scale, Shield } from "lucide-react-native"
 import { Alert, Linking, ScrollView, View } from "react-native"
@@ -22,6 +24,8 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const profileQuery = usePatientProfile()
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
   const { notificationsEnabled, setNotificationsEnabled } = useAppNotificationPermission()
 
   return (
@@ -74,12 +78,12 @@ export default function ProfileScreen() {
             >
               <Card>
                 <ListItem 
-                  title={profileQuery.data.fullName}
+                  title={patientProfileFullName(profileQuery.data)}
                   subtitle={t("name")} 
                 />
                 <ListItem
                   subtitle={t("dateOfBirth")}
-                  title={profileQuery.data.dateOfBirth}
+                  title={formatPatientDateOfBirth(profileQuery.data.dateOfBirth, locale)}
                 />
                 <ListItem subtitle={t("email")} title={profileQuery.data.email} />
                 <ListItem subtitle={t("phone")} title={profileQuery.data.phone} />

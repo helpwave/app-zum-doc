@@ -2,8 +2,8 @@ import { AppBar } from "@/components/app-bar"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { parseIsoDate, toAppLocale } from "@app-zum-doc/utils/api"
-import { useAppointment, useCancelAppointment } from "@app-zum-doc/utils/hooks"
+import { parseIsoDate, formatPatientDateOfBirth, patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
+import { useAppointment, useCancelAppointment, usePatientProfileById } from "@app-zum-doc/utils/hooks"
 import {
   Button,
   Card,
@@ -37,14 +37,22 @@ export default function AppointmentDetailScreen() {
   const appointmentQuery = useAppointment(appointmentId, locale)
   const cancelAppointment = useCancelAppointment()
   const appointment = appointmentQuery.data
+  const profileQuery = usePatientProfileById(appointment?.profileId ?? "")
+  const doctorsOffice = appointment?.doctorsOffice
   const imageSource =
-    appointment?.doctorImageUri === "practice-logo"
+    doctorsOffice?.imageUri === "practice-logo"
       ? practiceLogo
-      : appointment?.doctorImageUri === "doctor-portrait"
+      : doctorsOffice?.imageUri === "doctor-portrait"
         ? doctorPortrait
-        : appointment?.doctorImageUri
-          ? { uri: appointment.doctorImageUri }
+        : doctorsOffice?.imageUri
+          ? { uri: doctorsOffice.imageUri }
           : doctorPortrait
+  const patientName = profileQuery.data
+    ? patientProfileFullName(profileQuery.data)
+    : undefined
+  const patientDateOfBirth = profileQuery.data
+    ? formatPatientDateOfBirth(profileQuery.data.dateOfBirth, locale)
+    : undefined
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.screenBackground }}>
@@ -123,22 +131,22 @@ export default function AppointmentDetailScreen() {
                     contentFit="cover"
                   />
                   <View style={{ flex: 1, gap: theme.spacing.xs }}>
-                    <Text
+                    <ThemedText
                       style={{
                         ...theme.typography.heading.md,
                         color: colors.name,
                       }}
                     >
-                      {appointment.doctorName}
-                    </Text>
-                    <Text
+                      {doctorsOffice?.name}
+                    </ThemedText>
+                    <ThemedText
                       style={{
                         ...theme.typography.body.sm,
                         color: colors.specialty,
                       }}
                     >
-                      {appointment.doctorSpecialty}
-                    </Text>
+                      {doctorsOffice?.specialization}
+                    </ThemedText>
                   </View>
                   <Chip
                     size="sm"
@@ -160,7 +168,7 @@ export default function AppointmentDetailScreen() {
                     >
                       <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
                       <ThemedText>
-                        {t("appointmentStatus", { status: appointment.status })}
+                        {t("patientRequestStatus", { status: appointment.status })}
                       </ThemedText>
                     </View>
                   </Chip>
@@ -208,11 +216,11 @@ export default function AppointmentDetailScreen() {
               </Card>
 
               <View>
-                <DetailRow label={t("patient")} value={appointment.patientName} />
+                <DetailRow label={t("patient")} value={patientName ?? "—"} />
                 <Divider />
                 <DetailRow
                   label={t("dateOfBirth")}
-                  value={appointment.patientDateOfBirth}
+                  value={patientDateOfBirth ?? "—"}
                 />
                 {appointment.sickNote ? (
                   <>
@@ -249,6 +257,7 @@ export default function AppointmentDetailScreen() {
                       ],
                     )
                   }}
+                  style={{ alignSelf: "flex-end" }}
                 >
                   {t("cancelAppointmentRequest")}
                 </Button>

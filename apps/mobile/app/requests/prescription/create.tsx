@@ -8,6 +8,7 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
   toAppLocale,
+  patientProfileFullName,
   type MedicationSize,
 } from "@app-zum-doc/utils/api"
 import {
@@ -26,7 +27,9 @@ import {
   ListItem,
   ListNavigationItem,
   Select,
+  SelectOption,
   Switch,
+  Textarea,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
@@ -111,7 +114,7 @@ export default function CreatePrescriptionScreen() {
       return
     }
     const prescription = reorderQuery.data
-    setDoctorId(prescription.doctorsOfficeId)
+    setDoctorId(prescription.doctorsOffice.id)
     setProfileId(prescription.profileId)
     setShipByMail(prescription.shipByMail)
     setNote(prescription.note)
@@ -173,12 +176,15 @@ export default function CreatePrescriptionScreen() {
         >
           <LabeledField label={t("doctor")}>
             <Select
-              options={doctorOptions}
               value={doctorId || undefined}
               onValueChange={setDoctorId}
               placeholder={t("selectPractice")}
               style={{ width: "100%" }}
-            />
+            >
+              {doctorOptions.map((option) => (
+                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("patient")}>
@@ -187,7 +193,7 @@ export default function CreatePrescriptionScreen() {
                 <ListItem
                   title={
                     selectedProfile
-                      ? t("profileSelf", { name: selectedProfile.fullName })
+                      ? t("profileSelf", { name: patientProfileFullName(selectedProfile) })
                       : t("patient")
                   }
                 />
@@ -195,7 +201,7 @@ export default function CreatePrescriptionScreen() {
                 <ListNavigationItem
                   title={
                     selectedProfile
-                      ? t("profileSelf", { name: selectedProfile.fullName })
+                      ? t("profileSelf", { name: patientProfileFullName(selectedProfile) })
                       : t("patient")
                   }
                   onPress={() => {
@@ -266,17 +272,10 @@ export default function CreatePrescriptionScreen() {
           </Card>
 
           <LabeledField label={t("appointmentNote")}>
-            <Input
+            <Textarea
               value={note}
               onValueChange={setNote}
               placeholder={t("prescriptionNotePlaceholder")}
-              multiline
-              numberOfLines={4}
-              style={{
-                width: "100%",
-                minHeight: theme.semantics.control.lg.size * 2,
-                textAlignVertical: "top",
-              }}
             />
           </LabeledField>
 
@@ -313,7 +312,7 @@ export default function CreatePrescriptionScreen() {
         title={t("patient")}
         options={profiles.map((profile) => ({
           id: profile.id,
-          label: t("profileSelf", { name: profile.fullName }),
+          label: t("profileSelf", { name: patientProfileFullName(profile) }),
         }))}
         value={profileId}
         onChange={setProfileId}

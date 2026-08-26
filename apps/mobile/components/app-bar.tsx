@@ -2,10 +2,12 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { IconButton, ThemedText } from "@helpwave/hightide-native/components"
 import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
+import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { useRouter } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
 import type { ReactNode } from "react"
 import { View, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export type AppBarProps = ViewProps & {
   title?: ReactNode
@@ -31,14 +33,35 @@ export function AppBar({
   const { theme } = useAzdTheme()
   const router = useRouter()
   const showBack = !noDefaultBackNavigation && router.canGoBack()
+  const insets = useSafeAreaInsets()
 
   return (
-    <View {...viewProps} style={style}>
-      <ContentThemeOverrideProvider foreground={theme.colors.surface.onColor}>
+    <View
+      {...viewProps} 
+      style={[
+        {
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+          paddingTop: insets.top,
+          backgroundColor: theme.colors.surface.color,
+        },
+        style
+      ]}
+     >
+      <ContentThemeOverrideProvider 
+        foreground={theme.colors.surface.onColor}
+        background={theme.colors.surface.color}
+      >
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
+            justifyContent: "space-between",
+            ...StyleAdapterUtils.padding({
+              "type": "logicalAxis",
+              inline: theme.padding.lg,
+              block: theme.padding.md,
+            }),
           }}
         >
           <View
@@ -55,6 +78,7 @@ export function AppBar({
               <IconButton
                 icon={ChevronLeft}
                 variant="foreground"
+                color={theme.colors.surfaceInverse}
                 accessibilityRole="button"
                 accessibilityLabel={t("back")}
                 onPress={() => {
@@ -94,7 +118,6 @@ export function AppBar({
               {
                 flexDirection: "row",
                 alignItems: "center",
-                marginLeft: "auto",
                 zIndex: 1,
               },
               trailingContainerStyle,

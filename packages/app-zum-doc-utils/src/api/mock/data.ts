@@ -1,32 +1,75 @@
 import type {
-  Appointment,
-  ChatMessage,
-  Conversation,
+  Address,
+  AppointmentRecord,
+  ConversationPreview,
   DoctorsOffice,
   DoctorsOfficeOpeningHours,
-  HomeSummary,
   Medication,
   MedicationCatalogItem,
+  Message,
   PatientProfile,
   PatientProfileSummary,
-  Prescription,
-  Referral,
+  PrescriptionRecord,
+  ReferralRecord,
 } from "../types"
+import { toPatientProfileSummary } from "../patientProfile"
+
+export const initialMyDoctorIds = ["office-moser", "office-haumann"] as const
+
+function chatTime(
+  year: number,
+  month: number,
+  day: number,
+  hours: number,
+  minutes: number,
+): Date {
+  return new Date(year, month - 1, day, hours, minutes)
+}
 
 export type LocalizedLabel = {
   "de-DE": string
   "en-US": string
 }
 
+export type LocalizedDoctorServiceSeed = {
+  id: string
+  name: LocalizedLabel
+  description: LocalizedLabel
+}
+
+export type LocalizedDoctorSeed = {
+  id: string
+  name: LocalizedLabel
+  imageUri?: string
+}
+
 export type DoctorsOfficeSeed = Omit<
   DoctorsOffice,
-  "isMyDoctor" | "specialty" | "services" | "additionalOfferLabel"
+  "specialization" | "services" | "offers" | "doctors"
 > & {
   cityId: string
   specializationId: string
-  specialty?: LocalizedLabel
-  services?: LocalizedLabel[]
-  additionalOffer?: LocalizedLabel
+  specialization?: LocalizedLabel
+  services?: LocalizedDoctorServiceSeed[]
+  offers?: LocalizedDoctorServiceSeed[]
+  doctors?: LocalizedDoctorSeed[]
+}
+
+function address(
+  street: string,
+  streetNumber: number,
+  postalCode: string,
+  city: string,
+  province?: string,
+): Address {
+  return {
+    country: "Deutschland",
+    province,
+    city,
+    postalCode,
+    street,
+    streetNumber,
+  }
 }
 
 function openingHours(
@@ -68,139 +111,154 @@ export const specializationsSeed: {
   { id: "orthopedics", labels: { "de-DE": "Orthopädie", "en-US": "Orthopedics" } },
 ]
 
-export const conversationsSeed: Conversation[] = [
+export const conversationsSeed: ConversationPreview[] = [
   {
     id: "conv-sophie",
-    contact: {
-      id: "contact-sophie",
+    user: {
+      id: "user-sophie",
       name: "Dr. med. Sophie Vogt",
-      subtitle: "Hausarztpraxis Altstadt",
-      initials: "SV",
-      presence: "online",
+      status: "online",
     },
-    lastMessage: "Wir haben die Ergebnisse Ihrer Blut…",
-    timeLabel: "09:12",
+    lastMessage: {
+      id: "msg-text-1",
+      preview: "Wir haben die Ergebnisse Ihrer Blut…",
+      time: chatTime(2026, 7, 8, 9, 12),
+      direction: "incoming",
+      status: "received",
+    },
     unreadCount: 1,
-    sentByMe: false,
   },
   {
     id: "conv-altstadt",
-    contact: {
-      id: "contact-altstadt",
+    user: {
+      id: "user-altstadt",
       name: "Hausarztpraxis Altstadt",
-      subtitle: "Praxis-Team",
       imageUri: "practice-logo",
-      presence: "offline",
+      status: "offline",
     },
-    lastMessage: "Ihr Rezept liegt zur Abholung bereit.",
-    timeLabel: "Gestern",
+    lastMessage: {
+      id: "msg-alt-2",
+      preview: "Vielen Dank, ich hole es morgen ab.",
+      time: chatTime(2026, 7, 7, 16, 50),
+      direction: "outgoing",
+      status: "read",
+    },
     unreadCount: 0,
-    sentByMe: true,
   },
   {
     id: "conv-klein",
-    contact: {
-      id: "contact-klein",
+    user: {
+      id: "user-klein",
       name: "Zahnarztpraxis Dr. Klein",
-      initials: "KL",
-      presence: "offline",
+      status: "offline",
     },
-    lastMessage: "Bitte kommen Sie 10 Minuten früher.",
-    timeLabel: "Mo",
+    lastMessage: {
+      id: "msg-klein-1",
+      preview: "Bitte kommen Sie 10 Minuten früher.",
+      time: chatTime(2026, 7, 7, 10, 5),
+      direction: "incoming",
+      status: "received",
+    },
     unreadCount: 0,
-    sentByMe: false,
   },
   {
     id: "conv-kern",
-    contact: {
-      id: "contact-kern",
+    user: {
+      id: "user-kern",
       name: "Radiologie Dr. Kern",
-      initials: "RK",
-      presence: "offline",
+      status: "offline",
     },
-    lastMessage: "Überweisung erhalten, vielen Dank.",
-    timeLabel: "24. Juni",
+    lastMessage: {
+      id: "msg-kern-1",
+      preview: "Überweisung erhalten, vielen Dank.",
+      time: chatTime(2026, 6, 24, 11, 20),
+      direction: "outgoing",
+      status: "sent",
+    },
     unreadCount: 0,
-    sentByMe: false,
   },
 ]
 
-export const messagesByConversation: Record<string, ChatMessage[]> = {
+export const messagesByConversation: Record<string, Message[]> = {
   "conv-sophie": [
     {
       id: "msg-date-1",
       type: "date",
-      label: "Heute · 09:10",
+      date: chatTime(2026, 7, 8, 9, 10),
     },
     {
       id: "msg-text-1",
       type: "text",
       direction: "incoming",
+      status: "received",
       body: "Guten Tag Herr Wellermann, wir haben die Ergebnisse Ihrer Blutuntersuchung erhalten und würden die Werte gerne mit Ihnen besprechen.",
-      timeLabel: "09:12",
+      time: chatTime(2026, 7, 8, 9, 12),
     },
     {
       id: "msg-card-1",
       type: "card",
       direction: "incoming",
+      status: "received",
       kind: "appointment",
       title: "Terminvorschlag",
       subtitle: "Besprechung Blutwerte · 30 Min",
       primary: "Mi. 8. Juli 2026",
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
-      status: "pending",
-      statusLabel: "AUSSTEHEND",
-      timeLabel: "09:15",
+      mainActionId: "accept",
+      time: chatTime(2026, 7, 8, 9, 15),
       actions: [
-        { id: "accept", label: "Zusagen", variant: "primary" },
-        { id: "decline", label: "Ablehnen", variant: "secondary" },
+        { id: "accept", label: "Zusagen" },
+        { id: "decline", label: "Ablehnen" },
       ],
     },
     {
       id: "msg-text-2",
       type: "text",
       direction: "outgoing",
+      status: "sent",
       body: "Vielen Dank. 15:00 Uhr passt mir gut – ich komme vorbei.",
-      timeLabel: "09:20",
+      time: chatTime(2026, 7, 8, 9, 20),
     },
     {
       id: "msg-att-1",
       type: "attachment",
       direction: "incoming",
+      status: "received",
       fileName: "Befund_Blutbild.pdf",
       fileType: "PDF",
       fileSize: "196 KB",
-      timeLabel: "09:21",
+      time: chatTime(2026, 7, 8, 9, 21),
     },
     {
       id: "msg-text-3",
       type: "text",
       direction: "outgoing",
+      status: "read",
       body: "Perfekt, ich habe den Befund erhalten. Bis Mittwoch!",
-      timeLabel: "09:24",
-      receipt: "read",
+      time: chatTime(2026, 7, 8, 9, 24),
     },
   ],
   "conv-altstadt": [
     {
       id: "msg-alt-date",
       type: "date",
-      label: "Gestern · 16:40",
+      date: chatTime(2026, 7, 7, 16, 40),
     },
     {
       id: "msg-alt-1",
       type: "text",
       direction: "incoming",
+      status: "received",
       body: "Ihr Rezept liegt zur Abholung bereit.",
-      timeLabel: "16:42",
+      time: chatTime(2026, 7, 7, 16, 42),
     },
     {
       id: "msg-alt-2",
       type: "text",
       direction: "outgoing",
+      status: "read",
       body: "Vielen Dank, ich hole es morgen ab.",
-      timeLabel: "16:50",
-      receipt: "read",
+      time: chatTime(2026, 7, 7, 16, 50),
     },
   ],
   "conv-klein": [
@@ -208,8 +266,9 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       id: "msg-klein-1",
       type: "text",
       direction: "incoming",
+      status: "received",
       body: "Bitte kommen Sie 10 Minuten früher.",
-      timeLabel: "10:05",
+      time: chatTime(2026, 7, 7, 10, 5),
     },
   ],
   "conv-kern": [
@@ -217,9 +276,9 @@ export const messagesByConversation: Record<string, ChatMessage[]> = {
       id: "msg-kern-1",
       type: "text",
       direction: "outgoing",
+      status: "sent",
       body: "Überweisung erhalten, vielen Dank.",
-      timeLabel: "11:20",
-      receipt: "sent",
+      time: chatTime(2026, 6, 24, 11, 20),
     },
   ],
 }
@@ -250,28 +309,24 @@ export const patientMedicationsSeed: Medication[] = [
 
 export const patientProfileSeed: PatientProfile = {
   id: "patient-wellermann",
-  fullName: "Jonas Wellermann",
   firstName: "Jonas",
   lastName: "Wellermann",
-  dateOfBirth: "14.03.1989",
-  insuranceNumber: "A123456789",
-  insuranceType: "GKV",
-  insuranceProviderId: "tk",
-  federalStateId: "nordrhein-westfalen",
+  dateOfBirth: new Date(1989, 2, 14),
   email: "jonas.wellermann@mail.de",
   phone: "+49 170 1234567",
-  practiceName: "Hausarztpraxis Altstadt",
-  practiceAddress: "Markt 12, 52062 Aachen",
-  notificationsEnabled: true,
+  insurance: {
+    insuranceProviderId: "techniker-krankenkasse",
+    insuranceNumber: "A123456789",
+  },
+  medicationList: patientMedicationsSeed,
 }
 
 export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   "office-moser": {
     id: "office-moser",
     name: "Dr. Moser",
-    phone: "040 3187612001",
+    phoneNumber: "040 3187612001",
     imageUri: "doctor-portrait",
-    status: "open",
     openingHours: openingHours({
       monday: ["7:00 - 16:00"],
       tuesday: ["7:00 - 12:00", "14:00 - 16:00"],
@@ -279,22 +334,57 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["7:00 - 16:00"],
       friday: ["7:00 - 12:00"],
     }),
-    addressLine1: "Teichweg 12",
-    addressLine2: "22637 Nordberg",
-    websiteLabel: "www.dr-moser.de",
+    address: address("Teichweg", 12, "22637", "Nordberg"),
     websiteUrl: "https://www.dr-moser.de",
-    specialty: {
+    specialization: {
       "de-DE": "Allgemeinmedizin - Innere Medizin",
       "en-US": "General medicine - Internal medicine",
     },
-    additionalOffer: {
-      "de-DE": "Online-Termin für Impfungen",
-      "en-US": "Online appointment for vaccinations",
-    },
+    offers: [
+      {
+        id: "online-vaccination-appointment",
+        name: {
+          "de-DE": "Online-Termin für Impfungen",
+          "en-US": "Online appointment for vaccinations",
+        },
+        description: {
+          "de-DE": "Terminbuchung für Impfungen online",
+          "en-US": "Book vaccination appointments online",
+        },
+      },
+    ],
     services: [
-      { "de-DE": "Impfungen", "en-US": "Vaccinations" },
-      { "de-DE": "Vorsorgeuntersuchung", "en-US": "Preventive checkup" },
-      { "de-DE": "DMP", "en-US": "DMP" },
+      {
+        id: "vaccinations",
+        name: { "de-DE": "Impfungen", "en-US": "Vaccinations" },
+        description: {
+          "de-DE": "Standard- und Reiseimpfungen",
+          "en-US": "Standard and travel vaccinations",
+        },
+      },
+      {
+        id: "preventive-checkup",
+        name: { "de-DE": "Vorsorgeuntersuchung", "en-US": "Preventive checkup" },
+        description: {
+          "de-DE": "Regelmäßige Vorsorge und Check-ups",
+          "en-US": "Regular preventive care and check-ups",
+        },
+      },
+      {
+        id: "dmp",
+        name: { "de-DE": "DMP", "en-US": "DMP" },
+        description: {
+          "de-DE": "Disease-Management-Programme",
+          "en-US": "Disease management programmes",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-moser",
+        name: { "de-DE": "Dr. Moser", "en-US": "Dr. Moser" },
+        imageUri: "doctor-portrait",
+      },
     ],
     cityId: "nordberg",
     specializationId: "internal-medicine",
@@ -302,27 +392,48 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   "office-haumann": {
     id: "office-haumann",
     name: "Dr. Haumann",
-    phone: "0241 5566 730",
-    imageUri: null,
-    initials: "HM",
-    status: "closed",
+    phoneNumber: "0241 5566 730",
     openingHours: openingHours({
       monday: ["8:00 - 12:00"],
       tuesday: ["8:00 - 12:00"],
       thursday: ["8:00 - 12:00", "14:00 - 17:00"],
       friday: ["8:00 - 12:00"],
     }),
-    addressLine1: "Pontstraße 55",
-    addressLine2: "52062 Aachen",
-    websiteLabel: "www.dr-haumann.de",
+    address: address("Pontstraße", 55, "52062", "Aachen"),
     websiteUrl: "https://www.dr-haumann.de",
-    additionalOffer: {
-      "de-DE": "Videosprechstunde",
-      "en-US": "Video consultation",
-    },
+    offers: [
+      {
+        id: "video-consultation",
+        name: { "de-DE": "Videosprechstunde", "en-US": "Video consultation" },
+        description: {
+          "de-DE": "Beratung per Videoanruf",
+          "en-US": "Consultation via video call",
+        },
+      },
+    ],
     services: [
-      { "de-DE": "Hausbesuche", "en-US": "Home visits" },
-      { "de-DE": "Videosprechstunde", "en-US": "Video consultation" },
+      {
+        id: "home-visits",
+        name: { "de-DE": "Hausbesuche", "en-US": "Home visits" },
+        description: {
+          "de-DE": "Hausbesuche nach Vereinbarung",
+          "en-US": "Home visits by appointment",
+        },
+      },
+      {
+        id: "video-consultation",
+        name: { "de-DE": "Videosprechstunde", "en-US": "Video consultation" },
+        description: {
+          "de-DE": "Videosprechstunde für Bestandspatienten",
+          "en-US": "Video consultation for existing patients",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-haumann",
+        name: { "de-DE": "Dr. Haumann", "en-US": "Dr. Haumann" },
+      },
     ],
     cityId: "aachen",
     specializationId: "general-medicine",
@@ -330,10 +441,8 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
   "office-vogt": {
     id: "office-vogt",
     name: "Dr. med. Sophie Vogt",
-    phone: "030 88776611",
+    phoneNumber: "030 88776611",
     imageUri: "doctor-portrait",
-    initials: "SV",
-    status: "open",
     openingHours: openingHours({
       monday: ["8:00 - 16:00"],
       tuesday: ["8:00 - 16:00"],
@@ -341,24 +450,36 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["8:00 - 16:00"],
       friday: ["8:00 - 12:00"],
     }),
-    addressLine1: "Friedrichstraße 88",
-    addressLine2: "10117 Berlin",
-    websiteLabel: "www.kardiologie-vogt.de",
+    address: address("Friedrichstraße", 88, "10117", "Berlin"),
     websiteUrl: "https://www.kardiologie-vogt.de",
-    additionalOffer: {
-      "de-DE": "Belastungs-EKG",
-      "en-US": "Stress ECG",
-    },
+    offers: [
+      {
+        id: "stress-ecg",
+        name: { "de-DE": "Belastungs-EKG", "en-US": "Stress ECG" },
+        description: {
+          "de-DE": "Belastungs-EKG in der Praxis",
+          "en-US": "Stress ECG at the practice",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-vogt",
+        name: {
+          "de-DE": "Dr. med. Sophie Vogt",
+          "en-US": "Dr. med. Sophie Vogt",
+        },
+        imageUri: "doctor-portrait",
+      },
+    ],
     cityId: "berlin",
     specializationId: "cardiology",
   },
   "office-klein": {
     id: "office-klein",
     name: "Zahnarztpraxis Dr. Klein",
-    phone: "0521 334455",
+    phoneNumber: "0521 334455",
     imageUri: "practice-logo",
-    initials: "KL",
-    status: "open",
     openingHours: openingHours({
       monday: ["9:00 - 17:00"],
       tuesday: ["9:00 - 17:00"],
@@ -366,24 +487,35 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["9:00 - 17:00"],
       friday: ["9:00 - 13:00"],
     }),
-    addressLine1: "Jahnplatz 4",
-    addressLine2: "33602 Bielefeld",
-    websiteLabel: "www.zahnarzt-klein.de",
+    address: address("Jahnplatz", 4, "33602", "Bielefeld"),
     websiteUrl: "https://www.zahnarzt-klein.de",
-    additionalOffer: {
-      "de-DE": "Professionelle Zahnreinigung",
-      "en-US": "Professional dental cleaning",
-    },
+    offers: [
+      {
+        id: "professional-dental-cleaning",
+        name: {
+          "de-DE": "Professionelle Zahnreinigung",
+          "en-US": "Professional dental cleaning",
+        },
+        description: {
+          "de-DE": "Professionelle Zahnreinigung und Prophylaxe",
+          "en-US": "Professional dental cleaning and prophylaxis",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-klein",
+        name: { "de-DE": "Dr. Klein", "en-US": "Dr. Klein" },
+      },
+    ],
     cityId: "bielefeld",
     specializationId: "dentistry",
   },
   "office-kern": {
     id: "office-kern",
     name: "Radiologie Dr. Kern",
-    phone: "0234 998877",
+    phoneNumber: "0234 998877",
     imageUri: "practice-logo",
-    initials: "RK",
-    status: "closed",
     openingHours: openingHours({
       monday: ["7:30 - 15:30"],
       tuesday: ["7:30 - 15:30"],
@@ -391,24 +523,32 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["7:30 - 15:30"],
       friday: ["7:30 - 12:00"],
     }),
-    addressLine1: "Kortumstraße 19",
-    addressLine2: "44787 Bochum",
-    websiteLabel: "www.radiologie-kern.de",
+    address: address("Kortumstraße", 19, "44787", "Bochum"),
     websiteUrl: "https://www.radiologie-kern.de",
-    additionalOffer: {
-      "de-DE": "MRT ohne Wartezeit",
-      "en-US": "MRI without waiting",
-    },
+    offers: [
+      {
+        id: "mri-without-waiting",
+        name: { "de-DE": "MRT ohne Wartezeit", "en-US": "MRI without waiting" },
+        description: {
+          "de-DE": "MRT-Termine mit kurzer Wartezeit",
+          "en-US": "MRI appointments with short waiting times",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-kern",
+        name: { "de-DE": "Dr. Kern", "en-US": "Dr. Kern" },
+      },
+    ],
     cityId: "bochum",
     specializationId: "radiology",
   },
   "office-altstadt": {
     id: "office-altstadt",
     name: "Hausarztpraxis Altstadt",
-    phone: "0241 112233",
+    phoneNumber: "0241 112233",
     imageUri: "practice-logo",
-    initials: "HA",
-    status: "open",
     openingHours: openingHours({
       monday: ["8:00 - 18:00"],
       tuesday: ["8:00 - 18:00"],
@@ -416,24 +556,34 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["8:00 - 18:00"],
       friday: ["8:00 - 13:00"],
     }),
-    addressLine1: "Markt 12",
-    addressLine2: "52062 Aachen",
-    websiteLabel: "www.hausarzt-altstadt.de",
+    address: address("Markt", 12, "52062", "Aachen"),
     websiteUrl: "https://www.hausarzt-altstadt.de",
-    additionalOffer: {
-      "de-DE": "Hausbesuche",
-      "en-US": "Home visits",
-    },
+    offers: [
+      {
+        id: "home-visits",
+        name: { "de-DE": "Hausbesuche", "en-US": "Home visits" },
+        description: {
+          "de-DE": "Hausbesuche für immobile Patienten",
+          "en-US": "Home visits for immobile patients",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-altstadt",
+        name: {
+          "de-DE": "Hausarztpraxis Altstadt",
+          "en-US": "Hausarztpraxis Altstadt",
+        },
+      },
+    ],
     cityId: "aachen",
     specializationId: "general-medicine",
   },
   "office-willendorfer": {
     id: "office-willendorfer",
     name: "Dr. Anton Willendorfer",
-    phone: "040 44556677",
-    imageUri: null,
-    initials: "AW",
-    status: "open",
+    phoneNumber: "040 44556677",
     openingHours: openingHours({
       monday: ["8:00 - 16:00"],
       tuesday: ["8:00 - 16:00"],
@@ -441,147 +591,45 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["8:00 - 16:00"],
       friday: ["8:00 - 12:00"],
     }),
-    addressLine1: "Alsterweg 8",
-    addressLine2: "22637 Nordberg",
-    websiteLabel: "www.ortho-willendorfer.de",
+    address: address("Alsterweg", 8, "22637", "Nordberg"),
     websiteUrl: "https://www.ortho-willendorfer.de",
-    specialty: {
+    specialization: {
       "de-DE": "Orthopädie",
       "en-US": "Orthopedics",
     },
-    additionalOffer: {
-      "de-DE": "Rückensprechstunde",
-      "en-US": "Back consultation",
-    },
+    offers: [
+      {
+        id: "back-consultation",
+        name: { "de-DE": "Rückensprechstunde", "en-US": "Back consultation" },
+        description: {
+          "de-DE": "Spezielle Sprechstunde für Rückenbeschwerden",
+          "en-US": "Special consultation for back pain",
+        },
+      },
+    ],
+    doctors: [
+      {
+        id: "doctor-willendorfer",
+        name: {
+          "de-DE": "Dr. Anton Willendorfer",
+          "en-US": "Dr. Anton Willendorfer",
+        },
+      },
+    ],
     cityId: "nordberg",
     specializationId: "orthopedics",
   },
 }
 
-export function buildHomeSummary(): HomeSummary {
-  const moser = doctorsOfficesSeed["office-moser"]
-  const haumann = doctorsOfficesSeed["office-haumann"]
-
-  return {
-    quickActions: [
-      {
-        id: "prescription",
-        label: "Rezept",
-        href: "/requests/prescription/create",
-      },
-      {
-        id: "appointment",
-        label: "Termin",
-        href: "/requests/appointment/create",
-      },
-      {
-        id: "referral",
-        label: "Überweisung",
-        href: "/requests/referral/create",
-      },
-    ],
-    myDoctors: [
-      {
-        id: moser.id,
-        name: moser.name,
-        specialty: moser.specialty?.["de-DE"] ?? "",
-        phone: moser.phone,
-        imageUri: moser.imageUri,
-        status: moser.status,
-      },
-      {
-        id: haumann.id,
-        name: haumann.name,
-        specialty: haumann.specialty?.["de-DE"] ?? "",
-        phone: haumann.phone,
-        imageUri: haumann.imageUri,
-        initials: haumann.initials,
-        status: haumann.status,
-      },
-    ],
-    recentRequests: [
-      {
-        id: "req-limptar",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Limptar N Filmtabletten, 80 St",
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "in_progress",
-        statusLabel: "In Bearbeitung",
-      },
-      {
-        id: "req-aciclovir",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Aciclovir 800 Heumann",
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "in_progress",
-        statusLabel: "In Bearbeitung",
-      },
-      {
-        id: "req-floxal",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Floxal EDO 3 mg/ml Augentropfen",
-        kind: "prescription",
-        kindLabel: "Rezept",
-        status: "ready_for_pickup",
-        statusLabel: "Abholbereit",
-      },
-      {
-        id: "req-radiologie",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Dr. Anton Willendorfer",
-        kind: "referral",
-        kindLabel: "Überweisung",
-        status: "in_progress",
-        statusLabel: "In Bearbeitung",
-      },
-      {
-        id: "req-checkup",
-        doctorsOfficeId: moser.id,
-        doctorName: moser.name,
-        title: "Vorsorgeuntersuchung",
-        kind: "appointment",
-        kindLabel: "Termin",
-        status: "in_progress",
-        statusLabel: "Angefragt",
-      },
-      {
-        id: "req-haumann-vaccine",
-        doctorsOfficeId: haumann.id,
-        doctorName: haumann.name,
-        title: "Grippeimpfung",
-        kind: "appointment",
-        kindLabel: "Termin",
-        status: "confirmed",
-        statusLabel: "Bestätigt",
-      },
-    ],
-  }
-}
-
 export const patientProfilesSeed: PatientProfileSummary[] = [
-  {
-    id: patientProfileSeed.id,
-    fullName: patientProfileSeed.fullName,
-    dateOfBirth: patientProfileSeed.dateOfBirth,
-  },
+  toPatientProfileSummary(patientProfileSeed),
 ]
 
-export const appointmentsSeed: Appointment[] = [
+export const appointmentsSeed: AppointmentRecord[] = [
   {
     id: "req-checkup",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
-    patientDateOfBirth: patientProfileSeed.dateOfBirth,
     date: "2025-06-22",
     time: "14:00",
     isEmergency: false,
@@ -592,13 +640,7 @@ export const appointmentsSeed: Appointment[] = [
   {
     id: "req-haumann-vaccine",
     doctorsOfficeId: "office-haumann",
-    doctorName: "Dr. Haumann",
-    doctorSpecialty: "Allgemeinmedizin",
-    doctorImageUri: null,
-    doctorInitials: "HM",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
-    patientDateOfBirth: patientProfileSeed.dateOfBirth,
     date: "2025-06-21",
     time: "10:00",
     isEmergency: false,
@@ -607,68 +649,51 @@ export const appointmentsSeed: Appointment[] = [
   },
 ]
 
-export const prescriptionsSeed: Prescription[] = [
+export const prescriptionsSeed: PrescriptionRecord[] = [
   {
     id: "req-limptar",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
     shipByMail: true,
     note: "Wenn möglich bitte zwei kleine Packungen Paracetamol. Vielen Dank und lieben Gruß.",
     medications: [
       { id: "rx-med-paracetamol", name: "Paracetamol", size: "n2" },
       { id: "rx-med-zip", name: "1-KAM Zip-Kompresse", size: "n1" },
     ],
-    status: "in_progress",
+    status: "inProgress",
   },
   {
     id: "req-aciclovir",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
     shipByMail: false,
     note: "",
     medications: [
       { id: "rx-med-aciclovir", name: "Amoxicillin", size: "n1" },
     ],
-    status: "in_progress",
+    status: "inProgress",
   },
   {
     id: "req-floxal",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
     shipByMail: true,
     note: "",
     medications: [
       { id: "rx-med-floxal", name: "Ibuprofen", size: "n3" },
     ],
-    status: "ready_for_pickup",
+    status: "readyForPickup",
   },
 ]
 
-export const referralsSeed: Referral[] = [
+export const referralsSeed: ReferralRecord[] = [
   {
     id: "req-radiologie",
     doctorsOfficeId: "office-moser",
-    doctorName: "Dr. Moser",
-    doctorSpecialty: "Allgemeinmedizin - Innere Medizin",
-    doctorImageUri: "doctor-portrait",
     profileId: patientProfileSeed.id,
-    patientName: patientProfileSeed.fullName,
-    specialistDoctorsOfficeId: "office-willendorfer",
-    specialistName: "Dr. Anton Willendorfer",
+    specialization: "Radiologie",
     reason:
       "Anhaltendes Unwohlsein und starke Schmerzen im unteren Rücken.",
-    status: "in_progress",
+    status: "inProgress",
   },
 ]

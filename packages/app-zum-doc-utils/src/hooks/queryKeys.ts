@@ -5,6 +5,10 @@ export const conversationKeys = {
   messages: (id: string) => ["conversations", "messages", id] as const,
 }
 
+export const myDoctorsKeys = {
+  all: ["myDoctors"] as const,
+}
+
 export const homeKeys = {
   all: ["home"] as const,
   summary: (locale: string) => ["home", "summary", locale] as const,
@@ -13,6 +17,7 @@ export const homeKeys = {
 export const profileKeys = {
   all: ["profile"] as const,
   patient: ["profile", "patient"] as const,
+  byId: (profileId: string) => ["profile", "detail", profileId] as const,
 }
 
 export const doctorsOfficeKeys = {

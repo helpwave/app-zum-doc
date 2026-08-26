@@ -3,44 +3,45 @@ import {
   contactAvatarImage,
 } from "@/components/azd-avatar-image"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import type { Conversation } from "@app-zum-doc/utils/api"
+import {
+  formatConversationPreviewTime,
+  showsSentIndicator,
+  toAppLocale,
+  type ConversationPreview,
+} from "@app-zum-doc/utils/api"
 import {
   AvatarWithStatus,
   ChatConversationRow,
 } from "@helpwave/hightide-native/components"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type ConversationRowProps = {
-  conversation: Conversation
+  conversation: ConversationPreview
   onPress?: () => void
 }
 
 export function ConversationRow({ conversation, onPress }: ConversationRowProps) {
-  const unread = conversation.unreadCount > 0
-  const contact = conversation.contact
-  const {theme} = useAzdTheme()
+  const user = conversation.user
+  const lastMessage = conversation.lastMessage
+  const { theme } = useAzdTheme()
+  const { locale: localizationLocale } = useLocalization()
+  const locale = toAppLocale(localizationLocale)
   const safeAreaInsets = useSafeAreaInsets()
 
   return (
     <ChatConversationRow
       onPress={onPress}
-      avatar={
-        <AvatarWithStatus
-          name={contact.name}
-          image={contactAvatarImage(contact.imageUri, contact.name)}
-          ImageComponent={AzdAvatarImage}
-          status={contact.presence ?? "unknown"}
-          size={40}
-        />
-      }
-      title={contact.name}
-      timestamp={conversation.timeLabel}
-      preview={conversation.lastMessage}
+      avatarProps={{
+        name: user.name,
+        image: contactAvatarImage(user.imageUri, user.name),
+      }}
+      title={user.name}
+      timestamp={formatConversationPreviewTime(lastMessage.time, locale)}
+      preview={lastMessage.preview}
       unreadCount={conversation.unreadCount}
-      sentIndicator={
-        conversation.sentByMe && !unread ? "sentAndReceived" : undefined
-      }
+      messageStatus={lastMessage.status}
       style={{
         ...StyleAdapterUtils.padding({
           type: "physicalSide",

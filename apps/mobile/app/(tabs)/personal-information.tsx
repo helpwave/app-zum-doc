@@ -6,24 +6,24 @@ import { SegmentedControl } from "@/components/segmented-control"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-  federalStates,
-  insuranceKindFromType,
-  insuranceProviders,
-  toSelectOptions,
-  type InsuranceKind,
-} from "@/lib/personal-information"
-import { toAppLocale, type PatientProfile } from "@app-zum-doc/utils/api"
+  filterInsuranceCompaniesByType,
+  findInsuranceCompany,
+  formatPatientDateOfBirth,
+  toAppLocale,
+  type InsuranceType,
+  type PatientProfile,
+} from "@app-zum-doc/utils/api"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import {
-  IconButton,
   Input,
   Select,
+  SelectOption,
   ThemedIcon,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter } from "expo-router"
-import { Calendar, X } from "lucide-react-native"
-import { useMemo, useState } from "react"
+import { Calendar } from "lucide-react-native"
+import { useEffect, useMemo, useState } from "react"
 import {
   KeyboardAvoidingView,
   Platform,
@@ -43,27 +43,36 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
   const [firstName, setFirstName] = useState(profile.firstName)
   const [lastName, setLastName] = useState(profile.lastName)
-  const [dateOfBirth, setDateOfBirth] = useState(profile.dateOfBirth)
+  const [dateOfBirth, setDateOfBirth] = useState(
+    formatPatientDateOfBirth(profile.dateOfBirth, locale),
+  )
+  const [email, setEmail] = useState(profile.email)
   const [phone, setPhone] = useState(profile.phone)
-  const [insuranceKind, setInsuranceKind] = useState<InsuranceKind>(
-    insuranceKindFromType(profile.insuranceType),
+  const [insuranceType, setInsuranceType] = useState<InsuranceType>(
+    findInsuranceCompany(profile.insurance.insuranceProviderId)?.type ?? "public",
   )
   const [insuranceProviderId, setInsuranceProviderId] = useState(
-    profile.insuranceProviderId,
+    profile.insurance.insuranceProviderId,
   )
-  const [federalStateId, setFederalStateId] = useState<string | undefined>(
-    profile.federalStateId,
+  const [insuranceNumber, setInsuranceNumber] = useState(
+    profile.insurance.insuranceNumber,
   )
-  const [insuranceNumber, setInsuranceNumber] = useState(profile.insuranceNumber)
 
   const insuranceOptions = useMemo(
-    () => toSelectOptions(insuranceProviders, locale),
-    [locale],
+    () =>
+      filterInsuranceCompaniesByType(insuranceType).map((company) => ({
+        id: company.id,
+        label: company.name,
+      })),
+    [insuranceType],
   )
-  const federalStateOptions = useMemo(
-    () => toSelectOptions(federalStates, locale),
-    [locale],
-  )
+
+  useEffect(() => {
+    const selectedCompany = findInsuranceCompany(insuranceProviderId)
+    if (selectedCompany && selectedCompany.type !== insuranceType) {
+      setInsuranceProviderId("")
+    }
+  }, [insuranceProviderId, insuranceType])
 
   return (
     <ScrollView
@@ -112,6 +121,17 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
         />
       </LabeledField>
 
+      <LabeledField label={t("email")}>
+        <Input
+          value={email}
+          onValueChange={setEmail}
+          autoComplete="email"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          style={{ width: "100%" }}
+        />
+      </LabeledField>
+
       <LabeledField label={t("phoneNumber")}>
         <Input
           value={phone}
@@ -125,10 +145,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <Section title={t("insuranceType")}>
         <SegmentedControl
-          value={insuranceKind}
-          onChange={setInsuranceKind}
+          value={insuranceType}
+          onChange={setInsuranceType}
           options={[
-            { id: "statutory", label: t("insuranceStatutory") },
+            { id: "public", label: t("insuranceStatutory") },
             { id: "private", label: t("insurancePrivate") },
           ]}
         />
@@ -136,35 +156,15 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("insuranceProvider")}>
         <Select
-          options={insuranceOptions}
           value={insuranceProviderId}
           onValueChange={setInsuranceProviderId}
           placeholder={t("insuranceProvider")}
           style={{ width: "100%" }}
-        />
-      </LabeledField>
-
-      <LabeledField
-        label={t("federalState")}
-        trailing={federalStateId ? (
-          <IconButton
-            icon={X}
-            size="sm"
-            variant="foreground"
-            accessibilityLabel={t("clearSelection")}
-            onPress={() => {
-              setFederalStateId(undefined)
-            }}
-          />
-        ) : undefined}
-      >
-        <Select
-          options={federalStateOptions}
-          value={federalStateId}
-          onValueChange={setFederalStateId}
-          placeholder={t("federalState")}
-          style={{ width: "100%" }}
-        />
+        >
+          {insuranceOptions.map((option) => (
+            <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+          ))}
+        </Select>
       </LabeledField>
 
       <LabeledField label={t("insuranceNumberOptional")}>
