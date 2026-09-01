@@ -5,7 +5,7 @@ import {
   fetchMessages,
   markConversationRead,
   resolveCardAction,
-  sendMessage,
+  sendMessage
 } from "../api/client"
 import { conversationKeys, homeKeys } from "./queryKeys"
 
@@ -16,19 +16,32 @@ export function useConversations() {
   })
 }
 
-export function useConversation(conversationId: string) {
+type UseConversationProps = {
+  conversationId: string | null,
+  enabled?: boolean,
+}
+
+export function useConversation({
+  conversationId,
+  enabled = true,
+}: UseConversationProps) {
   return useQuery({
-    queryKey: conversationKeys.detail(conversationId),
-    queryFn: () => fetchConversation(conversationId),
-    enabled: conversationId.length > 0,
+    queryKey: conversationKeys.detail(conversationId ?? ''),
+    queryFn: () => fetchConversation(conversationId as string),
+    enabled: enabled && conversationId != null && conversationId.length > 0,
   })
 }
 
-export function useMessages(conversationId: string) {
+type UseMessagesProps = {
+  conversationId: string | null,
+  enabled?: boolean,
+}
+
+export function useMessages({ conversationId, enabled = true }: UseMessagesProps) {
   return useQuery({
-    queryKey: conversationKeys.messages(conversationId),
-    queryFn: () => fetchMessages(conversationId),
-    enabled: conversationId.length > 0,
+    queryKey: conversationKeys.messages(conversationId ?? ''),
+    queryFn: () => fetchMessages(conversationId as string),
+    enabled: enabled && conversationId != null && conversationId.length > 0,
   })
 }
 
@@ -44,7 +57,11 @@ export function useMarkConversationRead() {
   })
 }
 
-export function useSendMessage(conversationId: string) {
+type UseSendMessageProps = {
+  conversationId: string,
+}
+
+export function useSendMessage({ conversationId }: UseSendMessageProps) {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -57,7 +74,11 @@ export function useSendMessage(conversationId: string) {
   })
 }
 
-export function useResolveCardAction(conversationId: string) {
+type UseResolveCardActionProps = {
+  conversationId: string,
+}
+
+export function useResolveCardAction({ conversationId }: UseResolveCardActionProps) {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -65,8 +86,8 @@ export function useResolveCardAction(conversationId: string) {
       messageId,
       actionId,
     }: {
-      messageId: string
-      actionId: string
+      messageId: string,
+      actionId: string,
     }) => resolveCardAction(conversationId, messageId, actionId),
     onSuccess: (messages) => {
       queryClient.setQueryData(conversationKeys.messages(conversationId), messages)

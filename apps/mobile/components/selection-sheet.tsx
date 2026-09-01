@@ -21,8 +21,8 @@ type SelectionSheetProps = {
   visible: boolean
   title: string
   options: readonly SelectionSheetOption[]
-  value: string
-  onChange: (value: string) => void
+  value: string | null
+  onChange: (value: string | null) => void
   onCancel: () => void
   onDone: () => void
 }

@@ -37,27 +37,35 @@ export default function CreateReferralScreen() {
     doctorId?: string | string[]
     reorderFrom?: string | string[]
   }>()
-  const initialDoctorId = typeof params.doctorId === "string" ? params.doctorId : ""
+  const initialDoctorId = typeof params.doctorId === "string" ? params.doctorId : null
   const reorderFrom =
-    typeof params.reorderFrom === "string" ? params.reorderFrom : ""
+    typeof params.reorderFrom === "string" ? params.reorderFrom : null
 
-  const homeQuery = useHomeSummary(locale)
+  const homeQuery = useHomeSummary({ locale })
   const profilesQuery = usePatientProfiles()
-  const specializationsQuery = useSpecializations("", locale)
-  const reorderQuery = useReferral(reorderFrom, locale)
+  const specializationsQuery = useSpecializations({ search: "", locale })
+  const reorderQuery = useReferral({
+    referralId: reorderFrom,
+    locale,
+    enabled: reorderFrom != null,
+  })
   const createReferral = useCreateReferral()
   const profiles = useMemo(
     () => profilesQuery.data ?? [],
     [profilesQuery.data],
   )
 
-  const [doctorId, setDoctorId] = useState(initialDoctorId)
-  const [profileId, setProfileId] = useState("")
-  const [specialization, setSpecialization] = useState("")
+  const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
+  const [profileId, setProfileId] = useState<string | null>(null)
+  const [specialization, setSpecialization] = useState<string | null>(null)
   const [reason, setReason] = useState("")
   const [didPrefillReorder, setDidPrefillReorder] = useState(false)
 
-  const officeQuery = useDoctorsOffice(doctorId, locale)
+  const officeQuery = useDoctorsOffice({
+    doctorsOfficeId: doctorId,
+    locale,
+    enabled: doctorId != null,
+  })
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({
       id: doctor.id,
@@ -116,8 +124,9 @@ export default function CreateReferralScreen() {
   }, [didPrefillReorder, reorderQuery.data])
 
   const canSubmit =
-    doctorId.length > 0
-    && profileId.length > 0
+    doctorId != null
+    && profileId != null
+    && specialization != null
     && specialization.trim().length > 0
     && reason.trim().length > 0
     && !createReferral.isPending
@@ -126,7 +135,7 @@ export default function CreateReferralScreen() {
     homeQuery.isPending
     || profilesQuery.isPending
     || specializationsQuery.isPending
-    || (reorderFrom.length > 0 && reorderQuery.isPending && !didPrefillReorder)
+    || (reorderFrom != null && reorderQuery.isPending && !didPrefillReorder)
 
   return (
     <KeyboardAvoidingView
@@ -158,7 +167,7 @@ export default function CreateReferralScreen() {
           void homeQuery.refetch()
           void profilesQuery.refetch()
           void specializationsQuery.refetch()
-          if (reorderFrom.length > 0) {
+          if (reorderFrom != null) {
             void reorderQuery.refetch()
           }
         }}
@@ -176,7 +185,7 @@ export default function CreateReferralScreen() {
         >
           <LabeledField label={t("doctor")}>
             <Select
-              value={doctorId || undefined}
+              value={doctorId}
               onValueChange={setDoctorId}
               placeholder={t("selectPractice")}
               style={{ width: "100%" }}
@@ -189,7 +198,7 @@ export default function CreateReferralScreen() {
 
           <LabeledField label={t("patient")}>
             <Select
-              value={profileId || undefined}
+              value={profileId}
               onValueChange={setProfileId}
               placeholder={t("patient")}
               style={{ width: "100%" }}
@@ -202,7 +211,7 @@ export default function CreateReferralScreen() {
 
           <LabeledField label={t("referralToSpecialist")}>
             <Select
-              value={specialization || undefined}
+              value={specialization}
               onValueChange={setSpecialization}
               placeholder={t("selectSpecialization")}
               style={{ width: "100%" }}
@@ -224,6 +233,9 @@ export default function CreateReferralScreen() {
           <Button
             disabled={!canSubmit}
             onPress={() => {
+              if (doctorId == null || profileId == null || specialization == null) {
+                return
+              }
               void createReferral.mutateAsync({
                 locale,
                 input: {

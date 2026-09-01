@@ -47,7 +47,7 @@ export function AppBar({
         },
         style
       ]}
-     >
+    >
       <ContentThemeOverrideProvider 
         foreground={theme.colors.surface.onColor}
         background={theme.colors.surface.color}

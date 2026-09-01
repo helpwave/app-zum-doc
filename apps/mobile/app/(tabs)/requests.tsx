@@ -57,9 +57,13 @@ export default function RequestsScreen() {
   const { doctorId: doctorIdParam } = useLocalSearchParams<{
     doctorId?: string | string[]
   }>()
-  const doctorId = typeof doctorIdParam === "string" ? doctorIdParam : ""
-  const homeQuery = useHomeSummary(locale)
-  const doctorQuery = useDoctorsOffice(doctorId, locale)
+  const doctorId = typeof doctorIdParam === "string" ? doctorIdParam : null
+  const homeQuery = useHomeSummary({ locale })
+  const doctorQuery = useDoctorsOffice({
+    doctorsOfficeId: doctorId,
+    locale,
+    enabled: doctorId != null,
+  })
   const [selectedRequestType, setSelectedRequestType] = useState<PatientRequestType | null>(null)
 
   const typeLabels: Record<PatientRequestType, string> = {

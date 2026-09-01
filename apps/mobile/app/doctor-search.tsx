@@ -12,13 +12,13 @@ import {
   useDoctorSearch,
   useSpecializations,
 } from "@app-zum-doc/utils/hooks"
-import { IconButton, SearchBar, ThemedText } from "@helpwave/hightide-native/components"
+import { SearchBar, ThemedText } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useDebouncer } from "@helpwave/hightide-utils/hooks"
 import { useRouter } from "expo-router"
-import { BriefcaseMedical, ChevronLeft, MapPin } from "lucide-react-native"
+import { BriefcaseMedical, MapPin } from "lucide-react-native"
 import { useMemo, useState } from "react"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export default function DoctorSearchScreen() {
@@ -49,21 +49,23 @@ export default function DoctorSearchScreen() {
     useState("")
 
   const doctorsQuery = useDoctorSearch({
-    query: debouncedQuery,
-    cityId: city?.id,
-    specializationId: specialization?.id,
-    locale,
+    filters: {
+      query: debouncedQuery,
+      cityId: city?.id,
+      specializationId: specialization?.id,
+      locale,
+    },
   })
-  const citiesQuery = useCities(
-    debouncedCitySearch,
+  const citiesQuery = useCities({
+    search: debouncedCitySearch,
     locale,
-    openSheet === "city",
-  )
-  const specializationsQuery = useSpecializations(
-    debouncedSpecializationSearch,
+    enabled: openSheet === "city",
+  })
+  const specializationsQuery = useSpecializations({
+    search: debouncedSpecializationSearch,
     locale,
-    openSheet === "specialization",
-  )
+    enabled: openSheet === "specialization",
+  })
 
   const doctors = doctorsQuery.data ?? []
   const cityItems = useMemo(

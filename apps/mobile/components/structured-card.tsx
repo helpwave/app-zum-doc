@@ -35,57 +35,57 @@ export function StructuredCard({
     >
       <View style={{flexDirection: "column", gap: theme.spacing.md}}>
         <View style={{flexDirection: "row", alignItems: "center", gap: theme.spacing.md}}>
-        <View 
-          style={{
-           backgroundColor: tonalPrimary.color,
-           borderRadius: theme.borderRadius.md,
-           height: theme.semantics.container.md.size,
-           width: theme.semantics.container.md.size,
-           justifyContent: "center",
-           alignItems: "center",
-          }}
-        >
-          <ThemedIcon color={tonalPrimary.onColor} icon={CalendarDays} size={theme.icongraphy.sizes.md}/>
+          <View 
+            style={{
+              backgroundColor: tonalPrimary.color,
+              borderRadius: theme.borderRadius.md,
+              height: theme.semantics.container.md.size,
+              width: theme.semantics.container.md.size,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ThemedIcon color={tonalPrimary.onColor} icon={CalendarDays} size={theme.icongraphy.sizes.md}/>
+          </View>
+          <View style={{flexDirection: "column", gap: theme.spacing.xs}}>
+            <ThemedText style={{...theme.typography.body.lg, fontWeight: theme.fontWeights.semibold}}>{message.title}</ThemedText>
+            <ThemedText appearance="description">{message.subtitle}</ThemedText>
+          </View>
         </View>
-        <View style={{flexDirection: "column", gap: theme.spacing.xs}}>
-          <ThemedText style={{...theme.typography.body.lg, fontWeight: theme.fontWeights.semibold}}>{message.title}</ThemedText>
-          <ThemedText appearance="description">{message.subtitle}</ThemedText>
+        <View style={{ gap: theme.spacing.xs }}>
+          <Text
+            style={{
+              ...theme.typography.body.md,
+              fontWeight: theme.fontWeights.bold,
+              color: colors.title,
+            }}
+          >
+            {message.primary}
+          </Text>
+          <Text style={{ ...theme.typography.body.sm, color: colors.detail }}>
+            {message.detail}
+          </Text>
         </View>
-      </View>
-      <View style={{ gap: theme.spacing.xs }}>
-        <Text
-          style={{
-            ...theme.typography.body.md,
-            fontWeight: theme.fontWeights.bold,
-            color: colors.title,
-          }}
-        >
-          {message.primary}
-        </Text>
-        <Text style={{ ...theme.typography.body.sm, color: colors.detail }}>
-          {message.detail}
-        </Text>
-      </View>
-      {showActions && (
-        <View style={{flexDirection: "row", alignItems: "flex-end", gap: theme.spacing.md }}>
-          {message.actions!.map((action) => {
-            const isMainAction = action.id === message.mainActionId
+        {showActions && (
+          <View style={{flexDirection: "row", alignItems: "flex-end", gap: theme.spacing.md }}>
+            {message.actions!.map((action) => {
+              const isMainAction = action.id === message.mainActionId
 
-            return (
-              <Button
-                key={action.id}
-                color={theme.colors.primary}
-                variant={isMainAction ? "filled" : "tonal"}
-                disabled={isActionPending}
-                onPress={() => onAction?.(action.id)}
-                style={{ flex: 1 }}
-              >
-                {action.label}
-              </Button>
-            )
-          })}
-        </View>
-      )}
+              return (
+                <Button
+                  key={action.id}
+                  color={theme.colors.primary}
+                  variant={isMainAction ? "filled" : "tonal"}
+                  disabled={isActionPending}
+                  onPress={() => onAction?.(action.id)}
+                  style={{ flex: 1 }}
+                >
+                  {action.label}
+                </Button>
+              )
+            })}
+          </View>
+        )}
       </View>
     </ChatMessageBubble>
   )

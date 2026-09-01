@@ -3,11 +3,21 @@ import { addMyDoctor, fetchDoctorsOffice, removeMyDoctor } from "../api/client"
 import type { AppLocale } from "../api/types"
 import { doctorsOfficeKeys, homeKeys, myDoctorsKeys } from "./queryKeys"
 
-export function useDoctorsOffice(doctorsOfficeId: string, locale: AppLocale) {
+type UseDoctorsOfficeProps = {
+  doctorsOfficeId: string | null,
+  locale: AppLocale,
+  enabled?: boolean,
+}
+
+export function useDoctorsOffice({
+  doctorsOfficeId,
+  locale,
+  enabled = true,
+}: UseDoctorsOfficeProps) {
   return useQuery({
-    queryKey: doctorsOfficeKeys.detail(doctorsOfficeId, locale),
-    queryFn: () => fetchDoctorsOffice(doctorsOfficeId, locale),
-    enabled: doctorsOfficeId.length > 0,
+    queryKey: doctorsOfficeKeys.detail(doctorsOfficeId ?? '', locale),
+    queryFn: () => fetchDoctorsOffice(doctorsOfficeId as string, locale),
+    enabled: enabled && doctorsOfficeId != null && doctorsOfficeId.length > 0,
   })
 }
 

@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
-  const homeQuery = useHomeSummary(locale)
+  const homeQuery = useHomeSummary({ locale })
   const isFocused = useIsFocused()
   const sectionTitleStyle = {
     ...theme.typography.heading.sm,

@@ -9,10 +9,18 @@ export function usePatientProfile() {
   })
 }
 
-export function usePatientProfileById(profileId: string) {
+type UsePatientProfileByIdProps = {
+  profileId: string | null,
+  enabled?: boolean,
+}
+
+export function usePatientProfileById({
+  profileId,
+  enabled = true,
+}: UsePatientProfileByIdProps) {
   return useQuery({
-    queryKey: profileKeys.byId(profileId),
-    queryFn: () => fetchPatientProfileById(profileId),
-    enabled: profileId.length > 0,
+    queryKey: profileKeys.byId(profileId ?? ''),
+    queryFn: () => fetchPatientProfileById(profileId as string),
+    enabled: enabled && profileId != null && profileId.length > 0,
   })
 }

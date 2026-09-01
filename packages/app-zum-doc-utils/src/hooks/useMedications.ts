@@ -3,7 +3,7 @@ import {
   addPatientMedication,
   fetchPatientMedications,
   removePatientMedication,
-  searchMedications,
+  searchMedications
 } from "../api/client"
 import type { MedicationSize } from "../api/types"
 import { medicationKeys } from "./queryKeys"
@@ -15,7 +15,15 @@ export function usePatientMedications() {
   })
 }
 
-export function useMedicationSearch(search: string, enabled = true) {
+type UseMedicationSearchProps = {
+  search: string,
+  enabled?: boolean,
+}
+
+export function useMedicationSearch({
+  search,
+  enabled = true,
+}: UseMedicationSearchProps) {
   return useQuery({
     queryKey: medicationKeys.search(search),
     queryFn: () => searchMedications({ search }),

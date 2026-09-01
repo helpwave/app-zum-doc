@@ -7,11 +7,21 @@ import {
 import type { AppLocale, CreatePrescriptionInput } from "../api/types"
 import { homeKeys, prescriptionKeys } from "./queryKeys"
 
-export function usePrescription(prescriptionId: string, locale: AppLocale) {
+type UsePrescriptionProps = {
+  prescriptionId: string | null,
+  locale: AppLocale,
+  enabled?: boolean,
+}
+
+export function usePrescription({
+  prescriptionId,
+  locale,
+  enabled = true,
+}: UsePrescriptionProps) {
   return useQuery({
-    queryKey: prescriptionKeys.detail(prescriptionId, locale),
-    queryFn: () => fetchPrescription(prescriptionId, locale),
-    enabled: prescriptionId.length > 0,
+    queryKey: prescriptionKeys.detail(prescriptionId ?? '', locale),
+    queryFn: () => fetchPrescription(prescriptionId as string, locale),
+    enabled: enabled && prescriptionId != null && prescriptionId.length > 0,
   })
 }
 

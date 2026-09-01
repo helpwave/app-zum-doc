@@ -36,11 +36,11 @@ export default function ChatThreadScreen() {
   const router = useRouter()
   const markedReadFor = useRef<string | null>(null)
 
-  const conversationQuery = useConversation(conversationId)
-  const messagesQuery = useMessages(conversationId)
+  const conversationQuery = useConversation({ conversationId })
+  const messagesQuery = useMessages({ conversationId })
   const markRead = useMarkConversationRead()
-  const sendMessage = useSendMessage(conversationId)
-  const resolveCard = useResolveCardAction(conversationId)
+  const sendMessage = useSendMessage({ conversationId })
+  const resolveCard = useResolveCardAction({ conversationId })
 
   useEffect(() => {
     if (!conversationId || markedReadFor.current === conversationId) {

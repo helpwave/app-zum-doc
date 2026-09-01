@@ -3,7 +3,7 @@ import {
   cancelAppointment,
   createAppointment,
   fetchAppointment,
-  fetchPatientProfiles,
+  fetchPatientProfiles
 } from "../api/client"
 import type { AppLocale, CreateAppointmentInput } from "../api/types"
 import { appointmentKeys, homeKeys, profileListKeys } from "./queryKeys"
@@ -15,11 +15,21 @@ export function usePatientProfiles() {
   })
 }
 
-export function useAppointment(appointmentId: string, locale: AppLocale) {
+type UseAppointmentProps = {
+  appointmentId: string | null,
+  locale: AppLocale,
+  enabled?: boolean,
+}
+
+export function useAppointment({
+  appointmentId,
+  locale,
+  enabled = true,
+}: UseAppointmentProps) {
   return useQuery({
-    queryKey: appointmentKeys.detail(appointmentId, locale),
-    queryFn: () => fetchAppointment(appointmentId, locale),
-    enabled: appointmentId.length > 0,
+    queryKey: appointmentKeys.detail(appointmentId ?? '', locale),
+    queryFn: () => fetchAppointment(appointmentId as string, locale),
+    enabled: enabled && appointmentId != null && appointmentId.length > 0,
   })
 }
 
@@ -52,8 +62,8 @@ export function useCancelAppointment() {
       appointmentId,
       locale,
     }: {
-      appointmentId: string
-      locale: AppLocale
+      appointmentId: string,
+      locale: AppLocale,
     }) => cancelAppointment(appointmentId, locale),
     onSuccess: async (appointment, { locale }) => {
       queryClient.setQueryData(

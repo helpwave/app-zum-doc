@@ -48,9 +48,9 @@ export default function RequestAppointmentScreen() {
   const { doctorId: doctorIdParam } = useLocalSearchParams<{
     doctorId?: string | string[]
   }>()
-  const initialDoctorId = typeof doctorIdParam === "string" ? doctorIdParam : undefined
+  const initialDoctorId = typeof doctorIdParam === "string" ? doctorIdParam : null
 
-  const homeQuery = useHomeSummary(locale)
+  const homeQuery = useHomeSummary({ locale })
   const profilesQuery = usePatientProfiles()
   const createAppointment = useCreateAppointment()
   const profiles = useMemo(
@@ -58,8 +58,8 @@ export default function RequestAppointmentScreen() {
     [profilesQuery.data],
   )
 
-  const [doctorId, setDoctorId] = useState(initialDoctorId)
-  const [profileId, setProfileId] = useState("")
+  const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
+  const [profileId, setProfileId] = useState<string | null>(null)
   const [date, setDate] = useState<string | undefined>()
   const [time, setTime] = useState<string | undefined>()
   const [isEmergency, setIsEmergency] = useState(false)
@@ -68,7 +68,11 @@ export default function RequestAppointmentScreen() {
     "profile" | "date" | "time" | null
   >(null)
 
-  const officeQuery = useDoctorsOffice(doctorId ?? "", locale)
+  const officeQuery = useDoctorsOffice({
+    doctorsOfficeId: doctorId,
+    locale,
+    enabled: doctorId != null,
+  })
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({
       id: doctor.id,
@@ -124,8 +128,8 @@ export default function RequestAppointmentScreen() {
   }, [time, timeSlots])
 
   const canSubmit =
-    !!doctorId
-    && profileId.length > 0
+    doctorId != null
+    && profileId != null
     && date != null
     && time != null
     && !createAppointment.isPending
@@ -248,7 +252,7 @@ export default function RequestAppointmentScreen() {
           <Button
             disabled={!canSubmit}
             onPress={() => {
-              if (!date || !time || !doctorId) {
+              if (!date || !time || doctorId == null || profileId == null) {
                 return
               }
               void createAppointment.mutateAsync({

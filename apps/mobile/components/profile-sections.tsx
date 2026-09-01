@@ -174,7 +174,12 @@ export function LocaleSetting() {
         title={t("language")}
         options={options}
         value={locale}
-        onChange={setLocale}
+        onChange={(nextLocale) => {
+          if (nextLocale == null) {
+            return
+          }
+          setLocale(nextLocale)
+        }}
         onCancel={() => {
           setIsOpen(false)
         }}

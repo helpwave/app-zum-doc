@@ -5,7 +5,7 @@ import config from '@helpwave/eslint-config';
 export default defineConfig([
   config.recommended,
   {
-    ignores: ['dist/*'],
+    ignores: ['dist/*', 'node_modules/*'],
   },
   {
     rules: {

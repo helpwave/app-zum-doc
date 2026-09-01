@@ -19,21 +19,25 @@ import { Alert, ScrollView, View } from "react-native"
 export default function DoctorDetailScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
   const { id } = useLocalSearchParams<{ id: string }>()
-  const doctorsOfficeId = typeof id === "string" ? id : ""
+  const doctorsOfficeId = typeof id === "string" ? id : null
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
   const router = useRouter()
-  const officeQuery = useDoctorsOffice(doctorsOfficeId, locale)
+  const officeQuery = useDoctorsOffice({
+    doctorsOfficeId,
+    locale,
+    enabled: doctorsOfficeId != null,
+  })
   const myDoctorsQuery = useMyDoctors()
-  const homeQuery = useHomeSummary(locale)
+  const homeQuery = useHomeSummary({ locale })
   const addMyDoctor = useAddMyDoctor()
   const removeMyDoctor = useRemoveMyDoctor()
   const office = officeQuery.data
-  const isMyDoctor = myDoctorsQuery.data
-    ? isMyDoctorsOffice(myDoctorsQuery.data, doctorsOfficeId)
-    : false
+  const isMyDoctor =
+    myDoctorsQuery.data && doctorsOfficeId != null
+      ? isMyDoctorsOffice(myDoctorsQuery.data, doctorsOfficeId)
+      : false
   const doctorRequests = (homeQuery.data?.recentRequests ?? []).filter(
     (request) => request.doctorsOffice.id === doctorsOfficeId,
   )

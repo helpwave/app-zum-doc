@@ -7,11 +7,21 @@ import {
 import type { AppLocale, CreateReferralInput } from "../api/types"
 import { homeKeys, referralKeys } from "./queryKeys"
 
-export function useReferral(referralId: string, locale: AppLocale) {
+type UseReferralProps = {
+  referralId: string | null,
+  locale: AppLocale,
+  enabled?: boolean,
+}
+
+export function useReferral({
+  referralId,
+  locale,
+  enabled = true,
+}: UseReferralProps) {
   return useQuery({
-    queryKey: referralKeys.detail(referralId, locale),
-    queryFn: () => fetchReferral(referralId, locale),
-    enabled: referralId.length > 0,
+    queryKey: referralKeys.detail(referralId ?? '', locale),
+    queryFn: () => fetchReferral(referralId as string, locale),
+    enabled: enabled && referralId != null && referralId.length > 0,
   })
 }
 

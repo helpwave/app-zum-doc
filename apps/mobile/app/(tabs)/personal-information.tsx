@@ -51,8 +51,8 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
   const [insuranceType, setInsuranceType] = useState<InsuranceType>(
     findInsuranceCompany(profile.insurance.insuranceProviderId)?.type ?? "public",
   )
-  const [insuranceProviderId, setInsuranceProviderId] = useState(
-    profile.insurance.insuranceProviderId,
+  const [insuranceProviderId, setInsuranceProviderId] = useState<string | null>(
+    profile.insurance.insuranceProviderId || null,
   )
   const [insuranceNumber, setInsuranceNumber] = useState(
     profile.insurance.insuranceNumber,
@@ -68,9 +68,9 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
   )
 
   useEffect(() => {
-    const selectedCompany = findInsuranceCompany(insuranceProviderId)
+    const selectedCompany = findInsuranceCompany(insuranceProviderId ?? "")
     if (selectedCompany && selectedCompany.type !== insuranceType) {
-      setInsuranceProviderId("")
+      setInsuranceProviderId(null)
     }
   }, [insuranceProviderId, insuranceType])
 

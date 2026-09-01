@@ -54,21 +54,25 @@ export default function CreatePrescriptionScreen() {
     doctorId?: string | string[]
     reorderFrom?: string | string[]
   }>()
-  const initialDoctorId = typeof params.doctorId === "string" ? params.doctorId : ""
+  const initialDoctorId = typeof params.doctorId === "string" ? params.doctorId : null
   const reorderFrom =
-    typeof params.reorderFrom === "string" ? params.reorderFrom : ""
+    typeof params.reorderFrom === "string" ? params.reorderFrom : null
 
-  const homeQuery = useHomeSummary(locale)
+  const homeQuery = useHomeSummary({ locale })
   const profilesQuery = usePatientProfiles()
-  const reorderQuery = usePrescription(reorderFrom, locale)
+  const reorderQuery = usePrescription({
+    prescriptionId: reorderFrom,
+    locale,
+    enabled: reorderFrom != null,
+  })
   const createPrescription = useCreatePrescription()
   const profiles = useMemo(
     () => profilesQuery.data ?? [],
     [profilesQuery.data],
   )
 
-  const [doctorId, setDoctorId] = useState(initialDoctorId)
-  const [profileId, setProfileId] = useState("")
+  const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
+  const [profileId, setProfileId] = useState<string | null>(null)
   const [medications, setMedications] = useState<DraftMedication[]>([])
   const [shipByMail, setShipByMail] = useState(false)
   const [note, setNote] = useState("")
@@ -77,7 +81,11 @@ export default function CreatePrescriptionScreen() {
   )
   const [didPrefillReorder, setDidPrefillReorder] = useState(false)
 
-  const officeQuery = useDoctorsOffice(doctorId, locale)
+  const officeQuery = useDoctorsOffice({
+    doctorsOfficeId: doctorId,
+    locale,
+    enabled: doctorId != null,
+  })
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({
       id: doctor.id,
@@ -129,15 +137,15 @@ export default function CreatePrescriptionScreen() {
   }, [didPrefillReorder, reorderQuery.data])
 
   const canSubmit =
-    doctorId.length > 0
-    && profileId.length > 0
+    doctorId != null
+    && profileId != null
     && medications.length > 0
     && !createPrescription.isPending
 
   const isPending =
     homeQuery.isPending
     || profilesQuery.isPending
-    || (reorderFrom.length > 0 && reorderQuery.isPending && !didPrefillReorder)
+    || (reorderFrom != null && reorderQuery.isPending && !didPrefillReorder)
 
   return (
     <KeyboardAvoidingView
@@ -158,7 +166,7 @@ export default function CreatePrescriptionScreen() {
         onRetry={() => {
           void homeQuery.refetch()
           void profilesQuery.refetch()
-          if (reorderFrom.length > 0) {
+          if (reorderFrom != null) {
             void reorderQuery.refetch()
           }
         }}
@@ -176,7 +184,7 @@ export default function CreatePrescriptionScreen() {
         >
           <LabeledField label={t("doctor")}>
             <Select
-              value={doctorId || undefined}
+              value={doctorId}
               onValueChange={setDoctorId}
               placeholder={t("selectPractice")}
               style={{ width: "100%" }}
@@ -282,6 +290,9 @@ export default function CreatePrescriptionScreen() {
           <Button
             disabled={!canSubmit}
             onPress={() => {
+              if (doctorId == null || profileId == null) {
+                return
+              }
               void createPrescription.mutateAsync({
                 locale,
                 input: {

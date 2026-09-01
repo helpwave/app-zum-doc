@@ -51,7 +51,10 @@ export function AddMedicationSheet({
     null,
   )
   const [selectedSize, setSelectedSize] = useState<MedicationSize | undefined>()
-  const searchQuery = useMedicationSearch(debouncedSearch, visible)
+  const searchQuery = useMedicationSearch({
+    search: debouncedSearch,
+    enabled: visible,
+  })
   const items = searchQuery.data ?? []
   const showInitialLoading = searchQuery.isPending && items.length === 0
   const isLastStep = currentStep === stepCount - 1
