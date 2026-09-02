@@ -10,7 +10,6 @@ import { useHomeSummary } from "@app-zum-doc/utils/hooks"
 import { Button } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
-import { StatusBar } from "expo-status-bar"
 import { ChevronRight } from "lucide-react-native"
 import { ScrollView, View } from "react-native"
 import { useIsFocused } from "@react-navigation/native"
@@ -55,7 +54,6 @@ export default function HomeScreen() {
         backgroundColor: colors.screenBackground,
       }}
     >
-      {isFocused ? <StatusBar style="light" /> : null}
       <QueryState
         isPending={homeQuery.isPending}
         isError={homeQuery.isError}
