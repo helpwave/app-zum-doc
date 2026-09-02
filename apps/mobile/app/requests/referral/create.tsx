@@ -1,5 +1,5 @@
+import { AppBar } from "@/components/app-bar"
 import { LabeledField } from "@/components/labeled-field"
-import { NavigationHeader } from "@/components/navigation-header"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -14,17 +14,14 @@ import {
 } from "@app-zum-doc/utils/hooks"
 import {
   Button,
-  IconButton,
-  Input,
   Select,
   SelectOption,
   Textarea,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { Ellipsis } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
-import { Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native"
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 
 export default function CreateReferralScreen() {
   const t = useAppTranslation()
@@ -145,9 +142,8 @@ export default function CreateReferralScreen() {
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <NavigationHeader
+      <AppBar
         title={t("orderReferral")}
-        onBack={() => router.back()}
       />
       <QueryState
         isPending={isPending}

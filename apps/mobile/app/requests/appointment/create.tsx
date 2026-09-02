@@ -1,6 +1,6 @@
+import { AppBar } from "@/components/app-bar"
 import { DatePickerSheet } from "@/components/date-picker-sheet"
 import { LabeledField } from "@/components/labeled-field"
-import { NavigationHeader } from "@/components/navigation-header"
 import { QueryState } from "@/components/query-state"
 import { SelectionSheet } from "@/components/selection-sheet"
 import { TimeSlotSheet } from "@/components/time-slot-sheet"
@@ -22,7 +22,6 @@ import {
 import {
   Button,
   Card,
-  Input,
   ListActionItem,
   ListItem,
   ListNavigationItem,
@@ -142,9 +141,8 @@ export default function RequestAppointmentScreen() {
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <NavigationHeader
+      <AppBar
         title={t("requestAppointment")}
-        onBack={() => router.back()}
       />
       <QueryState
         isPending={homeQuery.isPending || profilesQuery.isPending}

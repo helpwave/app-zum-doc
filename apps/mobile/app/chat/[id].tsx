@@ -82,6 +82,7 @@ export default function ChatThreadScreen() {
               icon={ChevronLeft}
               size="md"
               variant="foreground"
+              color={theme.colors.surfaceInverse}
               onPress={() => router.back()}
             />
           }

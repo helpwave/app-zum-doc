@@ -1,5 +1,5 @@
 import { AddMedicationSheet } from "@/components/add-medication-sheet"
-import { NavigationHeader } from "@/components/navigation-header"
+import { AppBar } from "@/components/app-bar"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -43,14 +43,14 @@ export default function MedicationsScreen() {
         backgroundColor: colors.background,
       }}
     >
-      <NavigationHeader
+      <AppBar
         title={t("medicationList")}
-        onBack={() => router.back()}
         trailing={
           <IconButton
             icon={Camera}
             size="sm"
             variant="foreground"
+            color={theme.colors.surfaceInverse}
             accessibilityLabel={t("scanMedication")}
             onPress={() => {
               Alert.alert(t("medicationList"), t("placeholderComingSoon"))
@@ -80,11 +80,9 @@ export default function MedicationsScreen() {
             title={t("addMedication")}
             color={theme.colors.primary}
             leading={<ThemedIcon icon={CirclePlus} />}
-            itemStyle={(previous) => ({
-              ...previous,
-              backgroundColor: theme.colors.primary.color,
+            itemStyle={{
               borderRadius: theme.borderRadius.lg,
-            })}
+            }}
             titleStyle={(previous) => ({
               ...previous,
               color: theme.colors.primary.onColor,
