@@ -1,5 +1,5 @@
+import { AppBar } from "@/components/app-bar"
 import { RequestTile } from "@/components/home-sections"
-import { NavigationHeader } from "@/components/navigation-header"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -97,11 +97,8 @@ export default function RequestsScreen() {
         backgroundColor: colors.background,
       }}
     >
-      <NavigationHeader
+      <AppBar
         title={title}
-        onBack={() => {
-          router.back()
-        }}
       />
       <QueryState
         isPending={homeQuery.isPending}

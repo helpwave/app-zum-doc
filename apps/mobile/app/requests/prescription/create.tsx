@@ -1,6 +1,6 @@
 import { AddMedicationSheet } from "@/components/add-medication-sheet"
+import { AppBar } from "@/components/app-bar"
 import { LabeledField } from "@/components/labeled-field"
-import { NavigationHeader } from "@/components/navigation-header"
 import { PrescriptionMedicationCard } from "@/components/prescription-medication-card"
 import { QueryState } from "@/components/query-state"
 import { SelectionSheet } from "@/components/selection-sheet"
@@ -22,7 +22,6 @@ import {
   Button,
   Card,
   IconButton,
-  Input,
   ListActionItem,
   ListItem,
   ListNavigationItem,
@@ -155,9 +154,8 @@ export default function CreatePrescriptionScreen() {
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <NavigationHeader
+      <AppBar
         title={t("orderPrescription")}
-        onBack={() => router.back()}
       />
       <QueryState
         isPending={isPending}

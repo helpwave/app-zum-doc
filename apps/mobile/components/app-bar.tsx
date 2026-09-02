@@ -10,12 +10,13 @@ import { View, type StyleProp, type ViewProps, type ViewStyle } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export type AppBarProps = ViewProps & {
-  title?: ReactNode
-  leading?: ReactNode
-  trailing?: ReactNode
-  noDefaultBackNavigation?: boolean
-  leadingContainerStyle?: StyleProp<ViewStyle>
-  trailingContainerStyle?: StyleProp<ViewStyle>
+  title?: ReactNode,
+  leading?: ReactNode,
+  trailing?: ReactNode,
+  noDefaultBackNavigation?: boolean,
+  isTransparent?: boolean,
+  leadingContainerStyle?: StyleProp<ViewStyle>,
+  trailingContainerStyle?: StyleProp<ViewStyle>,
 }
 
 export function AppBar({
@@ -23,6 +24,7 @@ export function AppBar({
   leading,
   trailing,
   noDefaultBackNavigation = false,
+  isTransparent = false,
   leadingContainerStyle,
   trailingContainerStyle,
   style,
@@ -43,7 +45,7 @@ export function AppBar({
           paddingLeft: insets.left,
           paddingRight: insets.right,
           paddingTop: insets.top,
-          backgroundColor: theme.colors.surface.color,
+          backgroundColor: isTransparent ? "transparent" : theme.colors.surface.color,
         },
         style
       ]}

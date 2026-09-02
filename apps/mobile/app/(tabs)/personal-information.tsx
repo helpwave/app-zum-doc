@@ -1,5 +1,5 @@
+import { AppBar } from "@/components/app-bar"
 import { LabeledField } from "@/components/labeled-field"
-import { NavigationHeader } from "@/components/navigation-header"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
 import { SegmentedControl } from "@/components/segmented-control"
@@ -21,7 +21,6 @@ import {
   ThemedIcon,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
-import { useRouter } from "expo-router"
 import { Calendar } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
 import {
@@ -183,7 +182,6 @@ export default function PersonalInformationScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const colors = theme.components.screen
-  const router = useRouter()
   const profileQuery = usePatientProfile()
 
   return (
@@ -194,9 +192,8 @@ export default function PersonalInformationScreen() {
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <NavigationHeader
+      <AppBar
         title={t("personalInformation")}
-        onBack={() => router.back()}
       />
       <QueryState
         isPending={profileQuery.isPending}

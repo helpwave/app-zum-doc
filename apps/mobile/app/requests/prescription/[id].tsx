@@ -78,27 +78,85 @@ export default function PrescriptionDetailScreen() {
               colors={[colors.heroStart, colors.heroEnd]}
               start={{ x: 0.05, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={{
-                paddingHorizontal: theme.spacing.lg,
-                paddingTop: insets.top + theme.spacing.md,
-                paddingBottom: theme.spacing.lg,
-              }}
             >
-              <ContentThemeOverrideProvider foreground={colors.heroIcon}>
-                <AppBar
-                  title={t("actionPrescription")}
-                  trailing={
-                    <IconButton
-                      icon={MessageCircle}
-                      variant="foreground"
-                      accessibilityLabel={t("openChat")}
-                      onPress={() => {
-                        Alert.alert(t("actionPrescription"), t("placeholderComingSoon"))
+              <AppBar
+                title={t("actionPrescription")}
+                isTransparent
+              />
+              <View 
+                style={{
+                  paddingHorizontal: theme.spacing.lg,
+                  paddingBottom: theme.spacing.lg,
+                }}
+              >
+                <Card
+                  style={{
+                    padding: theme.spacing.lg,
+                    gap: theme.spacing.lg,
+                    boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: theme.spacing.md,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Image
+                      source={imageSource}
+                      style={{
+                        width: theme.semantics.container.md.size,
+                        height: theme.semantics.container.md.size,
+                        borderRadius: 9999,
                       }}
+                      contentFit="cover"
                     />
-                  }
-                />
-              </ContentThemeOverrideProvider>
+                    <View style={{ flex: 1, gap: theme.spacing.xs }}>
+                      <ThemedText
+                        style={{
+                          ...theme.typography.heading.md,
+                          color: colors.name,
+                        }}
+                      >
+                        {doctorsOffice?.name}
+                      </ThemedText>
+                      <ThemedText
+                        style={{
+                          ...theme.typography.body.sm,
+                          color: colors.specialty,
+                        }}
+                      >
+                        {doctorsOffice?.specialization}
+                      </ThemedText>
+                    </View>
+                    <Chip
+                      size="sm"
+                      variant="tonal"
+                      color={
+                        prescription.status === "inProgress"
+                          ? theme.colors.warning
+                          : prescription.status === "cancelled"
+                            ? theme.colors.negative
+                            : theme.colors.positive
+                      }
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: theme.spacing.xs,
+                        }}
+                      >
+                        <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
+                        <ThemedText>
+                          {t("patientRequestStatus", { status: prescription.status })}
+                        </ThemedText>
+                      </View>
+                    </Chip>
+                  </View>
+                </Card>
+              </View>
             </LinearGradient>
 
             <View
@@ -108,74 +166,6 @@ export default function PrescriptionDetailScreen() {
                 gap: theme.spacing.xl,
               }}
             >
-              <Card
-                style={{
-                  padding: theme.spacing.lg,
-                  gap: theme.spacing.lg,
-                  boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: theme.spacing.md,
-                    alignItems: "center",
-                  }}
-                >
-                  <Image
-                    source={imageSource}
-                    style={{
-                      width: theme.semantics.container.md.size,
-                      height: theme.semantics.container.md.size,
-                      borderRadius: 9999,
-                    }}
-                    contentFit="cover"
-                  />
-                  <View style={{ flex: 1, gap: theme.spacing.xs }}>
-                    <ThemedText
-                      style={{
-                        ...theme.typography.heading.md,
-                        color: colors.name,
-                      }}
-                    >
-                      {doctorsOffice?.name}
-                    </ThemedText>
-                    <ThemedText
-                      style={{
-                        ...theme.typography.body.sm,
-                        color: colors.specialty,
-                      }}
-                    >
-                      {doctorsOffice?.specialization}
-                    </ThemedText>
-                  </View>
-                  <Chip
-                    size="sm"
-                    variant="tonal"
-                    color={
-                      prescription.status === "inProgress"
-                        ? theme.colors.warning
-                        : prescription.status === "cancelled"
-                          ? theme.colors.negative
-                          : theme.colors.positive
-                    }
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: theme.spacing.xs,
-                      }}
-                    >
-                      <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
-                      <ThemedText>
-                        {t("patientRequestStatus", { status: prescription.status })}
-                      </ThemedText>
-                    </View>
-                  </Chip>
-                </View>
-              </Card>
-
               <View>
                 <DetailRow label={t("patient")} value={patientName ?? "—"} />
                 <Divider />

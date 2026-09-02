@@ -1,9 +1,9 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
-import { NavigationHeader } from "@/components/navigation-header"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { ThemedText } from "@helpwave/hightide-native/components"
 import type { ReactNode } from "react"
 import { View } from "react-native"
+import { AppBar } from "./app-bar"
 
 type PlaceholderScreenProps = {
   title: string
@@ -29,7 +29,7 @@ export function PlaceholderScreen({
         backgroundColor: colors.background,
       }}
     >
-      <NavigationHeader title={title} onBack={onBack} />
+      <AppBar title={title} />
       <View
         style={{
           flex: 1,
