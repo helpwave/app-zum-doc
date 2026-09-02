@@ -1,3 +1,4 @@
+import { StatusBar } from "@/components/status-bar"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { queryClient } from "@/lib/query-client"
 import { azdSupportedThemes } from "@/theme/azd-theme"
@@ -6,11 +7,10 @@ import { HightideProvider, useHightide, useTheme } from "@helpwave/hightide-nati
 import { QueryClientProvider } from "@tanstack/react-query"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
-import { StatusBar } from "expo-status-bar"
 import * as SystemUI from "expo-system-ui"
 import { useEffect, type ReactNode } from "react"
 import { ActivityIndicator, Text, View } from "react-native"
-import { SafeAreaProvider } from "react-native-safe-area-context"
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context"
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined)
 
@@ -27,7 +27,7 @@ function LoadingView() {
 }
 
 function AppStack() {
-  const { theme, themeMode } = useAzdTheme()
+  const { theme } = useAzdTheme()
   const backgroundColor = theme.components.screen.background
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function AppStack() {
 
   return (
     <>
-      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
+      <StatusBar />
       <Stack
         screenOptions={{
           headerShown: false,
