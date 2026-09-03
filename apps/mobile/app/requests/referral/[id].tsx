@@ -35,11 +35,18 @@ export default function ReferralDetailScreen() {
   const locale = toAppLocale(localizationLocale)
   const { id } = useLocalSearchParams<{ id: string }>()
   const referralId = typeof id === "string" ? id : null
-  const referralQuery = useReferral({ referralId, locale })
+  const referralQuery = useReferral({ 
+    parameters:  referralId === null ? undefined : {
+      id: referralId,
+      locale,
+    }
+  })
   const cancelReferral = useCancelReferral()
   const referral = referralQuery.data
   const profileQuery = usePatientProfileById({
-    profileId: referral?.profileId ?? null,
+    parameters:  referral?.profileId === undefined ? undefined : {
+      profileId: referral?.profileId
+    }
   })
   const doctorsOffice = referral?.doctorsOffice
   const imageSource =

@@ -1,6 +1,7 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { Button, Card, ThemedText } from "@helpwave/hightide-native/components"
+import { RotateCcw } from "lucide-react-native"
 import type { ReactNode } from "react"
 import {
   ActivityIndicator,
@@ -69,8 +70,7 @@ export function QueryState({
       <View style={[centerStyle, style]}>
         <Card
           style={{
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: "flex-start",
             padding: theme.padding.xl,
             gap: theme.spacing.md
           }}
@@ -79,7 +79,6 @@ export function QueryState({
             style={{
               ...theme.typography.heading.md,
               fontWeight: theme.fontWeights.bold,
-              textAlign: "center",
             }}
           >
             {t("errorTitle")}
@@ -88,14 +87,13 @@ export function QueryState({
             appearance="description"
             style={{
               ...theme.typography.body.sm,
-              textAlign: "center",
               marginBottom: theme.spacing.md,
             }}
           >
             {error?.message ?? t("errorUnknown")}
           </ThemedText>
           {onRetry ? (
-            <Button size="md" onPress={onRetry}>
+            <Button size="md" onPress={onRetry} leadingIcon={RotateCcw} style={{alignSelf: "flex-end"}}>
               {t("retry")}
             </Button>
           ) : null}

@@ -47,21 +47,25 @@ export default function DoctorSearchScreen() {
     useState("")
 
   const doctorsQuery = useDoctorSearch({
-    filters: {
+    parameters: {
       query: debouncedQuery,
       cityId: city?.id,
       specializationId: specialization?.id,
       locale,
-    },
+    }
   })
   const citiesQuery = useCities({
-    search: debouncedCitySearch,
-    locale,
+    parameters: {
+      search: debouncedCitySearch,
+      locale,
+    },
     enabled: openSheet === "city",
   })
   const specializationsQuery = useSpecializations({
-    search: debouncedSpecializationSearch,
-    locale,
+    parameters: {
+      search: debouncedSpecializationSearch,
+      locale,
+    },
     enabled: openSheet === "specialization",
   })
 

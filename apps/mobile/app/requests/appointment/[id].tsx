@@ -34,11 +34,15 @@ export default function AppointmentDetailScreen() {
   const locale = toAppLocale(localizationLocale)
   const { id } = useLocalSearchParams<{ id: string }>()
   const appointmentId = typeof id === "string" ? id : null
-  const appointmentQuery = useAppointment({ appointmentId, locale })
+  const appointmentQuery = useAppointment({ 
+    parameters: appointmentId === null ? undefined : { appointmentId, locale } 
+  })
   const cancelAppointment = useCancelAppointment()
   const appointment = appointmentQuery.data
   const profileQuery = usePatientProfileById({
-    profileId: appointment?.profileId ?? null,
+    parameters: appointment?.profileId === undefined ? undefined : {
+      profileId: appointment?.profileId
+    }
   })
   const doctorsOffice = appointment?.doctorsOffice
   const imageSource =

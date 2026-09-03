@@ -36,11 +36,15 @@ export default function PrescriptionDetailScreen() {
   const locale = toAppLocale(localizationLocale)
   const { id } = useLocalSearchParams<{ id: string }>()
   const prescriptionId = typeof id === "string" ? id : null
-  const prescriptionQuery = usePrescription({ prescriptionId, locale })
+  const prescriptionQuery = usePrescription({ 
+    parameters: prescriptionId === null ? undefined : { id: prescriptionId, locale }
+  })
   const cancelPrescription = useCancelPrescription()
   const prescription = prescriptionQuery.data
   const profileQuery = usePatientProfileById({
-    profileId: prescription?.profileId ?? null,
+    parameters: prescription?.profileId === undefined ? undefined : {
+      profileId: prescription.profileId
+    }
   })
   const doctorsOffice = prescription?.doctorsOffice
   const imageSource =

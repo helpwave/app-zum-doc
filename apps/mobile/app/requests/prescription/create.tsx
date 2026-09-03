@@ -55,12 +55,13 @@ export default function CreatePrescriptionScreen() {
   const reorderFrom =
     typeof params.reorderFrom === "string" ? params.reorderFrom : null
 
-  const homeQuery = useHomeSummary({ locale })
+  const homeQuery = useHomeSummary({ parameters: { locale } })
   const profilesQuery = usePatientProfiles()
   const reorderQuery = usePrescription({
-    prescriptionId: reorderFrom,
-    locale,
-    enabled: reorderFrom != null,
+    parameters: !reorderFrom ? undefined : {
+      id: reorderFrom,
+      locale,
+    }
   })
   const createPrescription = useCreatePrescription()
   const profiles = useMemo(
@@ -79,9 +80,10 @@ export default function CreatePrescriptionScreen() {
   const [didPrefillReorder, setDidPrefillReorder] = useState(false)
 
   const officeQuery = useDoctorsOffice({
-    doctorsOfficeId: doctorId,
-    locale,
-    enabled: doctorId != null,
+    parameters: doctorId === null ? undefined : {
+      id: doctorId,
+      locale,
+    }
   })
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({

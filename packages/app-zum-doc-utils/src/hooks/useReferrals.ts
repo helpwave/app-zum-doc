@@ -1,68 +1,90 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   cancelReferral,
   createReferral,
-  fetchReferral,
-} from "../api/client"
-import type { AppLocale, CreateReferralInput } from "../api/types"
-import { homeKeys, referralKeys } from "./queryKeys"
+  fetchReferral
+} from '../api/client'
+import type { AppLocale, CreateReferralInput, Referral } from '../api/types'
+import {
+  assertNotUndefined,
+  type MutationHookOptions,
+  type QueryHookOptions,
+  withEnabled
+} from './queryHook'
+import { homeKeys, referralKeys } from './queryKeys'
 
-type UseReferralProps = {
-  referralId: string | null,
+type UseReferralParameters = {
+  id: string,
   locale: AppLocale,
-  enabled?: boolean,
 }
+type UseReferralProps = QueryHookOptions<UseReferralParameters, Referral>
 
 export function useReferral({
-  referralId,
-  locale,
-  enabled = true,
+  parameters,
+  enabled,
+  ...options
 }: UseReferralProps) {
   return useQuery({
-    queryKey: referralKeys.detail(referralId ?? '', locale),
-    queryFn: () => fetchReferral(referralId as string, locale),
-    enabled: enabled && referralId != null && referralId.length > 0,
+    ...options,
+    queryKey: referralKeys.detail(parameters),
+    queryFn: () => fetchReferral(assertNotUndefined(parameters)),
+    enabled: withEnabled(
+      parameters != undefined,
+      enabled
+    ),
   })
 }
 
-export function useCreateReferral() {
+type CreateReferralVariables = {
+  input: CreateReferralInput,
+  locale: AppLocale,
+}
+
+export function useCreateReferral(
+  options: MutationHookOptions<Referral, CreateReferralVariables> = {}
+) {
   const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
 
   return useMutation({
-    mutationFn: ({
-      input,
-      locale,
-    }: {
-      input: CreateReferralInput
-      locale: AppLocale
-    }) => createReferral(input, locale),
-    onSuccess: async (referral, { locale }) => {
+    ...rest,
+    mutationFn: ({ input, locale }: CreateReferralVariables) =>
+      createReferral(input, locale),
+    onSuccess: async (...args) => {
+      const [referral, { locale }] = args
       queryClient.setQueryData(
-        referralKeys.detail(referral.id, locale),
-        referral,
+        referralKeys.detail({ id: referral.id, locale }),
+        referral
       )
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })
+      await onSuccess?.(...args)
     },
   })
 }
 
-export function useCancelReferral() {
+type CancelReferralVariables = {
+  referralId: string,
+  locale: AppLocale,
+}
+
+export function useCancelReferral(
+  options: MutationHookOptions<Referral, CancelReferralVariables> = {}
+) {
   const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
 
   return useMutation({
-    mutationFn: ({
-      referralId,
-      locale,
-    }: {
-      referralId: string
-      locale: AppLocale
-    }) => cancelReferral(referralId, locale),
-    onSuccess: async (referral, { locale }) => {
+    ...rest,
+    mutationFn: ({ referralId, locale }: CancelReferralVariables) =>
+      cancelReferral(referralId, locale),
+    onSuccess: async (...args) => {
+      const [referral, { locale }] = args
       queryClient.setQueryData(
-        referralKeys.detail(referral.id, locale),
-        referral,
+        referralKeys.detail({ id: referral.id, locale }),
+        referral
       )
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })
+      await onSuccess?.(...args)
     },
   })
 }

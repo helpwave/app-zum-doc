@@ -1,62 +1,87 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   addPatientMedication,
   fetchPatientMedications,
   removePatientMedication,
   searchMedications
-} from "../api/client"
-import type { MedicationSize } from "../api/types"
-import { medicationKeys } from "./queryKeys"
+} from '../api/client'
+import type { Medication, MedicationCatalogItem, MedicationSize } from '../api/types'
+import {
+  assertNotUndefined,
+  withEnabled,
+  type MutationHookOptions,
+  type QueryHookOptions
+} from './queryHook'
+import { medicationKeys } from './queryKeys'
 
-export function usePatientMedications() {
+export function usePatientMedications(
+  options: QueryHookOptions<undefined, Medication[]> = {}
+) {
   return useQuery({
+    ...options,
     queryKey: medicationKeys.patient,
     queryFn: () => fetchPatientMedications(),
   })
 }
 
-type UseMedicationSearchProps = {
+type UseMedicationSearchParameter = {
   search: string,
-  enabled?: boolean,
 }
+type UseMedicationSearchProps = QueryHookOptions<UseMedicationSearchParameter, MedicationCatalogItem[]>
 
 export function useMedicationSearch({
-  search,
-  enabled = true,
+  parameters,
+  ...options
 }: UseMedicationSearchProps) {
   return useQuery({
-    queryKey: medicationKeys.search(search),
-    queryFn: () => searchMedications({ search }),
-    enabled,
+    ...options,
+    queryKey: medicationKeys.search(parameters),
+    queryFn: () => searchMedications(assertNotUndefined(parameters)),
+    enabled: withEnabled(
+      parameters !== undefined,
+      options.enabled
+    )
   })
 }
 
 type AddPatientMedicationInput = {
-  catalogId: string
-  size: MedicationSize
+  catalogId: string,
+  size: MedicationSize,
 }
 
-export function useAddPatientMedication() {
+export function useAddPatientMedication(
+  options: MutationHookOptions<Medication[], AddPatientMedicationInput> = {}
+) {
   const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
 
   return useMutation({
+    ...rest,
     mutationFn: ({ catalogId, size }: AddPatientMedicationInput) =>
       addPatientMedication({ catalogId, size }),
-    onSuccess: async (medications) => {
+    onSuccess: async (...args) => {
+      const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)
       await queryClient.invalidateQueries({ queryKey: medicationKeys.patient })
+      await onSuccess?.(...args)
     },
   })
 }
 
-export function useRemovePatientMedication() {
+export function useRemovePatientMedication(
+  options: MutationHookOptions<Medication[], string> = {}
+) {
   const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
 
   return useMutation({
+    ...rest,
     mutationFn: (medicationId: string) => removePatientMedication(medicationId),
-    onSuccess: async (medications) => {
+    onSuccess: async (...args) => {
+      const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)
       await queryClient.invalidateQueries({ queryKey: medicationKeys.patient })
+      await onSuccess?.(...args)
     },
   })
 }

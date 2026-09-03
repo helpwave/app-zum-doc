@@ -1,26 +1,33 @@
-import { useQuery } from "@tanstack/react-query"
-import { fetchPatientProfile, fetchPatientProfileById } from "../api/client"
-import { profileKeys } from "./queryKeys"
+import { useQuery } from '@tanstack/react-query'
+import { fetchPatientProfile, fetchPatientProfileById } from '../api/client'
+import type { PatientProfile } from '../api/types'
+import { assertNotUndefined, type QueryHookOptions, withEnabled } from './queryHook'
+import { profileKeys } from './queryKeys'
 
-export function usePatientProfile() {
+export function usePatientProfile(
+  options: QueryHookOptions<undefined, PatientProfile> = {}
+) {
   return useQuery({
+    ...options,
     queryKey: profileKeys.patient,
     queryFn: () => fetchPatientProfile(),
   })
 }
 
-type UsePatientProfileByIdProps = {
-  profileId: string | null,
-  enabled?: boolean,
+type UsePatientProfileByIdParameters = {
+  profileId: string,
 }
+type UsePatientProfileByIdProps = QueryHookOptions<UsePatientProfileByIdParameters, PatientProfile>
 
 export function usePatientProfileById({
-  profileId,
-  enabled = true,
+  parameters,
+  enabled,
+  ...options
 }: UsePatientProfileByIdProps) {
   return useQuery({
-    queryKey: profileKeys.byId(profileId ?? ''),
-    queryFn: () => fetchPatientProfileById(profileId as string),
-    enabled: enabled && profileId != null && profileId.length > 0,
+    ...options,
+    queryKey: profileKeys.byId(parameters),
+    queryFn: () => fetchPatientProfileById(assertNotUndefined(parameters)),
+    enabled: withEnabled(parameters !== undefined, enabled),
   })
 }

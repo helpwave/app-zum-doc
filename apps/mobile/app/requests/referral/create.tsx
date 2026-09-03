@@ -36,14 +36,13 @@ export default function CreateReferralScreen() {
   const reorderFrom =
     typeof params.reorderFrom === "string" ? params.reorderFrom : null
 
-  const homeQuery = useHomeSummary({ locale })
+  const homeQuery = useHomeSummary({ parameters: {locale} })
   const profilesQuery = usePatientProfiles()
-  const specializationsQuery = useSpecializations({ search: "", locale })
-  const reorderQuery = useReferral({
-    referralId: reorderFrom,
+  const specializationsQuery = useSpecializations({ parameters: {search: "", locale} })
+  const reorderQuery = useReferral({parameters: !reorderFrom ? undefined : {
+    id: reorderFrom,
     locale,
-    enabled: reorderFrom != null,
-  })
+  }})
   const createReferral = useCreateReferral()
   const profiles = useMemo(
     () => profilesQuery.data ?? [],
@@ -57,9 +56,10 @@ export default function CreateReferralScreen() {
   const [didPrefillReorder, setDidPrefillReorder] = useState(false)
 
   const officeQuery = useDoctorsOffice({
-    doctorsOfficeId: doctorId,
-    locale,
-    enabled: doctorId != null,
+    parameters: doctorId === null ? undefined : {
+      id: doctorId,
+      locale,
+    }
   })
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({
