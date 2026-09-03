@@ -37,7 +37,7 @@ export default function HomeScreen() {
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
-  const homeQuery = useHomeSummary({ locale })
+  const homeQuery = useHomeSummary({ parameters: { locale }})
 
   return (
     <View

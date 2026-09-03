@@ -1,68 +1,94 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   cancelPrescription,
   createPrescription,
-  fetchPrescription,
-} from "../api/client"
-import type { AppLocale, CreatePrescriptionInput } from "../api/types"
-import { homeKeys, prescriptionKeys } from "./queryKeys"
+  fetchPrescription
+} from '../api/client'
+import type {
+  AppLocale,
+  CreatePrescriptionInput,
+  Prescription
+} from '../api/types'
+import {
+  assertNotUndefined,
+  type MutationHookOptions,
+  type QueryHookOptions,
+  withEnabled
+} from './queryHook'
+import { homeKeys, prescriptionKeys } from './queryKeys'
 
-type UsePrescriptionProps = {
-  prescriptionId: string | null,
+type UsePrescriptionParameters = {
+  id: string,
   locale: AppLocale,
-  enabled?: boolean,
 }
+type UsePrescriptionProps = QueryHookOptions<UsePrescriptionParameters, Prescription>
 
 export function usePrescription({
-  prescriptionId,
-  locale,
-  enabled = true,
+  parameters,
+  enabled,
+  ...options
 }: UsePrescriptionProps) {
   return useQuery({
-    queryKey: prescriptionKeys.detail(prescriptionId ?? '', locale),
-    queryFn: () => fetchPrescription(prescriptionId as string, locale),
-    enabled: enabled && prescriptionId != null && prescriptionId.length > 0,
+    ...options,
+    queryKey: prescriptionKeys.detail(parameters),
+    queryFn: () => fetchPrescription(assertNotUndefined(parameters)),
+    enabled: withEnabled(
+      parameters !== undefined,
+      enabled
+    ),
   })
 }
 
-export function useCreatePrescription() {
+type CreatePrescriptionVariables = {
+  input: CreatePrescriptionInput,
+  locale: AppLocale,
+}
+
+export function useCreatePrescription(
+  options: MutationHookOptions<Prescription, CreatePrescriptionVariables> = {}
+) {
   const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
 
   return useMutation({
-    mutationFn: ({
-      input,
-      locale,
-    }: {
-      input: CreatePrescriptionInput
-      locale: AppLocale
-    }) => createPrescription(input, locale),
-    onSuccess: async (prescription, { locale }) => {
+    ...rest,
+    mutationFn: ({ input, locale }: CreatePrescriptionVariables) =>
+      createPrescription(input, locale),
+    onSuccess: async (...args) => {
+      const [prescription, { locale }] = args
       queryClient.setQueryData(
-        prescriptionKeys.detail(prescription.id, locale),
-        prescription,
+        prescriptionKeys.detail({ id: prescription.id, locale }),
+        prescription
       )
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })
+      await onSuccess?.(...args)
     },
   })
 }
 
-export function useCancelPrescription() {
+type CancelPrescriptionVariables = {
+  prescriptionId: string,
+  locale: AppLocale,
+}
+
+export function useCancelPrescription(
+  options: MutationHookOptions<Prescription, CancelPrescriptionVariables> = {}
+) {
   const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
 
   return useMutation({
-    mutationFn: ({
-      prescriptionId,
-      locale,
-    }: {
-      prescriptionId: string
-      locale: AppLocale
-    }) => cancelPrescription(prescriptionId, locale),
-    onSuccess: async (prescription, { locale }) => {
+    ...rest,
+    mutationFn: ({ prescriptionId, locale }: CancelPrescriptionVariables) =>
+      cancelPrescription(prescriptionId, locale),
+    onSuccess: async (...args) => {
+      const [prescription, { locale }] = args
       queryClient.setQueryData(
-        prescriptionKeys.detail(prescription.id, locale),
-        prescription,
+        prescriptionKeys.detail({ id: prescription.id, locale }),
+        prescription
       )
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })
+      await onSuccess?.(...args)
     },
   })
 }

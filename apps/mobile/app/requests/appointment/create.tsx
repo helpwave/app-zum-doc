@@ -47,7 +47,7 @@ export default function RequestAppointmentScreen() {
   }>()
   const initialDoctorId = typeof doctorIdParam === "string" ? doctorIdParam : null
 
-  const homeQuery = useHomeSummary({ locale })
+  const homeQuery = useHomeSummary({ parameters: { locale } })
   const profilesQuery = usePatientProfiles()
   const createAppointment = useCreateAppointment()
   const profiles = useMemo(
@@ -66,9 +66,10 @@ export default function RequestAppointmentScreen() {
   >(null)
 
   const officeQuery = useDoctorsOffice({
-    doctorsOfficeId: doctorId,
-    locale,
-    enabled: doctorId != null,
+    parameters: doctorId === null ? undefined : {
+      id: doctorId,
+      locale
+    }
   })
   const doctorOptions = useMemo(() => {
     const options = (homeQuery.data?.myDoctors ?? []).map((doctor) => ({

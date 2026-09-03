@@ -1,56 +1,61 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery } from '@tanstack/react-query'
 import {
   fetchCities,
   fetchDoctors,
   fetchSpecializations
-} from "../api/client"
-import type { DoctorSearchFilters } from "../api/types"
-import { cityKeys, doctorSearchKeys, specializationKeys } from "./queryKeys"
+} from '../api/client'
+import type {
+  DoctorsOffice,
+  DoctorSearchFilters,
+  SearchCity,
+  SearchSpecialization
+} from '../api/types'
+import { assertNotUndefined, type QueryHookOptions } from './queryHook'
+import { cityKeys, doctorSearchKeys, specializationKeys } from './queryKeys'
 
-type UseDoctorSearchProps = {
-  filters: DoctorSearchFilters
-  enabled?: boolean
-}
-
+type UseDoctorSearchProps = QueryHookOptions<DoctorSearchFilters, DoctorsOffice[]>
 export function useDoctorSearch({
-  filters,
-  enabled = true,
+  parameters,
+  ...options
 }: UseDoctorSearchProps) {
   return useQuery({
-    queryKey: doctorSearchKeys.list(filters),
-    queryFn: () => fetchDoctors(filters),
-    enabled,
+    ...options,
+    queryKey: doctorSearchKeys.list(parameters),
+    queryFn: () => fetchDoctors(assertNotUndefined(parameters)),
   })
 }
 
-type UseCitiesProps = {
-  search: string
-  locale: DoctorSearchFilters["locale"]
-  enabled?: boolean
+type UseCitiesParameter = {
+  search: string,
+  locale: DoctorSearchFilters['locale'],
 }
 
-export function useCities({ search, locale, enabled = true }: UseCitiesProps) {
+type UseCitiesProps = QueryHookOptions<UseCitiesParameter, SearchCity[]>
+
+export function useCities({
+  parameters,
+  ...options
+}: UseCitiesProps) {
   return useQuery({
-    queryKey: cityKeys.list(search, locale),
-    queryFn: () => fetchCities({ search, locale }),
-    enabled,
+    ...options,
+    queryKey: cityKeys.list(parameters),
+    queryFn: () => fetchCities(assertNotUndefined(parameters)),
   })
 }
 
-type UseSpecializationsProps = {
-  search: string
-  locale: DoctorSearchFilters["locale"]
-  enabled?: boolean
+type UseSpecializationsParameter = {
+  search: string,
+  locale: DoctorSearchFilters['locale'],
 }
+type UseSpecializationsProps = QueryHookOptions<UseSpecializationsParameter, SearchSpecialization[]>
 
 export function useSpecializations({
-  search,
-  locale,
-  enabled = true,
+  parameters,
+  ...options
 }: UseSpecializationsProps) {
   return useQuery({
-    queryKey: specializationKeys.list(search, locale),
-    queryFn: () => fetchSpecializations({ search, locale }),
-    enabled,
+    ...options,
+    queryKey: specializationKeys.list(parameters),
+    queryFn: () => fetchSpecializations(assertNotUndefined(parameters)),
   })
 }

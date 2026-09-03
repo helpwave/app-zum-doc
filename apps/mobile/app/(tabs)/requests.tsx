@@ -57,11 +57,12 @@ export default function RequestsScreen() {
     doctorId?: string | string[]
   }>()
   const doctorId = typeof doctorIdParam === "string" ? doctorIdParam : null
-  const homeQuery = useHomeSummary({ locale })
+  const homeQuery = useHomeSummary({ parameters: { locale } })
   const doctorQuery = useDoctorsOffice({
-    doctorsOfficeId: doctorId,
-    locale,
-    enabled: doctorId != null,
+    parameters: doctorId === null ? undefined : {
+      id: doctorId,
+      locale,
+    }
   })
   const [selectedRequestType, setSelectedRequestType] = useState<PatientRequestType | null>(null)
 

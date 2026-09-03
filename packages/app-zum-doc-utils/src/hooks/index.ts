@@ -1,3 +1,4 @@
+export * from './queryHook'
 export * from './queryKeys'
 export * from './useAppointments'
 export * from './useConversations'

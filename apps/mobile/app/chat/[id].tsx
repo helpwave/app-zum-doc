@@ -35,8 +35,8 @@ export default function ChatThreadScreen() {
   const router = useRouter()
   const markedReadFor = useRef<string | null>(null)
 
-  const conversationQuery = useConversation({ conversationId })
-  const messagesQuery = useMessages({ conversationId })
+  const conversationQuery = useConversation({ parameters: { conversationId} })
+  const messagesQuery = useMessages({ parameters: { conversationId } })
   const markRead = useMarkConversationRead()
   const sendMessage = useSendMessage({ conversationId })
   const resolveCard = useResolveCardAction({ conversationId })

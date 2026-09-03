@@ -25,12 +25,13 @@ export default function DoctorDetailScreen() {
   const locale = toAppLocale(localizationLocale)
   const router = useRouter()
   const officeQuery = useDoctorsOffice({
-    doctorsOfficeId,
-    locale,
-    enabled: doctorsOfficeId != null,
+    parameters: doctorsOfficeId === null ? undefined : {
+      id: doctorsOfficeId,
+      locale,
+    }
   })
   const myDoctorsQuery = useMyDoctors()
-  const homeQuery = useHomeSummary({ locale })
+  const homeQuery = useHomeSummary({ parameters: { locale } })
   const addMyDoctor = useAddMyDoctor()
   const removeMyDoctor = useRemoveMyDoctor()
   const office = officeQuery.data

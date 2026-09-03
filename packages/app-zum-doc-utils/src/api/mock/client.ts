@@ -14,8 +14,8 @@ import {
   specializationsSeed,
   type DoctorsOfficeSeed,
   type LocalizedDoctorSeed,
-  type LocalizedDoctorServiceSeed,
-} from "./data"
+  type LocalizedDoctorServiceSeed
+} from './data'
 import {
   WeekdayUtils,
   type Appointment,
@@ -45,24 +45,24 @@ import {
   type SearchCity,
   type SearchSpecialization,
   type StructuredCardMessage,
-  type TextMessage,
-} from "../types"
+  type TextMessage
+} from '../types'
 import {
   formatAppointmentRequestTitle,
   formatPrescriptionRequestTitle,
-  formatReferralRequestTitle,
-} from "../requestTitle"
+  formatReferralRequestTitle
+} from '../requestTitle'
 
 type HomeSummary = {
-  myDoctors: DoctorsOffice[]
-  recentRequests: RequestBase[]
+  myDoctors: DoctorsOffice[],
+  recentRequests: RequestBase[],
 }
 
 const delayMs = 550
 
 let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
 let messagesState: Record<string, Message[]> = structuredClone(
-  messagesByConversation,
+  messagesByConversation
 )
 let myDoctorIds = new Set<string>(initialMyDoctorIds)
 let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
@@ -82,17 +82,17 @@ function sleep(ms: number): Promise<void> {
 
 async function withMockLatency<T>(
   work: () => T,
-  options?: { failKey?: string },
+  options?: { failKey?: string }
 ): Promise<T> {
   await sleep(delayMs)
 
   const shouldFail =
     mockApiConfig.forceFail ||
-    options?.failKey?.toLowerCase() === "fehler" ||
-    process.env.EXPO_PUBLIC_MOCK_FAIL === "1"
+    options?.failKey?.toLowerCase() === 'fehler' ||
+    process.env.EXPO_PUBLIC_MOCK_FAIL === '1'
 
   if (shouldFail) {
-    throw new Error("Die Daten konnten nicht geladen werden. Bitte erneut versuchen.")
+    throw new Error('Die Daten konnten nicht geladen werden. Bitte erneut versuchen.')
   }
 
   return work()
@@ -100,35 +100,34 @@ async function withMockLatency<T>(
 
 export async function fetchConversations(): Promise<ConversationPreview[]> {
   return withMockLatency(() =>
-    conversationsState.map((conversation) => ({ ...conversation })),
-  )
+    conversationsState.map((conversation) => ({ ...conversation })))
 }
 
-export async function fetchConversation(
+export async function fetchConversation(params: {
   conversationId: string,
-): Promise<ConversationPreview> {
+}): Promise<ConversationPreview> {
   return withMockLatency(() => {
     const conversation = conversationsState.find(
-      (item) => item.id === conversationId,
+      (item) => item.id === params.conversationId
     )
     if (!conversation) {
-      throw new Error("Unterhaltung nicht gefunden.")
+      throw new Error('Unterhaltung nicht gefunden.')
     }
     return { ...conversation }
   })
 }
 
-export async function fetchMessages(
+export async function fetchMessages(params: {
   conversationId: string,
-): Promise<Message[]> {
+}): Promise<Message[]> {
   return withMockLatency(() => {
-    const messages = messagesState[conversationId] ?? []
+    const messages = messagesState[params.conversationId] ?? []
     return messages.map((message) => ({ ...message }))
   })
 }
 
 export async function markConversationRead(
-  conversationId: string,
+  conversationId: string
 ): Promise<ConversationPreview[]> {
   return withMockLatency(() => {
     conversationsState = conversationsState.map((conversation) => {
@@ -143,15 +142,15 @@ export async function markConversationRead(
 
 export async function sendMessage(
   conversationId: string,
-  body: string,
+  body: string
 ): Promise<Message[]> {
   return withMockLatency(() => {
     const now = new Date()
     const message: TextMessage = {
       id: `msg-local-${Date.now()}`,
-      type: "text",
-      direction: "outgoing",
-      status: "sent",
+      type: 'text',
+      direction: 'outgoing',
+      status: 'sent',
       body,
       time: now,
     }
@@ -166,8 +165,8 @@ export async function sendMessage(
       id: message.id,
       preview: body,
       time: now,
-      direction: "outgoing",
-      status: "sent",
+      direction: 'outgoing',
+      status: 'sent',
     }
 
     conversationsState = conversationsState.map((conversation) => {
@@ -188,12 +187,12 @@ export async function sendMessage(
 export async function resolveCardAction(
   conversationId: string,
   messageId: string,
-  actionId: string,
+  actionId: string
 ): Promise<Message[]> {
   return withMockLatency(() => {
     const existing = messagesState[conversationId] ?? []
     const next: Message[] = existing.map((message) => {
-      if (message.id !== messageId || message.type !== "card") {
+      if (message.id !== messageId || message.type !== 'card') {
         return message
       }
 
@@ -205,11 +204,11 @@ export async function resolveCardAction(
       }
     })
 
-    if (actionId === "accept") {
+    if (actionId === 'accept') {
       next.push({
         id: `msg-system-${Date.now()}`,
-        type: "system",
-        body: "Termin bestätigt · Mi. 8. Juli 2026 · 15:00 Uhr",
+        type: 'system',
+        body: 'Termin bestätigt · Mi. 8. Juli 2026 · 15:00 Uhr',
       })
     }
 
@@ -222,13 +221,13 @@ export async function resolveCardAction(
   })
 }
 
-export async function fetchHomeSummary(locale: AppLocale): Promise<HomeSummary> {
+export async function fetchHomeSummary(params: { locale: AppLocale }): Promise<HomeSummary> {
   return withMockLatency(() => ({
     myDoctors: [...myDoctorIds].flatMap((id) => {
       const office = doctorsOfficesSeed[id]
-      return office ? [toDoctorsOffice(office, locale)] : []
+      return office ? [toDoctorsOffice(office, params.locale)] : []
     }),
-    recentRequests: buildRecentRequests(locale),
+    recentRequests: buildRecentRequests(params.locale),
   }))
 }
 
@@ -236,30 +235,29 @@ export async function fetchPatientProfile(): Promise<PatientProfile> {
   return withMockLatency(() => ({ ...patientProfileSeed }))
 }
 
-export async function fetchPatientProfileById(
+export async function fetchPatientProfileById(params: {
   profileId: string,
-): Promise<PatientProfile> {
+}): Promise<PatientProfile> {
   return withMockLatency(() => {
-    if (patientProfileSeed.id === profileId) {
+    if (patientProfileSeed.id === params.profileId) {
       return { ...patientProfileSeed }
     }
-    throw new Error("Profil nicht gefunden.")
+    throw new Error('Profil nicht gefunden.')
   })
 }
 
 export async function fetchPatientProfiles(): Promise<PatientProfileSummary[]> {
   return withMockLatency(() =>
-    patientProfilesSeed.map((profile) => ({ ...profile })),
-  )
+    patientProfilesSeed.map((profile) => ({ ...profile })))
 }
 
 function resolveDoctorsOffice(
   doctorsOfficeId: string,
-  locale: AppLocale,
+  locale: AppLocale
 ): DoctorsOffice {
   const office = doctorsOfficesSeed[doctorsOfficeId]
   if (!office) {
-    throw new Error("Arztpraxis nicht gefunden.")
+    throw new Error('Arztpraxis nicht gefunden.')
   }
   return toDoctorsOffice(office, locale)
 }
@@ -274,12 +272,12 @@ function buildRecentRequests(locale: AppLocale): PatientRequest[] {
 
 function toAppointment(
   record: AppointmentRecord,
-  locale: AppLocale,
+  locale: AppLocale
 ): Appointment {
   const { doctorsOfficeId, ...rest } = record
   return {
     ...rest,
-    kind: "appointment",
+    kind: 'appointment',
     title: formatAppointmentRequestTitle(record.date, record.time, locale),
     doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
   }
@@ -287,13 +285,13 @@ function toAppointment(
 
 function toPrescription(
   record: PrescriptionRecord,
-  locale: AppLocale,
+  locale: AppLocale
 ): Prescription {
   const { doctorsOfficeId, ...rest } = record
   const medicationNames = record.medications.map((medication) => medication.name)
   return {
     ...rest,
-    kind: "prescription",
+    kind: 'prescription',
     title: formatPrescriptionRequestTitle(medicationNames),
     doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
     medications: rest.medications.map((medication) => ({ ...medication })),
@@ -304,7 +302,7 @@ function toReferral(record: ReferralRecord, locale: AppLocale): Referral {
   const { doctorsOfficeId, ...rest } = record
   return {
     ...rest,
-    kind: "referral",
+    kind: 'referral',
     title: formatReferralRequestTitle(record.specialization),
     doctorsOffice: resolveDoctorsOffice(doctorsOfficeId, locale),
   }
@@ -312,12 +310,12 @@ function toReferral(record: ReferralRecord, locale: AppLocale): Referral {
 
 export async function fetchAppointment(
   appointmentId: string,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Appointment> {
   return withMockLatency(() => {
     const appointment = appointmentsState.find((item) => item.id === appointmentId)
     if (!appointment) {
-      throw new Error("Termin nicht gefunden.")
+      throw new Error('Termin nicht gefunden.')
     }
     return toAppointment(appointment, locale)
   })
@@ -325,18 +323,18 @@ export async function fetchAppointment(
 
 export async function createAppointment(
   input: CreateAppointmentInput,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Appointment> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[input.doctorsOfficeId]
     if (!office) {
-      throw new Error("Arztpraxis nicht gefunden.")
+      throw new Error('Arztpraxis nicht gefunden.')
     }
     const profile =
       patientProfilesSeed.find((item) => item.id === input.profileId)
       ?? patientProfilesSeed[0]
     if (!profile) {
-      throw new Error("Profil nicht gefunden.")
+      throw new Error('Profil nicht gefunden.')
     }
 
     const appointment: AppointmentRecord = {
@@ -347,7 +345,7 @@ export async function createAppointment(
       time: input.time,
       isEmergency: input.isEmergency,
       note: input.note,
-      status: "requested",
+      status: 'requested',
     }
     appointmentsState = [appointment, ...appointmentsState]
     return toAppointment(appointment, locale)
@@ -356,54 +354,53 @@ export async function createAppointment(
 
 export async function cancelAppointment(
   appointmentId: string,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Appointment> {
   return withMockLatency(() => {
     const existing = appointmentsState.find((item) => item.id === appointmentId)
     if (!existing) {
-      throw new Error("Termin nicht gefunden.")
+      throw new Error('Termin nicht gefunden.')
     }
     const appointment: AppointmentRecord = {
       ...existing,
-      status: "cancelled",
+      status: 'cancelled',
     }
     appointmentsState = appointmentsState.map((item) =>
-      item.id === appointmentId ? appointment : item,
-    )
+      item.id === appointmentId ? appointment : item)
     return toAppointment(appointment, locale)
   })
 }
 
-export async function fetchPrescription(
-  prescriptionId: string,
+export async function fetchPrescription(params: {
+  id: string,
   locale: AppLocale,
-): Promise<Prescription> {
+}): Promise<Prescription> {
   return withMockLatency(() => {
-    const prescription = prescriptionsState.find((item) => item.id === prescriptionId)
+    const prescription = prescriptionsState.find((item) => item.id === params.id)
     if (!prescription) {
-      throw new Error("Rezept nicht gefunden.")
+      throw new Error('Rezept nicht gefunden.')
     }
-    return toPrescription(prescription, locale)
+    return toPrescription(prescription, params.locale)
   })
 }
 
 export async function createPrescription(
   input: CreatePrescriptionInput,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Prescription> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[input.doctorsOfficeId]
     if (!office) {
-      throw new Error("Arztpraxis nicht gefunden.")
+      throw new Error('Arztpraxis nicht gefunden.')
     }
     const profile =
       patientProfilesSeed.find((item) => item.id === input.profileId)
       ?? patientProfilesSeed[0]
     if (!profile) {
-      throw new Error("Profil nicht gefunden.")
+      throw new Error('Profil nicht gefunden.')
     }
     if (input.medications.length === 0) {
-      throw new Error("Bitte fügen Sie mindestens ein Medikament hinzu.")
+      throw new Error('Bitte fügen Sie mindestens ein Medikament hinzu.')
     }
 
     const prescription: PrescriptionRecord = {
@@ -417,7 +414,7 @@ export async function createPrescription(
         name: medication.name,
         size: medication.size,
       })),
-      status: "inProgress",
+      status: 'inProgress',
     }
     prescriptionsState = [prescription, ...prescriptionsState]
     return toPrescription(prescription, locale)
@@ -426,54 +423,53 @@ export async function createPrescription(
 
 export async function cancelPrescription(
   prescriptionId: string,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Prescription> {
   return withMockLatency(() => {
     const existing = prescriptionsState.find((item) => item.id === prescriptionId)
     if (!existing) {
-      throw new Error("Rezept nicht gefunden.")
+      throw new Error('Rezept nicht gefunden.')
     }
     const prescription: PrescriptionRecord = {
       ...existing,
-      status: "cancelled",
+      status: 'cancelled',
     }
     prescriptionsState = prescriptionsState.map((item) =>
-      item.id === prescriptionId ? prescription : item,
-    )
+      item.id === prescriptionId ? prescription : item)
     return toPrescription(prescription, locale)
   })
 }
 
-export async function fetchReferral(
-  referralId: string,
+export async function fetchReferral(params: {
+  id: string,
   locale: AppLocale,
-): Promise<Referral> {
+}): Promise<Referral> {
   return withMockLatency(() => {
-    const referral = referralsState.find((item) => item.id === referralId)
+    const referral = referralsState.find((item) => item.id === params.id)
     if (!referral) {
-      throw new Error("Überweisung nicht gefunden.")
+      throw new Error('Überweisung nicht gefunden.')
     }
-    return toReferral(referral, locale)
+    return toReferral(referral, params.locale)
   })
 }
 
 export async function createReferral(
   input: CreateReferralInput,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Referral> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[input.doctorsOfficeId]
     if (!office) {
-      throw new Error("Arztpraxis nicht gefunden.")
+      throw new Error('Arztpraxis nicht gefunden.')
     }
     const profile =
       patientProfilesSeed.find((item) => item.id === input.profileId)
       ?? patientProfilesSeed[0]
     if (!profile) {
-      throw new Error("Profil nicht gefunden.")
+      throw new Error('Profil nicht gefunden.')
     }
     if (input.specialization.trim().length === 0) {
-      throw new Error("Bitte wählen Sie eine Fachrichtung aus.")
+      throw new Error('Bitte wählen Sie eine Fachrichtung aus.')
     }
 
     const referral: ReferralRecord = {
@@ -482,7 +478,7 @@ export async function createReferral(
       profileId: profile.id,
       specialization: input.specialization.trim(),
       reason: input.reason,
-      status: "inProgress",
+      status: 'inProgress',
     }
     referralsState = [referral, ...referralsState]
     return toReferral(referral, locale)
@@ -491,35 +487,33 @@ export async function createReferral(
 
 export async function cancelReferral(
   referralId: string,
-  locale: AppLocale,
+  locale: AppLocale
 ): Promise<Referral> {
   return withMockLatency(() => {
     const existing = referralsState.find((item) => item.id === referralId)
     if (!existing) {
-      throw new Error("Überweisung nicht gefunden.")
+      throw new Error('Überweisung nicht gefunden.')
     }
     const referral: ReferralRecord = {
       ...existing,
-      status: "cancelled",
+      status: 'cancelled',
     }
     referralsState = referralsState.map((item) =>
-      item.id === referralId ? referral : item,
-    )
+      item.id === referralId ? referral : item)
     return toReferral(referral, locale)
   })
 }
 
 export async function fetchPatientMedications(): Promise<Medication[]> {
   return withMockLatency(() =>
-    patientMedicationsState.map((medication) => ({ ...medication })),
-  )
+    patientMedicationsState.map((medication) => ({ ...medication })))
 }
 
 export async function searchMedications(params: {
-  search?: string
+  search?: string,
 }): Promise<MedicationCatalogItem[]> {
   return withMockLatency(() => {
-    const query = params.search?.trim().toLowerCase() ?? ""
+    const query = params.search?.trim().toLowerCase() ?? ''
     return medicationCatalogSeed
       .filter((item) => !query || matchesQuery(item.name, query))
       .map((item) => ({ ...item }))
@@ -527,20 +521,20 @@ export async function searchMedications(params: {
 }
 
 export async function addPatientMedication(params: {
-  catalogId: string
-  size: MedicationSize
+  catalogId: string,
+  size: MedicationSize,
 }): Promise<Medication[]> {
   return withMockLatency(() => {
     const catalogItem = medicationCatalogSeed.find(
-      (item) => item.id === params.catalogId,
+      (item) => item.id === params.catalogId
     )
     if (!catalogItem) {
-      throw new Error("Medikament nicht gefunden.")
+      throw new Error('Medikament nicht gefunden.')
     }
 
     const alreadyAdded = patientMedicationsState.some(
       (medication) =>
-        medication.name === catalogItem.name && medication.size === params.size,
+        medication.name === catalogItem.name && medication.size === params.size
     )
     if (!alreadyAdded) {
       patientMedicationsState = [
@@ -558,11 +552,11 @@ export async function addPatientMedication(params: {
 }
 
 export async function removePatientMedication(
-  medicationId: string,
+  medicationId: string
 ): Promise<Medication[]> {
   return withMockLatency(() => {
     patientMedicationsState = patientMedicationsState.filter(
-      (medication) => medication.id !== medicationId,
+      (medication) => medication.id !== medicationId
     )
     return patientMedicationsState.map((medication) => ({ ...medication }))
   })
@@ -572,13 +566,13 @@ function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): strin
   return (
     office.specialization?.[locale]
     ?? specializationsSeed.find((item) => item.id === office.specializationId)?.labels[locale]
-    ?? ""
+    ?? ''
   )
 }
 
 function localizedDoctorServices(
   services: LocalizedDoctorServiceSeed[],
-  locale: AppLocale,
+  locale: AppLocale
 ) {
   return services.map((service) => ({
     id: service.id,
@@ -589,7 +583,7 @@ function localizedDoctorServices(
 
 function localizedDoctors(
   doctors: LocalizedDoctorSeed[],
-  locale: AppLocale,
+  locale: AppLocale
 ) {
   return doctors.map((doctor) => ({
     id: doctor.id,
@@ -599,7 +593,7 @@ function localizedDoctors(
 }
 
 function cloneOpeningHours(
-  hours: DoctorsOfficeOpeningHours,
+  hours: DoctorsOfficeOpeningHours
 ): DoctorsOfficeOpeningHours {
   return WeekdayUtils.array.reduce((next, day) => {
     next[day] = [...(hours[day] ?? [])]
@@ -609,7 +603,7 @@ function cloneOpeningHours(
 
 function toDoctorsOffice(
   office: DoctorsOfficeSeed,
-  locale: AppLocale,
+  locale: AppLocale
 ): DoctorsOffice {
   return {
     id: office.id,
@@ -623,11 +617,11 @@ function toDoctorsOffice(
       office.doctors ?? [
         {
           id: `${office.id}-doctor`,
-          name: { "de-DE": office.name, "en-US": office.name },
+          name: { 'de-DE': office.name, 'en-US': office.name },
           imageUri: office.imageUri ?? undefined,
         },
       ],
-      locale,
+      locale
     ),
     address: { ...office.address },
     websiteUrl: office.websiteUrl,
@@ -641,16 +635,16 @@ export async function fetchMyDoctors(): Promise<MyDoctors> {
   }))
 }
 
-export async function fetchDoctorsOffice(
-  doctorsOfficeId: string,
+export async function fetchDoctorsOffice(params: {
+  id: string,
   locale: AppLocale,
-): Promise<DoctorsOffice> {
+}): Promise<DoctorsOffice> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[doctorsOfficeId]
+    const office = doctorsOfficesSeed[params.id]
     if (!office) {
-      throw new Error("Arztpraxis nicht gefunden.")
+      throw new Error('Arztpraxis nicht gefunden.')
     }
-    return toDoctorsOffice(office, locale)
+    return toDoctorsOffice(office, params.locale)
   })
 }
 
@@ -658,7 +652,7 @@ export async function addMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
-      throw new Error("Arztpraxis nicht gefunden.")
+      throw new Error('Arztpraxis nicht gefunden.')
     }
     myDoctorIds.add(office.id)
     return { doctorIds: [...myDoctorIds] }
@@ -669,7 +663,7 @@ export async function removeMyDoctor(doctorsOfficeId: string): Promise<MyDoctors
   return withMockLatency(() => {
     const office = doctorsOfficesSeed[doctorsOfficeId]
     if (!office) {
-      throw new Error("Arztpraxis nicht gefunden.")
+      throw new Error('Arztpraxis nicht gefunden.')
     }
     myDoctorIds.delete(office.id)
     return { doctorIds: [...myDoctorIds] }
@@ -681,11 +675,11 @@ function matchesQuery(haystack: string, query: string): boolean {
 }
 
 export async function fetchCities(params: {
-  search?: string
-  locale: AppLocale
+  search?: string,
+  locale: AppLocale,
 }): Promise<SearchCity[]> {
   return withMockLatency(() => {
-    const query = params.search?.trim().toLowerCase() ?? ""
+    const query = params.search?.trim().toLowerCase() ?? ''
     return citiesSeed
       .map((city) => ({
         id: city.id,
@@ -696,11 +690,11 @@ export async function fetchCities(params: {
 }
 
 export async function fetchSpecializations(params: {
-  search?: string
-  locale: AppLocale
+  search?: string,
+  locale: AppLocale,
 }): Promise<SearchSpecialization[]> {
   return withMockLatency(() => {
-    const query = params.search?.trim().toLowerCase() ?? ""
+    const query = params.search?.trim().toLowerCase() ?? ''
     return specializationsSeed
       .map((specialization) => ({
         id: specialization.id,
@@ -711,10 +705,10 @@ export async function fetchSpecializations(params: {
 }
 
 export async function fetchDoctors(
-  filters: DoctorSearchFilters,
+  filters: DoctorSearchFilters
 ): Promise<DoctorsOffice[]> {
   return withMockLatency(() => {
-    const query = filters.query?.trim().toLowerCase() ?? ""
+    const query = filters.query?.trim().toLowerCase() ?? ''
     const cityById = new Map(citiesSeed.map((city) => [city.id, city]))
 
     return Object.values(doctorsOfficesSeed)
@@ -733,7 +727,7 @@ export async function fetchDoctors(
           return true
         }
 
-        const cityLabel = cityById.get(office.cityId)?.labels[filters.locale] ?? ""
+        const cityLabel = cityById.get(office.cityId)?.labels[filters.locale] ?? ''
         const specializationLabel = localizedSpecialty(office, filters.locale)
         const haystack = `${office.name} ${specializationLabel} ${cityLabel}`
         return matchesQuery(haystack, query)
