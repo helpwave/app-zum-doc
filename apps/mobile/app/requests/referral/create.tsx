@@ -15,7 +15,6 @@ import {
 import {
   Button,
   Select,
-  SelectOption,
   Textarea,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
@@ -26,7 +25,6 @@ import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 export default function CreateReferralScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
@@ -138,7 +136,7 @@ export default function CreateReferralScreen() {
     <KeyboardAvoidingView
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
@@ -168,7 +166,6 @@ export default function CreateReferralScreen() {
           }
         }}
         loadingLabel={t("loadingHome")}
-        style={{ backgroundColor: colors.background }}
       >
         <ScrollView
           contentContainerStyle={{
@@ -187,7 +184,7 @@ export default function CreateReferralScreen() {
               style={{ width: "100%" }}
             >
               {doctorOptions.map((option) => (
-                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+                <Select.Option key={option.id} value={option.id} label={option.label} />
               ))}
             </Select>
           </LabeledField>
@@ -200,7 +197,7 @@ export default function CreateReferralScreen() {
               style={{ width: "100%" }}
             >
               {profileOptions.map((option) => (
-                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+                <Select.Option key={option.id} value={option.id} label={option.label} />
               ))}
             </Select>
           </LabeledField>
@@ -213,7 +210,7 @@ export default function CreateReferralScreen() {
               style={{ width: "100%" }}
             >
               {specializationOptions.map((option) => (
-                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+                <Select.Option key={option.id} value={option.id} label={option.label} />
               ))}
             </Select>
           </LabeledField>

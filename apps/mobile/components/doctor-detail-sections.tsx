@@ -4,8 +4,7 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { WeekdayUtils, doctorsOfficeStatusFromOpeningHours, formatAddress, formatAddressLines, hasAddressContent, type DoctorsOffice, type RequestBase, type PatientRequestType } from "@app-zum-doc/utils/api"
 import { homeQuickActions } from "@/lib/quick-actions"
-import { Button, Card, Divider, IconButton, ListActionItem, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
-import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
+import { Button, Card, Divider, IconButton, ListActionItem, ListItem, ListNavigationItem, ThemedIcon, ThemedText } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
@@ -20,20 +19,19 @@ import {
   Sparkles,
   UserMinus,
 } from "lucide-react-native"
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import {
-  ActivityIndicator,
   Alert,
+  ColorValue,
   Linking,
   Modal,
   Platform,
   Pressable,
-  Text,
   View,
   useWindowDimensions,
 } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Section } from "./section"
+import { OKLCHUtils } from "@helpwave/hightide-design/utils"
 
 const doctorPortrait = require("../assets/images/doctor-portrait.png")
 
@@ -62,8 +60,6 @@ export function DoctorDetailHero({
 }: DoctorDetailHeroProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
-  const insets = useSafeAreaInsets()
   const window = useWindowDimensions()
   const moreButtonRef = useRef<View>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -97,10 +93,18 @@ export function DoctorDetailHero({
     }, 150)
   }
 
+  const heroColors = useMemo(() => {
+    const color = theme.colors.primary.color
+    const start = OKLCHUtils.changeLightness(color, 0.45)
+    const end = OKLCHUtils.changeLightness(color, 0.6)
+    const gradient: readonly [ColorValue, ColorValue, ...ColorValue[]] = [start, end]
+    return gradient
+  }, [theme.colors.primary.color])
+
   return (
     <>
       <LinearGradient
-        colors={[colors.heroStart, colors.heroEnd]}
+        colors={heroColors}
         start={{ x: 0.05, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -109,6 +113,7 @@ export function DoctorDetailHero({
         }}
       >
         <AppBar
+          color={{color: "#FFFFFF00", onColor: theme.colors.primary.onColor}}
           trailing={
             isMyDoctor ? (
               <View ref={moreButtonRef} collapsable={false}>
@@ -120,14 +125,11 @@ export function DoctorDetailHero({
                   disabled={isRemovingDoctor}
                   onPress={openMenu}
                   variant="foreground"
-                  color={theme.colors.surfaceInverse}
+                  color={{color:  theme.colors.primary.onColor, onColor: "#FFFFFF00"}}
                 />
               </View>
             ) : null
           }
-          style={{
-            backgroundColor: "#FFFFFF00"
-          }}
         />
 
         <View 
@@ -154,40 +156,18 @@ export function DoctorDetailHero({
               ))}
             </View>
           ) : (
-            <Pressable
+            <Button
               accessibilityRole="button"
               accessibilityState={{ disabled: isAddingDoctor, busy: isAddingDoctor }}
-              disabled={isAddingDoctor}
               onPress={onAddDoctor}
+              variant="tonal"
               style={{
-                height: theme.semantics.control.md.size,
-                borderRadius: 9999,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: theme.spacing.md,
-                backgroundColor: colors.ctaBackground,
-                opacity: isAddingDoctor ? 0.7 : 1,
+                ...StyleAdapterUtils.borderRadius({type: "all",  value: 999 }),
               }}
+              leadingIcon={Plus}
             >
-              {isAddingDoctor ? (
-                <ActivityIndicator
-                  size="small"
-                  color={colors.ctaText}
-                />
-              ) : (
-                <Plus size={theme.icongraphy.sizes.sm} color={colors.ctaText} strokeWidth={2.2} />
-              )}
-              <Text
-                style={{
-                  ...theme.typography.body.md,
-                  fontWeight: theme.fontWeights.medium,
-                  color: colors.ctaText,
-                }}
-              >
-                {t("addAsMyDoctor")}
-              </Text>
-            </Pressable>
+              {t("addAsMyDoctor")}
+            </Button>
           )}
         </View>
       </LinearGradient>
@@ -237,7 +217,6 @@ export function DoctorSummaryCard({
 }: DoctorSummaryCardProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
   const status = doctorsOfficeStatusFromOpeningHours(office.openingHours)
   const imageSource =
     office.imageUri === "doctor-portrait"
@@ -254,20 +233,20 @@ export function DoctorSummaryCard({
         flexDirection: "row",
         gap: theme.spacing.md + theme.spacing.xs,
         padding: theme.spacing.md + theme.spacing.xs,
-        height: 137,
-        backgroundColor: colors.cardBackground,
+        height: theme.semantics.touchTargetSize({}) * 3,
+        backgroundColor: theme.colors.surface.color,
         boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
       }}
     >
       <Image
         source={imageSource}
         style={{
-          width: 97,
+          width: theme.semantics.touchTargetSize({}) * 2,
           flexGrow: 0,
           flexShrink: 0,
           borderRadius: theme.borderRadius.md,
           borderWidth: theme.borderWidth.thin,
-          borderColor: colors.cardBorder,
+          borderColor: theme.colors.border,
         }}
         contentFit="cover"
       />
@@ -279,22 +258,22 @@ export function DoctorSummaryCard({
         }}
       >
         <View style={{ gap: theme.spacing.xs }}>
-          <Text
+          <ThemedText
             style={{
               ...theme.typography.heading.md,
-              color: colors.name,
+              color: theme.colors.surface.onColor,
             }}
           >
             {office.name}
-          </Text>
-          <Text
+          </ThemedText>
+          <ThemedText
+            appearance="description"
             style={{
               ...theme.typography.body.sm,
-              color: colors.specialty,
             }}
           >
             {office.specialization}
-          </Text>
+          </ThemedText>
         </View>
         <View
           style={{
@@ -309,18 +288,18 @@ export function DoctorSummaryCard({
               height: 12,
               borderRadius: 9999,
               backgroundColor: status === "open"
-                ? colors.openDot
-                : colors.closedDot,
+                ? theme.colors.primary.color
+                : theme.colors.disabled.color,
             }}
           />
-          <Text
+          <ThemedText
+            appearance="description"
             style={{
               ...theme.typography.body.sm,
-              color: colors.specialty,
             }}
           >
             {t("officeStatus", { status })}
-          </Text>
+          </ThemedText>
         </View>
       </View>
     </View>
@@ -377,7 +356,6 @@ export function OpeningHoursSection({
 }: OpeningHoursSectionProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
 
   return (
     <Section title={t("openingHours")}>
@@ -393,19 +371,19 @@ export function OpeningHoursSection({
               style={[
                 !isLast && {
                   borderBottomWidth: theme.borderWidth.thin,
-                  borderBottomColor: colors.rowDivider,
+                  borderBottomColor: theme.colors.border,
                 },
               ]}
               title={t("weekday", { day })}
               trailing={isClosed ? (
-                <Text
+                <ThemedText
+                  appearance="description"
                   style={{
                     ...theme.typography.body.md,
-                    color: colors.rowMuted,
                   }}
                 >
                   {t("closed")}
-                </Text>
+                </ThemedText>
               ) : (
                 <View
                   style={{
@@ -414,15 +392,14 @@ export function OpeningHoursSection({
                   }}
                 >
                   {times.map((time) => (
-                    <Text
+                    <ThemedText
                       key={time}
                       style={{
                         ...theme.typography.body.md,
-                        color: colors.rowValue,
                       }}
                     >
                       {time}
-                    </Text>
+                    </ThemedText>
                   ))}
                 </View>
               )}

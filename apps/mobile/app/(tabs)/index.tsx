@@ -12,7 +12,6 @@ import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
 import { ChevronRight } from "lucide-react-native"
 import { ScrollView, View } from "react-native"
-import { useIsFocused } from "@react-navigation/native"
 
 function ShowAllButton({ onPress }: { onPress: () => void }) {
   const t = useAppTranslation()
@@ -35,23 +34,16 @@ function ShowAllButton({ onPress }: { onPress: () => void }) {
 export default function HomeScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
   const homeQuery = useHomeSummary({ locale })
-  const isFocused = useIsFocused()
-  const sectionTitleStyle = {
-    ...theme.typography.heading.sm,
-    fontWeight: theme.fontWeights.bold,
-    color: colors.sectionTitle,
-  }
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.screenBackground,
+        backgroundColor: theme.colors.background.color,
       }}
     >
       <QueryState
@@ -62,7 +54,6 @@ export default function HomeScreen() {
           void homeQuery.refetch()
         }}
         loadingLabel={t("loadingHome")}
-        style={{ backgroundColor: colors.screenBackground }}
       >
         {homeQuery.data ? (
           <ScrollView
@@ -85,14 +76,13 @@ export default function HomeScreen() {
 
             <View
               style={{
-                paddingTop: theme.spacing.xl,
+                paddingTop: theme.spacing.lg,
                 gap: theme.spacing.xxl,
                 paddingHorizontal: theme.spacing.lg,
               }}
             >
               <Section
                 title={t("myDoctors")}
-                titleStyle={sectionTitleStyle}
                 trailing={(
                   <ShowAllButton
                     onPress={() => {
@@ -129,7 +119,6 @@ export default function HomeScreen() {
 
               <Section
                 title={t("recentRequests")}
-                titleStyle={sectionTitleStyle}
                 trailing={(
                   <ShowAllButton
                     onPress={() => {

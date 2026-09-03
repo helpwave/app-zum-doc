@@ -26,6 +26,7 @@ import {
   View,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { AppBar } from "./app-bar"
 
 type StartHeroProps = {
   onSearchPress: () => void
@@ -49,75 +50,85 @@ export function StartHero({
       start={{ x: 0.05, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
-        paddingHorizontal: theme.spacing.lg,
-        paddingTop: insets.top + theme.spacing.md + theme.spacing.sm,
-        paddingBottom: theme.spacing.lg + theme.spacing.sm,
-        gap: theme.spacing.xl - theme.spacing.xs,
         overflow: "hidden",
       }}
     >
-      <ThemedText
-        style={{
-          ...theme.typography.heading.lg,
-          fontFamily: theme.fontFamilies.accent,
-          fontWeight: theme.fontWeights.semibold,
-          textAlign: "center",
-          color: theme.colors.primary.onColor,
-        }}
-      >
-        {t("appName")}
-      </ThemedText>
-      
-
-      <ThemedPressable
-        accessibilityRole="button"
-        accessibilityLabel={t("searchDoctor")}
-        onPress={onSearchPress}
-        color={theme.colors.surface}
-        coloringStyle="filled"
-        stateLayerStyle={{
-          borderRadius: 999,
-        }}
-        style={{
-          borderRadius: 9999,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: theme.spacing.md,
-          ...StyleAdapterUtils.padding({
-            type: "logicalAxis",
-            inline: theme.spacing.lg,
-          }),
-          boxShadow: StyleAdapterUtils.shadow(theme.shadow.dialog),
-        }}
-      >
-        <Search 
-          size={theme.icongraphy.sizes.xs} 
-          color={theme.semantics.withAppearance({colorPair: theme.colors.surface, appearance: "subtle"})}
-        />
-        <Text
-          style={{
-            flex: 1,
-            ...theme.typography.body.md,
-            color: theme.semantics.asDescription({colorPair: theme.colors.surface}),
-          }}
-        >
-          {t("searchDoctor")}
-        </Text>
-      </ThemedPressable>
+      <AppBar
+        noDefaultBackNavigation 
+        color={{color: "#FFFFFF00", onColor: theme.colors.primary.onColor}}
+        title={(
+          <ThemedText
+            style={{
+              ...theme.typography.heading.lg,
+              fontFamily: theme.fontFamilies.accent,
+              fontWeight: theme.fontWeights.semibold,
+              textAlign: "center",
+              color: theme.colors.primary.onColor,
+            }}
+          >
+            {t("appName")}
+          </ThemedText>
+        )}
+      />
 
       <View
         style={{
-          flexDirection: "row",
-          gap: theme.spacing.md + theme.spacing.sm,
+          paddingLeft: insets.left + theme.spacing.lg,
+          paddingRight: insets.right + theme.spacing.lg,   
+          paddingBottom: theme.spacing.lg,
+          gap: theme.spacing.lg,       
         }}
       >
-        {homeQuickActions.map((action) => (
-          <StartQuickActionCard
-            key={action.id}
-            actionId={action.id}
-            onPress={() => onQuickActionPress(action.id)}
+        <ThemedPressable
+          accessibilityRole="button"
+          accessibilityLabel={t("searchDoctor")}
+          onPress={onSearchPress}
+          color={theme.colors.surface}
+          coloringStyle="filled"
+          stateLayerStyle={{
+            borderRadius: 999,
+          }}
+          style={{
+            borderRadius: 9999,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: theme.spacing.md,
+            ...StyleAdapterUtils.padding({
+              type: "logicalAxis",
+              inline: theme.spacing.lg,
+            }),
+            boxShadow: StyleAdapterUtils.shadow(theme.shadow.dialog),
+          }}
+        >
+          <Search 
+            size={theme.icongraphy.sizes.xs} 
+            color={theme.semantics.withAppearance({colorPair: theme.colors.surface, appearance: "subtle"})}
           />
-        ))}
+          <Text
+            style={{
+              flex: 1,
+              ...theme.typography.body.md,
+              color: theme.semantics.asDescription({colorPair: theme.colors.surface}),
+            }}
+          >
+            {t("searchDoctor")}
+          </Text>
+        </ThemedPressable>
+
+        <View
+          style={{
+            flexDirection: "row",
+            gap: theme.spacing.md + theme.spacing.sm,
+          }}
+        >
+          {homeQuickActions.map((action) => (
+            <StartQuickActionCard
+              key={action.id}
+              actionId={action.id}
+              onPress={() => onQuickActionPress(action.id)}
+            />
+          ))}
+        </View>
       </View>
     </LinearGradient>
   )
@@ -200,14 +211,14 @@ type RequestTileProps = {
 export function RequestTile({ request, onPress }: RequestTileProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
-  const isWarning = request.status === "inProgress"
   const KindIcon =
     request.kind === "prescription"
       ? Pill
       : request.kind === "appointment"
         ? Calendar
         : FileText
+
+  const statusColor = theme.semantics.coloringColorVariant({colorPair: theme.colors[request.status], variant: "transparent"})
 
   return (
     <ThemedPressable
@@ -224,7 +235,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         paddingBottom: theme.spacing.lg,
         gap: theme.spacing.md + theme.spacing.sm,
         alignItems: "flex-start",
-        backgroundColor: colors.cardBackground,
+        backgroundColor: theme.colors.surface.color,
         boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
       }}
     >
@@ -239,7 +250,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
             style={{
               ...theme.typography.body.md,
               fontWeight: theme.fontWeights.semibold,
-              color: colors.requestDoctor
+              color: theme.semantics.asDescription({ colorPair: theme.colors.surface })
             }}
           >
             {request.doctorsOffice.name}
@@ -247,7 +258,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
           <Text
             style={{
               ...theme.typography.heading.md,
-              color: colors.requestTitle,
+              color: theme.colors.surface.onColor,
             }}
           >
             {request.title}
@@ -263,9 +274,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
             paddingHorizontal: theme.spacing.md + theme.spacing.sm,
             borderRadius: 9999,
             overflow: "hidden",
-            backgroundColor: isWarning
-              ? colors.statusWarningBackground
-              : colors.statusSuccessBackground,
+            backgroundColor: statusColor.color,
           }}
         >
           <View
@@ -274,9 +283,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
               height: theme.spacing.md,
               borderRadius: 9999,
               flexShrink: 0,
-              backgroundColor: isWarning
-                ? colors.statusWarningDot
-                : colors.statusSuccessDot,
+              backgroundColor: statusColor.onColor,
             }}
           />
           <Text
@@ -284,9 +291,7 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
               flexShrink: 1,
               ...theme.typography.body.sm,
               fontWeight: theme.fontWeights.medium,
-              color: isWarning
-                ? colors.statusWarningText
-                : colors.statusSuccessText,
+              color: statusColor.onColor,
             }}
             numberOfLines={1}
             ellipsizeMode="tail"

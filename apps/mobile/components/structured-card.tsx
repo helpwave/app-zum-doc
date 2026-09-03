@@ -9,7 +9,7 @@ import {
   ThemedText,
 } from "@helpwave/hightide-native/components"
 import { CalendarDays } from "lucide-react-native"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 
 type StructuredCardProps = {
   message: StructuredCardMessage
@@ -23,7 +23,6 @@ export function StructuredCard({
   isActionPending = false,
 }: StructuredCardProps) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.structuredCard
   const tonalPrimary = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
   const showActions =
     !message.selectedActionId && message.actions && message.actions.length > 0
@@ -53,18 +52,17 @@ export function StructuredCard({
           </View>
         </View>
         <View style={{ gap: theme.spacing.xs }}>
-          <Text
+          <ThemedText
             style={{
               ...theme.typography.body.md,
               fontWeight: theme.fontWeights.bold,
-              color: colors.title,
             }}
           >
             {message.primary}
-          </Text>
-          <Text style={{ ...theme.typography.body.sm, color: colors.detail }}>
+          </ThemedText>
+          <ThemedText appearance="description" style={{ ...theme.typography.body.sm }}>
             {message.detail}
-          </Text>
+          </ThemedText>
         </View>
         {showActions && (
           <View style={{flexDirection: "row", alignItems: "flex-end", gap: theme.spacing.md }}>

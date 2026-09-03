@@ -23,7 +23,7 @@ export function Composer({
   style,
 }: ComposerProps) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.composer
+  const errorMessageColors = theme.semantics.coloringColorVariant({colorPair: theme.colors.negative, variant: "tonal"})
 
   return (
     <>
@@ -31,10 +31,10 @@ export function Composer({
         <Text
           style={{
             ...theme.typography.body.sm,
-            color: colors.errorText,
+            color: errorMessageColors.onColor,
             paddingHorizontal: theme.spacing.lg - theme.spacing.xs,
             paddingTop: theme.spacing.md,
-            backgroundColor: colors.errorBackground,
+            backgroundColor: errorMessageColors.color,
           }}
         >
           {errorMessage}

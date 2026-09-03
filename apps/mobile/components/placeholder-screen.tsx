@@ -20,13 +20,12 @@ export function PlaceholderScreen({
 }: PlaceholderScreenProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
     >
       <AppBar title={title} />

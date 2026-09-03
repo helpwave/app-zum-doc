@@ -20,7 +20,6 @@ import { useAppTranslation } from "../../hooks/useAppTranslation"
 export default function ProfileScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const profileQuery = usePatientProfile()
@@ -32,8 +31,7 @@ export default function ProfileScreen() {
     <View
       style={[
         { 
-          paddingTop: insets.top,
-          backgroundColor: colors.background,
+          backgroundColor: theme.colors.background.color,
           flex: 1,
         },
       ]}
@@ -46,11 +44,11 @@ export default function ProfileScreen() {
           void profileQuery.refetch()
         }}
         loadingLabel={t("loadingProfile")}
-        style={{ backgroundColor: colors.background }}
       >
         {profileQuery.data ? (
           <ScrollView
             contentContainerStyle={{
+              paddingTop: insets.top,
               paddingHorizontal: theme.spacing.xl,
               paddingBottom: theme.spacing.xl,
               gap: theme.spacing.lg

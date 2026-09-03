@@ -30,7 +30,6 @@ function highlightedTab(routeName: string): VisibleTab | null {
 export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.tabBar
   const insets = useSafeAreaInsets()
   const labels = {
     index: t("tabStart"),
@@ -54,8 +53,8 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
         paddingLeft: insets.left + theme.spacing.md,
         paddingRight: insets.right + theme.spacing.md,
         borderTopWidth: theme.borderWidth.thin,
-        backgroundColor: colors.background,
-        borderTopColor: colors.border,
+        backgroundColor: theme.colors.surface.color,
+        borderTopColor: theme.colors.border,
       }}
     >
       {visibleRoutes.map((route) => {
@@ -107,18 +106,18 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
                 paddingHorizontal: theme.spacing.lg,
                 borderRadius: 999,
                 overflow: "hidden",
-                backgroundColor: selected ? colors.activeBackground : "#FFFFFF00",
+                backgroundColor: selected ? theme.colors.primary.color : "#FFFFFF00",
               }}
             >
               <Icon
                 size={theme.icongraphy.sizes.md}
-                color={selected ? colors.activeForeground : colors.inactive}
+                color={selected ? theme.colors.primary.onColor : theme.semantics.asDescription({colorPair: theme.colors.surface})}
               />
             </View>
             <Text
               style={{
                 ...theme.typography.label.sm,
-                color: selected ? theme.colors.primary.color : colors.inactive,
+                color: selected ? theme.colors.primary.color :  theme.semantics.asDescription({colorPair: theme.colors.surface}),
                 fontWeight: selected
                   ? theme.fontWeights.bold
                   : theme.fontWeights.medium,

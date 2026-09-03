@@ -1,5 +1,4 @@
 import { QueryState } from "@/components/query-state"
-import { ScreenHeader } from "@/components/screen-header"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { ConversationPreview } from "@app-zum-doc/utils/api"
@@ -12,6 +11,8 @@ import { useRouter } from "expo-router"
 import { useMemo, useState } from "react"
 import { View } from "react-native"
 import { ConversationRow } from "@/components/conversation-row"
+import { AppBar } from "@/components/app-bar"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 function conversationMatchesSearch(conversation: ConversationPreview, query: string) {
   if (query.length === 0) {
@@ -31,7 +32,7 @@ function conversationMatchesSearch(conversation: ConversationPreview, query: str
 export default function ChatListScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
+  const insets = useSafeAreaInsets()
   const router = useRouter()
   const [search, setSearch] = useState("")
   const conversationsQuery = useConversations()
@@ -46,21 +47,29 @@ export default function ChatListScreen() {
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
     >
-      <ScreenHeader
+      <AppBar
         title={t("chatsTitle")}
       >
-        <SearchBar
-          value={search}
-          placeholder={t("searchPracticeOrMessage")}
-          onValueChange={(value) => {
-            setSearch(value ?? "")
+        <View 
+          style={{
+            paddingLeft: insets.left + theme.padding.lg,
+            paddingRight: insets.right + theme.padding.lg,
+            paddingBottom: theme.padding.lg,
           }}
-          onSearch={setSearch}
-        />
-      </ScreenHeader>
+        >
+          <SearchBar
+            value={search}
+            placeholder={t("searchPracticeOrMessage")}
+            onValueChange={(value) => {
+              setSearch(value ?? "")
+            }}
+            onSearch={setSearch}
+          />
+        </View>
+      </AppBar>
 
       <QueryState
         isPending={conversationsQuery.isPending}
@@ -71,7 +80,7 @@ export default function ChatListScreen() {
         }}
         loadingLabel={t("loadingChats")}
       >
-        <ChatConversationList>
+        <ChatConversationList style={{backgroundColor: theme.colors.background.color}}>
           {conversations.map((item) => (
             <ConversationRow
               key={item.id}

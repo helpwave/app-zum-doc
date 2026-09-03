@@ -16,7 +16,6 @@ import {
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
-import { useRouter } from "expo-router"
 import { Camera, CirclePlus, Pill, Trash, TriangleAlert } from "lucide-react-native"
 import { useState } from "react"
 import { Alert, ScrollView, View } from "react-native"
@@ -24,8 +23,6 @@ import { Alert, ScrollView, View } from "react-native"
 export default function MedicationsScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
-  const router = useRouter()
   const medicationsQuery = usePatientMedications()
   const addMedication = useAddPatientMedication()
   const removeMedication = useRemovePatientMedication()
@@ -40,7 +37,7 @@ export default function MedicationsScreen() {
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
     >
       <AppBar
@@ -66,7 +63,6 @@ export default function MedicationsScreen() {
           void medicationsQuery.refetch()
         }}
         loadingLabel={t("loadingMedications")}
-        style={{ backgroundColor: colors.background }}
       >
         <ScrollView
           contentContainerStyle={{

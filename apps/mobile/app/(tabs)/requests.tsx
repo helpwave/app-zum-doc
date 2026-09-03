@@ -50,7 +50,6 @@ function RequestTypeChip({
 export default function RequestsScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
@@ -94,7 +93,7 @@ export default function RequestsScreen() {
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
     >
       <AppBar
@@ -108,7 +107,7 @@ export default function RequestsScreen() {
           void homeQuery.refetch()
         }}
         loadingLabel={t("loadingRequests")}
-        style={{ flex: 1, backgroundColor: colors.background }}
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{

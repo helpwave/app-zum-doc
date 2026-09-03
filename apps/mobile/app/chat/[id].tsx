@@ -29,7 +29,6 @@ import { useAppTranslation } from "../../hooks/useAppTranslation"
 export default function ChatThreadScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const headerColors = theme.components.screenHeader
   const { id } = useLocalSearchParams<{ id: string }>()
   const conversationId = typeof id === "string" ? id : ""
   const insets = useSafeAreaInsets()
@@ -72,7 +71,7 @@ export default function ChatThreadScreen() {
       <View
         style={{
           paddingTop: insets.top,
-          backgroundColor: headerColors.background,
+          backgroundColor: theme.colors.surface.color,
         }}
       >
         <ChatThreadHeader

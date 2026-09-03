@@ -25,7 +25,6 @@ type DoctorCardProps = {
 export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.homeSections
   const avatarSize = theme.semantics.container.md.size * 2
   const status = doctorsOfficeStatusFromOpeningHours(doctor.openingHours)
   const avatarColor: ColorPairToken = useMemo(() => {
@@ -55,7 +54,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
           type: "all",
           value: theme.padding.lg,
         }),
-        backgroundColor: colors.cardBackground,
+        backgroundColor: theme.colors.surface.color,
         boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
         ...style,
       }}
@@ -94,7 +93,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
           <Text
             style={{
               ...theme.typography.heading.md,
-              color: colors.doctorName,
+              color: theme.colors.surface.onColor,
             }}
           >
             {doctor.name}
@@ -102,7 +101,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
           <Text
             style={{
               ...theme.typography.body.sm,
-              color: colors.doctorSpecialty,
+              color: theme.semantics.asDescription({ colorPair: theme.colors.surface }),
             }}
             numberOfLines={2}
           >
@@ -119,7 +118,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
           >
             <View
               style={{
-                width: 12,
+                width: theme.icongraphy.sizes.xs,
                 height: theme.icongraphy.sizes.xs,
                 alignItems: "center",
                 justifyContent: "center",
@@ -131,8 +130,8 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
                   height: 12,
                   borderRadius: 9999,
                   backgroundColor: status === "open"
-                    ? colors.openDot
-                    : colors.closedDot,
+                    ? theme.colors.primary.color
+                    : theme.colors.disabled.color,
                 }}
               />
             </View>
@@ -143,7 +142,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
                 lineHeight: theme.icongraphy.sizes.xs,
                 includeFontPadding: false,
                 textAlignVertical: "center",
-                color: colors.doctorMeta,
+                color: theme.semantics.asDescription({ colorPair: theme.colors.surface }),
               }}
               numberOfLines={1}
             >
@@ -159,13 +158,16 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
           >
             <View
               style={{
-                width: 12,
+                width: theme.icongraphy.sizes.xs,
                 height: theme.icongraphy.sizes.xs,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Phone size={12} color={colors.doctorName} fill={colors.doctorName} />
+              <Phone 
+                size={theme.icongraphy.sizes.xs} 
+                color={theme.semantics.asDescription({ colorPair: theme.colors.surface })} 
+              />
             </View>
             <Text
               style={{
@@ -174,7 +176,7 @@ export function DoctorCard({ doctor, onPress, style }: DoctorCardProps) {
                 lineHeight: theme.icongraphy.sizes.xs,
                 includeFontPadding: false,
                 textAlignVertical: "center",
-                color: colors.doctorMeta,
+                color: theme.semantics.asDescription({ colorPair: theme.colors.surface }),
               }}
               numberOfLines={1}
             >
