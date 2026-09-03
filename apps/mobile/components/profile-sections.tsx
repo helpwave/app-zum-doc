@@ -2,15 +2,13 @@ import { SelectionSheet } from "@/components/selection-sheet"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-  findInsuranceCompany,
-  formatPatientDateOfBirth,
   patientProfileFullName,
-  toAppLocale,
   type PatientProfile,
 } from "@app-zum-doc/utils/api"
 import {
   ListActionItem,
-  ThemedIcon
+  ThemedIcon,
+  ThemedText
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { Image } from "expo-image"
@@ -26,10 +24,6 @@ type ProfileHeaderProps = {
 
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.profileSections
-  const { locale: localizationLocale } = useLocalization()
-  const locale = toAppLocale(localizationLocale)
-  const insuranceCompany = findInsuranceCompany(profile.insurance.insuranceProviderId)
 
   return (
     <View
@@ -51,7 +45,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         style={{
           ...theme.typography.heading.lg,
           fontWeight: theme.fontWeights.bold,
-          color: colors.name,
+          color: theme.colors.background.onColor,
           marginTop: theme.spacing.md,
         }}
       >
@@ -67,7 +61,6 @@ export function ThemeModeSetting() {
   const { theme, themeMode, preferredThemeMode, setTheme, supportedThemes } =
     useAzdTheme()
   const { locale } = useLocalization()
-  const colors = theme.components.profileSections
   const [isOpen, setIsOpen] = useState(false)
   const selectedPreference = preferredThemeMode ?? "system"
   const options = useMemo(
@@ -102,15 +95,15 @@ export function ThemeModeSetting() {
           setIsOpen(true)
         }}
         trailing={
-          <Text
+          <ThemedText
+            appearance="description"
             style={{
               ...theme.typography.body.sm,
               fontFamily: theme.fontFamilies.default,
-              color: colors.meta,
             }}
           >
             {currentName}
-          </Text>
+          </ThemedText>
         }
       />
       <SelectionSheet
@@ -135,7 +128,6 @@ export function ThemeModeSetting() {
 export function LocaleSetting() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.profileSections
   const { locale, setLocale, supportedLocales } = useLocalization()
   const [isOpen, setIsOpen] = useState(false)
   const options = useMemo(
@@ -162,7 +154,7 @@ export function LocaleSetting() {
             style={{
               ...theme.typography.body.sm,
               fontFamily: theme.fontFamilies.default,
-              color: colors.meta,
+              color: theme.semantics.asDescription({ colorPair: theme.colors.surface }),
             }}
           >
             {currentName}

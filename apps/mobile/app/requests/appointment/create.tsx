@@ -26,7 +26,6 @@ import {
   ListItem,
   ListNavigationItem,
   Select,
-  SelectOption,
   Switch,
   Textarea,
   ThemedIcon
@@ -40,7 +39,6 @@ import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 export default function RequestAppointmentScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
@@ -137,7 +135,7 @@ export default function RequestAppointmentScreen() {
     <KeyboardAvoidingView
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
@@ -153,7 +151,6 @@ export default function RequestAppointmentScreen() {
           void profilesQuery.refetch()
         }}
         loadingLabel={t("loadingHome")}
-        style={{ backgroundColor: colors.background }}
       >
         <ScrollView
           contentContainerStyle={{
@@ -171,9 +168,8 @@ export default function RequestAppointmentScreen() {
               placeholder={t("selectPractice")}
             >
               {doctorOptions.map((option) => (
-                <SelectOption
+                <Select.Option
                   key={option.id}
-                  id={option.id}
                   value={option.id}
                   label={option.label}
                 />

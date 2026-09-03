@@ -1,6 +1,7 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { IconButton, ThemedText } from "@helpwave/hightide-native/components"
+import { ColorPairToken } from "@helpwave/hightide-design/theme-tokens"
 import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { useRouter } from "expo-router"
@@ -14,9 +15,9 @@ export type AppBarProps = ViewProps & {
   leading?: ReactNode,
   trailing?: ReactNode,
   noDefaultBackNavigation?: boolean,
-  isTransparent?: boolean,
   leadingContainerStyle?: StyleProp<ViewStyle>,
   trailingContainerStyle?: StyleProp<ViewStyle>,
+  color?: ColorPairToken 
 }
 
 export function AppBar({
@@ -24,10 +25,10 @@ export function AppBar({
   leading,
   trailing,
   noDefaultBackNavigation = false,
-  isTransparent = false,
   leadingContainerStyle,
   trailingContainerStyle,
   style,
+  color: colorOverride,
   children,
   ...viewProps
 }: AppBarProps) {
@@ -37,6 +38,12 @@ export function AppBar({
   const showBack = !noDefaultBackNavigation && router.canGoBack()
   const insets = useSafeAreaInsets()
 
+  const color = colorOverride ?? theme.colors.surface
+  const inverseColor: ColorPairToken = {
+    color: color.onColor,
+    onColor: color.color
+  }
+
   return (
     <View
       {...viewProps} 
@@ -45,19 +52,20 @@ export function AppBar({
           paddingLeft: insets.left,
           paddingRight: insets.right,
           paddingTop: insets.top,
-          backgroundColor: isTransparent ? "transparent" : theme.colors.surface.color,
+          backgroundColor: color.color,
         },
         style
       ]}
     >
       <ContentThemeOverrideProvider 
-        foreground={theme.colors.surface.onColor}
-        background={theme.colors.surface.color}
+        foreground={color.onColor}
+        background={color.color}
       >
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
+            minHeight: theme.semantics.touchTargetSize({}) + 2 * theme.padding.md,
             justifyContent: "space-between",
             ...StyleAdapterUtils.padding({
               "type": "logicalAxis",
@@ -80,7 +88,7 @@ export function AppBar({
               <IconButton
                 icon={ChevronLeft}
                 variant="foreground"
-                color={theme.colors.surfaceInverse}
+                color={inverseColor}
                 accessibilityRole="button"
                 accessibilityLabel={t("back")}
                 onPress={() => {
@@ -96,6 +104,8 @@ export function AppBar({
               position: "absolute",
               left: 0,
               right: 0,
+              minHeight: theme.semantics.touchTargetSize({}),
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               paddingHorizontal: theme.semantics.control.md.size,

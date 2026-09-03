@@ -4,22 +4,23 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
 import { useCancelReferral, usePatientProfileById, useReferral } from "@app-zum-doc/utils/hooks"
+import { OKLCHUtils } from "@helpwave/hightide-design/utils"
 import {
   Button,
   Card,
   Chip,
   Divider,
-  IconButton,
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
-import { ContentThemeOverrideProvider, useLocalization } from "@helpwave/hightide-native/global-contexts"
+import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { Clock, MessageCircle, RotateCw } from "lucide-react-native"
-import { Alert, ScrollView, Text, View } from "react-native"
+import { Clock, RotateCw } from "lucide-react-native"
+import { useMemo } from "react"
+import { Alert, ColorValue, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const doctorPortrait = require("../../../assets/images/doctor-portrait.png")
@@ -28,7 +29,6 @@ const practiceLogo = require("../../../assets/images/practice-logo.png")
 export default function ReferralDetailScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
@@ -54,8 +54,16 @@ export default function ReferralDetailScreen() {
     ? patientProfileFullName(profileQuery.data)
     : undefined
 
+  const heroColors = useMemo(() => {
+    const color = theme.colors.referral.color
+    const start = OKLCHUtils.changeLightness(color, 0.45)
+    const end = OKLCHUtils.changeLightness(color, 0.6)
+    const gradient: readonly [ColorValue, ColorValue, ...ColorValue[]] = [start, end]
+    return gradient
+  }, [theme.colors.referral.color])
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.screenBackground }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background.color }}>
       <QueryState
         isPending={referralQuery.isPending}
         isError={referralQuery.isError}
@@ -64,7 +72,6 @@ export default function ReferralDetailScreen() {
           void referralQuery.refetch()
         }}
         loadingLabel={t("loadingReferral")}
-        style={{ backgroundColor: colors.screenBackground }}
       >
         {referral ? (
           <ScrollView
@@ -74,90 +81,87 @@ export default function ReferralDetailScreen() {
             showsVerticalScrollIndicator={false}
           >
             <LinearGradient
-              colors={[colors.heroStart, colors.heroEnd]}
+              colors={heroColors}
               start={{ x: 0.05, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <ContentThemeOverrideProvider foreground={colors.heroIcon}>
-                <AppBar
-                  title={t("actionReferral")}
-                  isTransparent
-                />
-                <View 
+              <AppBar
+                title={t("actionReferral")}
+                color={{color: "#FFFFFF00", onColor: theme.colors.referral.onColor}}
+              />
+              <View 
+                style={{
+                  paddingHorizontal: theme.spacing.lg,
+                  paddingBottom: theme.spacing.lg,
+                }}
+              >
+                <Card
                   style={{
-                    paddingHorizontal: theme.spacing.lg,
-                    paddingBottom: theme.spacing.lg,
+                    padding: theme.spacing.lg,
+                    gap: theme.spacing.lg,
+                    boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
                   }}
                 >
-                  <Card
+                  <View
                     style={{
-                      padding: theme.spacing.lg,
-                      gap: theme.spacing.lg,
-                      boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+                      flexDirection: "row",
+                      gap: theme.spacing.md,
+                      alignItems: "center",
                     }}
                   >
-                    <View
+                    <Image
+                      source={imageSource}
                       style={{
-                        flexDirection: "row",
-                        gap: theme.spacing.md,
-                        alignItems: "center",
+                        width: theme.semantics.container.md.size,
+                        height: theme.semantics.container.md.size,
+                        borderRadius: 9999,
                       }}
-                    >
-                      <Image
-                        source={imageSource}
+                      contentFit="cover"
+                    />
+                    <View style={{ flex: 1, gap: theme.spacing.xs }}>
+                      <ThemedText
                         style={{
-                          width: theme.semantics.container.md.size,
-                          height: theme.semantics.container.md.size,
-                          borderRadius: 9999,
+                          ...theme.typography.heading.md,
                         }}
-                        contentFit="cover"
-                      />
-                      <View style={{ flex: 1, gap: theme.spacing.xs }}>
-                        <ThemedText
-                          style={{
-                            ...theme.typography.heading.md,
-                            color: colors.name,
-                          }}
-                        >
-                          {doctorsOffice?.name}
-                        </ThemedText>
-                        <ThemedText
-                          style={{
-                            ...theme.typography.body.sm,
-                            color: colors.specialty,
-                          }}
-                        >
-                          {doctorsOffice?.specialization}
+                      >
+                        {doctorsOffice?.name}
+                      </ThemedText>
+                      <ThemedText
+                        appearance="description"
+                        style={{
+                          ...theme.typography.body.sm,
+                        }}
+                      >
+                        {doctorsOffice?.specialization}
+                      </ThemedText>
+                    </View>
+                    <Chip
+                      size="sm"
+                      variant="tonal"
+                      color={
+                        referral.status === "inProgress"
+                          ? theme.colors.warning
+                          : referral.status === "cancelled"
+                            ? theme.colors.negative
+                            : theme.colors.positive
+                      }
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: theme.spacing.xs,
+                        }}
+                      >
+                        <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
+                        <ThemedText>
+                          {t("patientRequestStatus", { status: referral.status })}
                         </ThemedText>
                       </View>
-                      <Chip
-                        size="sm"
-                        variant="tonal"
-                        color={
-                          referral.status === "inProgress"
-                            ? theme.colors.warning
-                            : referral.status === "cancelled"
-                              ? theme.colors.negative
-                              : theme.colors.positive
-                        }
-                      >
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: theme.spacing.xs,
-                          }}
-                        >
-                          <ThemedIcon icon={Clock} size={theme.icongraphy.sizes.xs} />
-                          <ThemedText>
-                            {t("patientRequestStatus", { status: referral.status })}
-                          </ThemedText>
-                        </View>
-                      </Chip>
-                    </View>
-                  </Card>
-                </View>
-              </ContentThemeOverrideProvider>
+                    </Chip>
+                  </View>
+                </Card>
+              </View>
             </LinearGradient>
 
             <View
@@ -184,15 +188,14 @@ export default function ReferralDetailScreen() {
                   >
                     {t("referralReason")}
                   </ThemedText>
-                  <Text
+                  <ThemedText
                     style={{
                       ...theme.typography.body.md,
                       fontWeight: theme.fontWeights.semibold,
-                      color: colors.rowValue,
                     }}
                   >
                     {referral.reason}
-                  </Text>
+                  </ThemedText>
                 </View>
               ) : null}
 
@@ -257,7 +260,6 @@ function DetailRow({
   value: string
 }) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
 
   return (
     <View
@@ -275,17 +277,16 @@ function DetailRow({
       >
         {label}
       </ThemedText>
-      <Text
+      <ThemedText
         style={{
           ...theme.typography.body.md,
           fontWeight: theme.fontWeights.semibold,
-          color: colors.rowValue,
           flexShrink: 1,
           textAlign: "right",
         }}
       >
         {value}
-      </Text>
+      </ThemedText>
     </View>
   )
 }

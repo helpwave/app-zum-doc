@@ -1,16 +1,13 @@
 import {
-  AzdAvatarImage,
   contactAvatarImage,
 } from "@/components/azd-avatar-image"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
   formatConversationPreviewTime,
-  showsSentIndicator,
   toAppLocale,
   type ConversationPreview,
 } from "@app-zum-doc/utils/api"
 import {
-  AvatarWithStatus,
   ChatConversationRow,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"

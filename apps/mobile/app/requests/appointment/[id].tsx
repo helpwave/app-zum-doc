@@ -9,17 +9,18 @@ import {
   Card,
   Chip,
   Divider,
-  IconButton,
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
+import { OKLCHUtils } from "@helpwave/hightide-design/utils"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useLocalSearchParams } from "expo-router"
-import { Calendar, Clock, MessageCircle } from "lucide-react-native"
-import { Alert, ScrollView, Text, View } from "react-native"
+import { Calendar, Clock } from "lucide-react-native"
+import { useMemo } from "react"
+import { Alert, ColorValue, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const doctorPortrait = require("../../../assets/images/doctor-portrait.png")
@@ -28,7 +29,6 @@ const practiceLogo = require("../../../assets/images/practice-logo.png")
 export default function AppointmentDetailScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
   const insets = useSafeAreaInsets()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
@@ -56,8 +56,16 @@ export default function AppointmentDetailScreen() {
     ? formatPatientDateOfBirth(profileQuery.data.dateOfBirth, locale)
     : undefined
 
+  const heroColors = useMemo(() => {
+    const color = theme.colors.appointment.color
+    const start = OKLCHUtils.changeLightness(color, 0.45)
+    const end = OKLCHUtils.changeLightness(color, 0.6)
+    const gradient: readonly [ColorValue, ColorValue, ...ColorValue[]] = [start, end]
+    return gradient
+  }, [theme.colors.appointment.color])
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.screenBackground }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background.color }}>
       <QueryState
         isPending={appointmentQuery.isPending}
         isError={appointmentQuery.isError}
@@ -66,7 +74,6 @@ export default function AppointmentDetailScreen() {
           void appointmentQuery.refetch()
         }}
         loadingLabel={t("loadingAppointment")}
-        style={{ backgroundColor: colors.screenBackground }}
       >
         {appointment ? (
           <ScrollView
@@ -76,13 +83,13 @@ export default function AppointmentDetailScreen() {
             showsVerticalScrollIndicator={false}
           >
             <LinearGradient
-              colors={[colors.heroStart, colors.heroEnd]}
+              colors={heroColors}
               start={{ x: 0.05, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <AppBar
                 title={t("appointmentTitle")}
-                isTransparent
+                color={{color: "#FFFFFF00", onColor: theme.colors.appointment.onColor}}
               />
               <View 
                 style={{
@@ -117,15 +124,14 @@ export default function AppointmentDetailScreen() {
                       <ThemedText
                         style={{
                           ...theme.typography.heading.md,
-                          color: colors.name,
                         }}
                       >
                         {doctorsOffice?.name}
                       </ThemedText>
                       <ThemedText
+                        appearance="description"
                         style={{
                           ...theme.typography.body.sm,
-                          color: colors.specialty,
                         }}
                       >
                         {doctorsOffice?.specialization}
@@ -272,7 +278,6 @@ function DetailRow({
   value: string
 }) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
 
   return (
     <View
@@ -290,17 +295,16 @@ function DetailRow({
       >
         {label}
       </ThemedText>
-      <Text
+      <ThemedText
         style={{
           ...theme.typography.body.md,
           fontWeight: theme.fontWeights.semibold,
-          color: colors.rowValue,
           flexShrink: 1,
           textAlign: "right",
         }}
       >
         {value}
-      </Text>
+      </ThemedText>
     </View>
   )
 }

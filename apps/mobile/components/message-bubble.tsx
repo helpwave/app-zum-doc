@@ -13,7 +13,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     <ChatMessageBubble
       direction={message.direction}
       timestamp={message.time}
-      messageStatus={message.status}
+      status={message.status}
     >
       {message.body}
     </ChatMessageBubble>

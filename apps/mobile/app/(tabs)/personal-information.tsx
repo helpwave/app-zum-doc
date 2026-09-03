@@ -17,7 +17,6 @@ import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import {
   Input,
   Select,
-  SelectOption,
   ThemedIcon,
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
@@ -57,14 +56,11 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
     profile.insurance.insuranceNumber,
   )
 
-  const insuranceOptions = useMemo(
-    () =>
-      filterInsuranceCompaniesByType(insuranceType).map((company) => ({
-        id: company.id,
-        label: company.name,
-      })),
-    [insuranceType],
-  )
+  const insuranceOptions = useMemo(() =>
+    filterInsuranceCompaniesByType(insuranceType).map((company) => ({
+      id: company.id,
+      label: company.name,
+    })), [insuranceType])
 
   useEffect(() => {
     const selectedCompany = findInsuranceCompany(insuranceProviderId ?? "")
@@ -161,7 +157,7 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
           style={{ width: "100%" }}
         >
           {insuranceOptions.map((option) => (
-            <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+            <Select.Option key={option.id} value={option.id} label={option.label} />
           ))}
         </Select>
       </LabeledField>
@@ -181,14 +177,13 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 export default function PersonalInformationScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const profileQuery = usePatientProfile()
 
   return (
     <KeyboardAvoidingView
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
@@ -203,7 +198,6 @@ export default function PersonalInformationScreen() {
           void profileQuery.refetch()
         }}
         loadingLabel={t("loadingProfile")}
-        style={{ backgroundColor: colors.background }}
       >
         {profileQuery.data ? (
           <View

@@ -1,8 +1,8 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { withAlpha } from "@/theme/azd-theme"
 import { Button, ListActionItem } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
+import { HexColorUtils } from "@helpwave/hightide-native/utils"
 import { Check } from "lucide-react-native"
 import { useEffect, useRef } from "react"
 import {
@@ -66,7 +66,7 @@ export function SelectionSheet({
           flex: 1,
           justifyContent: "center",
           paddingHorizontal: theme.spacing.lg + theme.spacing.sm,
-          backgroundColor: withAlpha(
+          backgroundColor: HexColorUtils.hexWithAlpha(
             "#000000",
             theme.config.appearancePercentages.faded,
           ),
@@ -141,7 +141,7 @@ export function SelectionSheet({
             style={{
               flexDirection: "row",
               borderTopWidth: theme.borderWidth.thin,
-              borderTopColor: theme.components.tabBar.border,
+              borderTopColor: theme.colors.border,
             }}
           >
             <Button

@@ -1,10 +1,9 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { Button, Card } from "@helpwave/hightide-native/components"
+import { Button, Card, ThemedText } from "@helpwave/hightide-native/components"
 import type { ReactNode } from "react"
 import {
   ActivityIndicator,
-  Text,
   View,
   type StyleProp,
   type ViewStyle,
@@ -31,7 +30,6 @@ export function QueryState({
 }: QueryStateProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.queryState
   const resolvedLoadingLabel = loadingLabel ?? t("loadingChats")
   const centerStyle = {
     flex: 1,
@@ -48,21 +46,19 @@ export function QueryState({
           style={{
             alignItems: "center",
             justifyContent: "center",
-            // TODO use padding tokens here
-            padding: theme.spacing.xl,
+            padding: theme.padding.xl,
             gap: theme.spacing.md
           }}
         >
-          <ActivityIndicator size="large" color={colors.spinner} />
-          <Text
+          <ActivityIndicator size="large" color={theme.colors.primary.color} />
+          <ThemedText
             style={{
               ...theme.typography.body.sm,
-              color: colors.loadingText,
               marginTop: theme.spacing.md,
             }}
           >
             {resolvedLoadingLabel}
-          </Text>
+          </ThemedText>
         </Card>
       </View>
     )
@@ -71,31 +67,39 @@ export function QueryState({
   if (isError) {
     return (
       <View style={[centerStyle, style]}>
-        <Text
+        <Card
           style={{
-            ...theme.typography.heading.md,
-            fontWeight: theme.fontWeights.bold,
-            textAlign: "center",
-            color: colors.title,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: theme.padding.xl,
+            gap: theme.spacing.md
           }}
         >
-          {t("errorTitle")}
-        </Text>
-        <Text
-          style={{
-            ...theme.typography.body.sm,
-            textAlign: "center",
-            color: colors.description,
-            marginBottom: theme.spacing.md,
-          }}
-        >
-          {error?.message ?? t("errorUnknown")}
-        </Text>
-        {onRetry ? (
-          <Button size="md" onPress={onRetry}>
-            {t("retry")}
-          </Button>
-        ) : null}
+          <ThemedText
+            style={{
+              ...theme.typography.heading.md,
+              fontWeight: theme.fontWeights.bold,
+              textAlign: "center",
+            }}
+          >
+            {t("errorTitle")}
+          </ThemedText>
+          <ThemedText 
+            appearance="description"
+            style={{
+              ...theme.typography.body.sm,
+              textAlign: "center",
+              marginBottom: theme.spacing.md,
+            }}
+          >
+            {error?.message ?? t("errorUnknown")}
+          </ThemedText>
+          {onRetry ? (
+            <Button size="md" onPress={onRetry}>
+              {t("retry")}
+            </Button>
+          ) : null}
+        </Card>
       </View>
     )
   }

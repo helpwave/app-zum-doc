@@ -28,8 +28,6 @@ export default function DoctorSearchScreen() {
   const locale = toAppLocale(localizationLocale)
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const colors = theme.components.screen
-  const headerColors = theme.components.screenHeader
   const debounceQuery = useDebouncer()
   const debounceCity = useDebouncer()
   const debounceSpecialization = useDebouncer()
@@ -81,7 +79,7 @@ export default function DoctorSearchScreen() {
     <View
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
     >
       <AppBar title={t("searchDoctor")} />

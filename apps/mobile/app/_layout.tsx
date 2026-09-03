@@ -10,7 +10,7 @@ import * as SplashScreen from "expo-splash-screen"
 import * as SystemUI from "expo-system-ui"
 import { useEffect, type ReactNode } from "react"
 import { ActivityIndicator, Text, View } from "react-native"
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context"
+import { SafeAreaProvider } from "react-native-safe-area-context"
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined)
 
@@ -28,11 +28,10 @@ function LoadingView() {
 
 function AppStack() {
   const { theme } = useAzdTheme()
-  const backgroundColor = theme.components.screen.background
 
   useEffect(() => {
-    void SystemUI.setBackgroundColorAsync(backgroundColor)
-  }, [backgroundColor])
+    void SystemUI.setBackgroundColorAsync(theme.colors.background.color)
+  }, [theme.colors.background.color])
 
   return (
     <>
@@ -40,7 +39,7 @@ function AppStack() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor },
+          contentStyle: { backgroundColor: theme.colors.background.color },
         }}
       >
         <Stack.Screen name="(tabs)" />

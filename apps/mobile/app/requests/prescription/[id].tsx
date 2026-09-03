@@ -5,12 +5,12 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
 import { useCancelPrescription, usePatientProfileById, usePrescription } from "@app-zum-doc/utils/hooks"
+import { OKLCHUtils } from "@helpwave/hightide-design/utils"
 import {
   Button,
   Card,
   Chip,
   Divider,
-  IconButton,
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
@@ -19,8 +19,9 @@ import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { Clock, MessageCircle, RotateCw } from "lucide-react-native"
-import { Alert, ScrollView, Text, View } from "react-native"
+import { Clock, RotateCw } from "lucide-react-native"
+import { useMemo } from "react"
+import { Alert, ColorValue, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const doctorPortrait = require("../../../assets/images/doctor-portrait.png")
@@ -29,7 +30,6 @@ const practiceLogo = require("../../../assets/images/practice-logo.png")
 export default function PrescriptionDetailScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
@@ -55,8 +55,17 @@ export default function PrescriptionDetailScreen() {
     ? patientProfileFullName(profileQuery.data)
     : undefined
 
+  const heroColors = useMemo(() => {
+    const color = theme.colors.prescription.color
+    const start = OKLCHUtils.changeLightness(color, 0.45)
+    const end = OKLCHUtils.changeLightness(color, 0.6)
+    const gradient: readonly [ColorValue, ColorValue, ...ColorValue[]] = [start, end]
+    return gradient
+  }, [theme.colors.prescription.color])
+  
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.screenBackground }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background.color }}>
       <QueryState
         isPending={prescriptionQuery.isPending}
         isError={prescriptionQuery.isError}
@@ -65,7 +74,6 @@ export default function PrescriptionDetailScreen() {
           void prescriptionQuery.refetch()
         }}
         loadingLabel={t("loadingPrescription")}
-        style={{ backgroundColor: colors.screenBackground }}
       >
         {prescription ? (
           <ScrollView
@@ -75,13 +83,13 @@ export default function PrescriptionDetailScreen() {
             showsVerticalScrollIndicator={false}
           >
             <LinearGradient
-              colors={[colors.heroStart, colors.heroEnd]}
+              colors={heroColors}
               start={{ x: 0.05, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <AppBar
                 title={t("actionPrescription")}
-                isTransparent
+                color={{color: "#FFFFFF00", onColor: theme.colors.prescription.onColor}}
               />
               <View 
                 style={{
@@ -116,15 +124,14 @@ export default function PrescriptionDetailScreen() {
                       <ThemedText
                         style={{
                           ...theme.typography.heading.md,
-                          color: colors.name,
                         }}
                       >
                         {doctorsOffice?.name}
                       </ThemedText>
                       <ThemedText
+                        appearance="description"
                         style={{
                           ...theme.typography.body.sm,
-                          color: colors.specialty,
                         }}
                       >
                         {doctorsOffice?.specialization}
@@ -286,7 +293,6 @@ function DetailRow({
   value: string
 }) {
   const { theme } = useAzdTheme()
-  const colors = theme.components.doctorDetail
 
   return (
     <View
@@ -304,17 +310,16 @@ function DetailRow({
       >
         {label}
       </ThemedText>
-      <Text
+      <ThemedText
         style={{
           ...theme.typography.body.md,
           fontWeight: theme.fontWeights.semibold,
-          color: colors.rowValue,
           flexShrink: 1,
           textAlign: "right",
         }}
       >
         {value}
-      </Text>
+      </ThemedText>
     </View>
   )
 }

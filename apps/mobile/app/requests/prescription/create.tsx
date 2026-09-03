@@ -26,7 +26,6 @@ import {
   ListItem,
   ListNavigationItem,
   Select,
-  SelectOption,
   Switch,
   Textarea,
 } from "@helpwave/hightide-native/components"
@@ -45,7 +44,6 @@ type DraftMedication = {
 export default function CreatePrescriptionScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const colors = theme.components.screen
   const router = useRouter()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
@@ -150,7 +148,7 @@ export default function CreatePrescriptionScreen() {
     <KeyboardAvoidingView
       style={{
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: theme.colors.background.color,
       }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
@@ -169,7 +167,6 @@ export default function CreatePrescriptionScreen() {
           }
         }}
         loadingLabel={t("loadingHome")}
-        style={{ backgroundColor: colors.background }}
       >
         <ScrollView
           contentContainerStyle={{
@@ -188,7 +185,7 @@ export default function CreatePrescriptionScreen() {
               style={{ width: "100%" }}
             >
               {doctorOptions.map((option) => (
-                <SelectOption key={option.id} id={option.id} value={option.id} label={option.label} />
+                <Select.Option key={option.id} value={option.id} label={option.label} />
               ))}
             </Select>
           </LabeledField>
@@ -256,6 +253,7 @@ export default function CreatePrescriptionScreen() {
                   setOpenSheet("medication")
                 }}
                 style={{ flex: 1 }}
+                textStyle={{ flexShrink: 1 }}
               >
                 {t("addAnotherMedication")}
               </Button>
