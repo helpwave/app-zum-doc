@@ -58,7 +58,7 @@ export default function HomeScreen() {
         {homeQuery.data ? (
           <ScrollView
             contentContainerStyle={{
-              paddingBottom: theme.spacing.xxl + theme.spacing.md,
+              paddingBottom: theme.spacing.lg,
             }}
             showsVerticalScrollIndicator={false}
           >

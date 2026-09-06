@@ -31,6 +31,8 @@
     }
   },
   "myDoctors": "My doctors",
+  "loadingMyDoctors": "Loading my doctors…",
+  "noMyDoctors": "You have not added any doctors yet.",
   "myRequests": "My requests",
   "recentRequests": "Current requests",
   "allRequests": "All requests",

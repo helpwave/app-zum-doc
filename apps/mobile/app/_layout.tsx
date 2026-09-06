@@ -51,20 +51,6 @@ function AppStack() {
           }}
         />
         <Stack.Screen
-          name="doctor-search"
-          options={{
-            animation: "slide_from_right",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="doctors"
-          options={{
-            animation: "slide_from_right",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
           name="requests/[id]"
           options={{
             animation: "slide_from_right",

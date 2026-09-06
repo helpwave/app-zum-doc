@@ -19,7 +19,6 @@ import { useRouter } from "expo-router"
 import { BriefcaseMedical, MapPin } from "lucide-react-native"
 import { useMemo, useState } from "react"
 import { View } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export default function DoctorSearchScreen() {
   const t = useAppTranslation()
@@ -27,7 +26,6 @@ export default function DoctorSearchScreen() {
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
   const router = useRouter()
-  const insets = useSafeAreaInsets()
   const debounceQuery = useDebouncer()
   const debounceCity = useDebouncer()
   const debounceSpecialization = useDebouncer()
@@ -175,7 +173,7 @@ export default function DoctorSearchScreen() {
               contentContainerStyle={{
                 gap: theme.spacing.md,
                 paddingHorizontal: theme.spacing.lg,
-                paddingBottom: theme.spacing.md + insets.bottom,
+                paddingBottom: theme.spacing.md,
                 alignItems: "stretch",
                 justifyContent: "flex-start",
               }}

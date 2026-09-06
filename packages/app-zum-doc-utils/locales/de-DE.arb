@@ -31,6 +31,8 @@
     }
   },
   "myDoctors": "Meine Ärzte",
+  "loadingMyDoctors": "Meine Ärzte werden geladen…",
+  "noMyDoctors": "Du hast noch keine Ärzte hinzugefügt.",
   "myRequests": "Meine Anfragen",
   "recentRequests": "Aktuelle Anfragen",
   "allRequests": "Alle Anfragen",
