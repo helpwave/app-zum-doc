@@ -13,6 +13,18 @@ export default function TabsLayout() {
       <Tabs.Screen name="chat" />
       <Tabs.Screen name="profile" />
       <Tabs.Screen
+        name="doctors"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="doctor-search"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="doctor/[id]"
         options={{
           href: null,

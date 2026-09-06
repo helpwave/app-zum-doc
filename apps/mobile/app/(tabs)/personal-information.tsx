@@ -72,7 +72,7 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
   return (
     <ScrollView
       contentContainerStyle={{
-        paddingHorizontal: theme.spacing.xl,
+        paddingHorizontal: theme.spacing.lg,
         paddingVertical: theme.spacing.lg,
         gap: theme.spacing.lg,
       }}

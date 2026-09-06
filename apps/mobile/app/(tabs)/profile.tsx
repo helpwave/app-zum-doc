@@ -49,8 +49,8 @@ export default function ProfileScreen() {
           <ScrollView
             contentContainerStyle={{
               paddingTop: insets.top,
-              paddingHorizontal: theme.spacing.xl,
-              paddingBottom: theme.spacing.xl,
+              paddingHorizontal: theme.spacing.lg,
+              paddingBottom: theme.spacing.lg,
               gap: theme.spacing.lg
             }}
             showsVerticalScrollIndicator={false}
