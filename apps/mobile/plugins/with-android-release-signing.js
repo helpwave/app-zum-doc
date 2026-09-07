@@ -9,6 +9,7 @@ const RELEASE_SIGNING_CONFIG = `        release {
                 storePassword keystoreProperties["storePassword"]
                 keyAlias keystoreProperties["keyAlias"]
                 keyPassword keystoreProperties["keyPassword"]
+                storeType keystoreProperties["storeType"]
             }
         }
 `

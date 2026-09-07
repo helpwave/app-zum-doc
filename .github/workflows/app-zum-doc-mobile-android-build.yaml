@@ -92,13 +92,18 @@ jobs:
             echo "No release keystore configured; Gradle will fall back to the debug keystore."
             exit 0
           fi
-          KEYSTORE_PATH="${RUNNER_TEMP}/upload-keystore.jks"
+          KEYSTORE_PATH="${RUNNER_TEMP}/upload-keystore.p12"
           printf '%s' "${ANDROID_KEYSTORE_BASE64}" | base64 --decode > "${KEYSTORE_PATH}"
+          keytool -list \
+            -storetype PKCS12 \
+            -keystore "${KEYSTORE_PATH}" \
+            -storepass "${ANDROID_KEYSTORE_PASSWORD}"
           {
             echo "storeFile=${KEYSTORE_PATH}"
             echo "storePassword=${ANDROID_KEYSTORE_PASSWORD}"
             echo "keyAlias=${ANDROID_KEY_ALIAS}"
             echo "keyPassword=${ANDROID_KEY_PASSWORD}"
+            echo "storeType=PKCS12"
           } > apps/mobile/android/keystore.properties
 
       - name: Make Gradle executable
