@@ -41,3 +41,8 @@ app-example
 # generated native folders
 /ios
 /android
+
+# release signing and store credentials
+keystore.properties
+play-store.json
+vendor/bundle

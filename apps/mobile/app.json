@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "app-zum-doc",
+    "name": "App zum Doc",
     "slug": "app-zum-doc",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,6 +13,7 @@
       "bundleIdentifier": "de.helpwave.appzumdoc"
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/azd-logo-foreground.png",
