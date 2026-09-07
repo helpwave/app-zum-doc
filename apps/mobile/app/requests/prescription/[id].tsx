@@ -1,4 +1,5 @@
 import { AppBar } from "@/components/app-bar"
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import { PrescriptionMedicationCard } from "@/components/prescription-medication-card"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
@@ -20,8 +21,8 @@ import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { Clock, RotateCw } from "lucide-react-native"
-import { useMemo } from "react"
-import { Alert, ColorValue, ScrollView, View } from "react-native"
+import { useMemo, useState } from "react"
+import { ColorValue, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const doctorPortrait = require("../../../assets/images/doctor-portrait.png")
@@ -40,6 +41,7 @@ export default function PrescriptionDetailScreen() {
     parameters: prescriptionId === null ? undefined : { id: prescriptionId, locale }
   })
   const cancelPrescription = useCancelPrescription()
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
   const prescription = prescriptionQuery.data
   const profileQuery = usePatientProfileById({
     parameters: prescription?.profileId === undefined ? undefined : {
@@ -256,25 +258,9 @@ export default function PrescriptionDetailScreen() {
                   <Button
                     color={theme.colors.negative}
                     variant="tonal"
-                    disabled={cancelPrescription.isPending}
+                    isProcessing={cancelPrescription.isPending}
                     onPress={() => {
-                      Alert.alert(
-                        t("cancelAppointmentRequest"),
-                        t("cancelPrescriptionConfirm"),
-                        [
-                          { text: t("cancel"), style: "cancel" },
-                          {
-                            text: t("cancelAppointmentRequest"),
-                            style: "destructive",
-                            onPress: () => {
-                              void cancelPrescription.mutateAsync({
-                                prescriptionId: prescription.id,
-                                locale,
-                              })
-                            },
-                          },
-                        ],
-                      )
+                      setCancelConfirmOpen(true)
                     }}
                   >
                     {t("cancelAppointmentRequest")}
@@ -285,6 +271,24 @@ export default function PrescriptionDetailScreen() {
           </ScrollView>
         ) : null}
       </QueryState>
+      <ConfirmationModal
+        isOpen={cancelConfirmOpen}
+        onIsOpenChange={setCancelConfirmOpen}
+        title={t("cancelAppointmentRequest")}
+        message={t("cancelPrescriptionConfirm")}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("cancelAppointmentRequest")}
+        confirmColor={theme.colors.negative}
+        onConfirm={() => {
+          if (!prescription) {
+            return
+          }
+          void cancelPrescription.mutateAsync({
+            prescriptionId: prescription.id,
+            locale,
+          })
+        }}
+      />
     </View>
   )
 }

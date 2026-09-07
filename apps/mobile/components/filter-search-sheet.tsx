@@ -1,7 +1,7 @@
+import { BottomSheetOverlay } from "@/components/bottom-sheet-overlay"
 import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import {
   IconButton,
   ListActionItem,
@@ -11,7 +11,7 @@ import {
 } from "@helpwave/hightide-native/components"
 import type { LucideIcon } from "lucide-react-native"
 import { Check, TrashIcon } from "lucide-react-native"
-import { ActivityIndicator, Modal, Pressable, View } from "react-native"
+import { ActivityIndicator, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export type FilterSearchOption = {
@@ -54,35 +54,16 @@ export function FilterSearchSheet({
   const showInitialLoading = isPending && items.length === 0
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      statusBarTranslucent
-      navigationBarTranslucent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <Pressable
+    <BottomSheetOverlay visible={visible} onClose={onClose}>
+      <View
         style={{
-          flex: 1,
-          justifyContent: "flex-end",
-          backgroundColor: HexColorUtils.hexWithAlpha(
-            "#000000",
-            0.5
-          ),
+          backgroundColor: theme.colors.surface.color,
+          borderTopLeftRadius: theme.borderRadius.xxl,
+          borderTopRightRadius: theme.borderRadius.xxl,
+          paddingBottom: insets.bottom + theme.spacing.lg,
+          height: "60%",
         }}
-        onPress={onClose}
       >
-        <Pressable
-          onPress={(event) => event.stopPropagation()}
-          style={{
-            backgroundColor: theme.colors.surface.color,
-            borderTopLeftRadius: theme.borderRadius.xxl,
-            borderTopRightRadius: theme.borderRadius.xxl,
-            paddingBottom: insets.bottom + theme.spacing.lg,
-            height: "60%",
-          }}
-        >
           <View
             style={{
               alignItems: "center",
@@ -190,8 +171,7 @@ export function FilterSearchSheet({
               }}
             />
           )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+      </View>
+    </BottomSheetOverlay>
   )
 }

@@ -1,5 +1,6 @@
 import { AddMedicationSheet } from "@/components/add-medication-sheet"
 import { AppBar } from "@/components/app-bar"
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -18,7 +19,7 @@ import {
 } from "@helpwave/hightide-native/components"
 import { Camera, CirclePlus, Pill, Trash, TriangleAlert } from "lucide-react-native"
 import { useState } from "react"
-import { Alert, ScrollView, View } from "react-native"
+import { ScrollView, View } from "react-native"
 
 export default function MedicationsScreen() {
   const t = useAppTranslation()
@@ -29,6 +30,7 @@ export default function MedicationsScreen() {
 
   const [hintDismissed, setHintDismissed] = useState(false)
   const [sheetVisible, setSheetVisible] = useState(false)
+  const [scanComingSoonOpen, setScanComingSoonOpen] = useState(false)
 
   const medications = medicationsQuery.data ?? []
   const showHint = medications.length === 0 && !hintDismissed
@@ -50,7 +52,7 @@ export default function MedicationsScreen() {
             color={theme.colors.surfaceInverse}
             accessibilityLabel={t("scanMedication")}
             onPress={() => {
-              Alert.alert(t("medicationList"), t("placeholderComingSoon"))
+              setScanComingSoonOpen(true)
             }}
           />
         }
@@ -79,11 +81,9 @@ export default function MedicationsScreen() {
             itemStyle={{
               borderRadius: theme.borderRadius.lg,
             }}
-            titleStyle={(previous) => ({
-              ...previous,
-              color: theme.colors.primary.onColor,
-              fontWeight: theme.fontWeights.medium,
-            })}
+            titleStyle={{
+              fontWeight: theme.fontWeights.semibold,
+            }}
             onPress={() => {
               setSheetVisible(true)
             }}
@@ -156,6 +156,14 @@ export default function MedicationsScreen() {
                     variant="foreground"
                     color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color }}
                     accessibilityLabel={t("deleteMedication")}
+                    isProcessing={
+                      removeMedication.isPending
+                      && removeMedication.variables === medication.id
+                    }
+                    disabled={
+                      removeMedication.isPending
+                      && removeMedication.variables !== medication.id
+                    }
                     onPress={() => {
                       void removeMedication.mutateAsync(medication.id)
                     }}
@@ -178,6 +186,12 @@ export default function MedicationsScreen() {
         onClose={() => {
           setSheetVisible(false)
         }}
+      />
+      <ConfirmationModal
+        isOpen={scanComingSoonOpen}
+        onIsOpenChange={setScanComingSoonOpen}
+        title={t("medicationList")}
+        message={t("placeholderComingSoon")}
       />
     </View>
   )

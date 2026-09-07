@@ -1,4 +1,5 @@
 import { AppBar } from "@/components/app-bar"
+import { DateInput } from "@/components/date-input"
 import { LabeledField } from "@/components/labeled-field"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
@@ -8,8 +9,8 @@ import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
   filterInsuranceCompaniesByType,
   findInsuranceCompany,
-  formatPatientDateOfBirth,
-  toAppLocale,
+  startOfDay,
+  toIsoDate,
   type InsuranceType,
   type PatientProfile,
 } from "@app-zum-doc/utils/api"
@@ -17,10 +18,7 @@ import { usePatientProfile } from "@app-zum-doc/utils/hooks"
 import {
   Input,
   Select,
-  ThemedIcon,
 } from "@helpwave/hightide-native/components"
-import { useLocalization } from "@helpwave/hightide-native/global-contexts"
-import { Calendar } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
 import {
   KeyboardAvoidingView,
@@ -36,14 +34,11 @@ type PersonalInformationFormProps = {
 function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const { locale: localizationLocale } = useLocalization()
-  const locale = toAppLocale(localizationLocale)
+  const today = startOfDay(new Date())
 
   const [firstName, setFirstName] = useState(profile.firstName)
   const [lastName, setLastName] = useState(profile.lastName)
-  const [dateOfBirth, setDateOfBirth] = useState(
-    formatPatientDateOfBirth(profile.dateOfBirth, locale),
-  )
+  const [dateOfBirth, setDateOfBirth] = useState(toIsoDate(profile.dateOfBirth))
   const [email, setEmail] = useState(profile.email)
   const [phone, setPhone] = useState(profile.phone)
   const [insuranceType, setInsuranceType] = useState<InsuranceType>(
@@ -99,20 +94,15 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
         />
       </LabeledField>
 
-      <LabeledField
-        label={t("dateOfBirth")}
-        trailing={
-          <ThemedIcon
-            icon={Calendar}
-            size={theme.icongraphy.sizes.md}
-            accessibilityLabel={t("selectDateOfBirth")}
-          />
-        }
-      >
-        <Input
+      <LabeledField label={t("dateOfBirth")}>
+        <DateInput
           value={dateOfBirth}
           onValueChange={setDateOfBirth}
-          style={{ width: "100%" }}
+          placeholder={t("dateOfBirth")}
+          title={t("selectDateOfBirth")}
+          hasYearSelect
+          startDate={toIsoDate(new Date(today.getFullYear() - 120, 0, 1))}
+          endDate={toIsoDate(today)}
         />
       </LabeledField>
 

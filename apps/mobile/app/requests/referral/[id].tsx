@@ -1,4 +1,5 @@
 import { AppBar } from "@/components/app-bar"
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -19,8 +20,8 @@ import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { Clock, RotateCw } from "lucide-react-native"
-import { useMemo } from "react"
-import { Alert, ColorValue, ScrollView, View } from "react-native"
+import { useMemo, useState } from "react"
+import { ColorValue, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const doctorPortrait = require("../../../assets/images/doctor-portrait.png")
@@ -42,6 +43,7 @@ export default function ReferralDetailScreen() {
     }
   })
   const cancelReferral = useCancelReferral()
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
   const referral = referralQuery.data
   const profileQuery = usePatientProfileById({
     parameters:  referral?.profileId === undefined ? undefined : {
@@ -226,25 +228,9 @@ export default function ReferralDetailScreen() {
                   <Button
                     color={theme.colors.negative}
                     variant="tonal"
-                    disabled={cancelReferral.isPending}
+                    isProcessing={cancelReferral.isPending}
                     onPress={() => {
-                      Alert.alert(
-                        t("cancelAppointmentRequest"),
-                        t("cancelReferralConfirm"),
-                        [
-                          { text: t("cancel"), style: "cancel" },
-                          {
-                            text: t("cancelAppointmentRequest"),
-                            style: "destructive",
-                            onPress: () => {
-                              void cancelReferral.mutateAsync({
-                                referralId: referral.id,
-                                locale,
-                              })
-                            },
-                          },
-                        ],
-                      )
+                      setCancelConfirmOpen(true)
                     }}
                   >
                     {t("cancelAppointmentRequest")}
@@ -255,6 +241,24 @@ export default function ReferralDetailScreen() {
           </ScrollView>
         ) : null}
       </QueryState>
+      <ConfirmationModal
+        isOpen={cancelConfirmOpen}
+        onIsOpenChange={setCancelConfirmOpen}
+        title={t("cancelAppointmentRequest")}
+        message={t("cancelReferralConfirm")}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("cancelAppointmentRequest")}
+        confirmColor={theme.colors.negative}
+        onConfirm={() => {
+          if (!referral) {
+            return
+          }
+          void cancelReferral.mutateAsync({
+            referralId: referral.id,
+            locale,
+          })
+        }}
+      />
     </View>
   )
 }

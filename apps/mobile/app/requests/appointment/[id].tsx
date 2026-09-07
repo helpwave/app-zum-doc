@@ -1,4 +1,5 @@
 import { AppBar } from "@/components/app-bar"
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -19,8 +20,8 @@ import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { useLocalSearchParams } from "expo-router"
 import { Calendar, Clock } from "lucide-react-native"
-import { useMemo } from "react"
-import { Alert, ColorValue, ScrollView, View } from "react-native"
+import { useMemo, useState } from "react"
+import { ColorValue, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const doctorPortrait = require("../../../assets/images/doctor-portrait.png")
@@ -38,6 +39,7 @@ export default function AppointmentDetailScreen() {
     parameters: appointmentId === null ? undefined : { appointmentId, locale } 
   })
   const cancelAppointment = useCancelAppointment()
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
   const appointment = appointmentQuery.data
   const profileQuery = usePatientProfileById({
     parameters: appointment?.profileId === undefined ? undefined : {
@@ -241,25 +243,9 @@ export default function AppointmentDetailScreen() {
                 <Button
                   color={theme.colors.negative}
                   variant="tonal"
-                  disabled={cancelAppointment.isPending}
+                  isProcessing={cancelAppointment.isPending}
                   onPress={() => {
-                    Alert.alert(
-                      t("cancelAppointmentRequest"),
-                      t("cancelAppointmentConfirm"),
-                      [
-                        { text: t("cancel"), style: "cancel" },
-                        {
-                          text: t("cancelAppointmentRequest"),
-                          style: "destructive",
-                          onPress: () => {
-                            void cancelAppointment.mutateAsync({
-                              appointmentId: appointment.id,
-                              locale,
-                            })
-                          },
-                        },
-                      ],
-                    )
+                    setCancelConfirmOpen(true)
                   }}
                   style={{ alignSelf: "flex-end" }}
                 >
@@ -270,6 +256,24 @@ export default function AppointmentDetailScreen() {
           </ScrollView>
         ) : null}
       </QueryState>
+      <ConfirmationModal
+        isOpen={cancelConfirmOpen}
+        onIsOpenChange={setCancelConfirmOpen}
+        title={t("cancelAppointmentRequest")}
+        message={t("cancelAppointmentConfirm")}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("cancelAppointmentRequest")}
+        confirmColor={theme.colors.negative}
+        onConfirm={() => {
+          if (!appointment) {
+            return
+          }
+          void cancelAppointment.mutateAsync({
+            appointmentId: appointment.id,
+            locale,
+          })
+        }}
+      />
     </View>
   )
 }

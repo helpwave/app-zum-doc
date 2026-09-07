@@ -9,7 +9,7 @@ import {
 } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"
 import { useMemo, useState } from "react"
-import { View } from "react-native"
+import { ScrollView, View } from "react-native"
 import { ConversationRow } from "@/components/conversation-row"
 import { AppBar } from "@/components/app-bar"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -80,7 +80,7 @@ export default function ChatListScreen() {
         }}
         loadingLabel={t("loadingChats")}
       >
-        <ChatConversationList style={{backgroundColor: theme.colors.background.color}}>
+        <ScrollView keyboardShouldPersistTaps="always">
           {conversations.map((item) => (
             <ConversationRow
               key={item.id}
@@ -93,7 +93,7 @@ export default function ChatListScreen() {
               }}
             />
           ))}
-        </ChatConversationList>
+        </ScrollView>
       </QueryState>
     </View>
   )

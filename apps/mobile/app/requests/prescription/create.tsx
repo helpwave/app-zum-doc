@@ -3,7 +3,6 @@ import { AppBar } from "@/components/app-bar"
 import { LabeledField } from "@/components/labeled-field"
 import { PrescriptionMedicationCard } from "@/components/prescription-medication-card"
 import { QueryState } from "@/components/query-state"
-import { SelectionSheet } from "@/components/selection-sheet"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
@@ -23,8 +22,6 @@ import {
   Card,
   IconButton,
   ListActionItem,
-  ListItem,
-  ListNavigationItem,
   Select,
   Switch,
   Textarea,
@@ -64,10 +61,12 @@ export default function CreatePrescriptionScreen() {
     }
   })
   const createPrescription = useCreatePrescription()
-  const profiles = useMemo(
-    () => profilesQuery.data ?? [],
-    [profilesQuery.data],
-  )
+  const profileOptions = useMemo(() => {
+    return (profilesQuery.data ?? []).map((profile) => ({
+      id: profile.id,
+      label: t("profileSelf", { name: patientProfileFullName(profile) }),
+    }))
+  }, [profilesQuery.data, t])
 
   const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
   const [profileId, setProfileId] = useState<string | null>(null)
@@ -101,8 +100,6 @@ export default function CreatePrescriptionScreen() {
     }
     return options
   }, [homeQuery.data?.myDoctors, officeQuery.data])
-  const selectedProfile = profiles.find((profile) => profile.id === profileId)
-  const profileReadonly = profiles.length <= 1
 
   useEffect(() => {
     if (initialDoctorId) {
@@ -111,10 +108,10 @@ export default function CreatePrescriptionScreen() {
   }, [initialDoctorId])
 
   useEffect(() => {
-    if (profiles.length === 1 && profiles[0]) {
-      setProfileId(profiles[0].id)
+    if (profileOptions.length === 1 && profileOptions[0]) {
+      setProfileId(profileOptions[0].id)
     }
-  }, [profiles])
+  }, [profileOptions])
 
   useEffect(() => {
     if (didPrefillReorder || !reorderQuery.data) {
@@ -139,7 +136,6 @@ export default function CreatePrescriptionScreen() {
     doctorId != null
     && profileId != null
     && medications.length > 0
-    && !createPrescription.isPending
 
   const isPending =
     homeQuery.isPending
@@ -193,28 +189,17 @@ export default function CreatePrescriptionScreen() {
           </LabeledField>
 
           <LabeledField label={t("patient")}>
-            <Card>
-              {profileReadonly ? (
-                <ListItem
-                  title={
-                    selectedProfile
-                      ? t("profileSelf", { name: patientProfileFullName(selectedProfile) })
-                      : t("patient")
-                  }
-                />
-              ) : (
-                <ListNavigationItem
-                  title={
-                    selectedProfile
-                      ? t("profileSelf", { name: patientProfileFullName(selectedProfile) })
-                      : t("patient")
-                  }
-                  onPress={() => {
-                    setOpenSheet("profile")
-                  }}
-                />
-              )}
-            </Card>
+            <Select
+              value={profileId}
+              onValueChange={setProfileId}
+              placeholder={t("patient")}
+              style={{ width: "100%" }}
+              readOnly={profileOptions.length < 2}
+            >
+              {profileOptions.map((option) => (
+                <Select.Option key={option.id} value={option.id} label={option.label} />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("medicationsSection")}>
@@ -287,6 +272,7 @@ export default function CreatePrescriptionScreen() {
 
           <Button
             disabled={!canSubmit}
+            isProcessing={createPrescription.isPending}
             onPress={() => {
               if (doctorId == null || profileId == null) {
                 return
@@ -315,23 +301,6 @@ export default function CreatePrescriptionScreen() {
           </Button>
         </ScrollView>
       </QueryState>
-
-      <SelectionSheet
-        visible={openSheet === "profile"}
-        title={t("patient")}
-        options={profiles.map((profile) => ({
-          id: profile.id,
-          label: t("profileSelf", { name: patientProfileFullName(profile) }),
-        }))}
-        value={profileId}
-        onChange={setProfileId}
-        onCancel={() => {
-          setOpenSheet(null)
-        }}
-        onDone={() => {
-          setOpenSheet(null)
-        }}
-      />
       <AddMedicationSheet
         visible={openSheet === "medication"}
         onSubmit={(selection) => {
