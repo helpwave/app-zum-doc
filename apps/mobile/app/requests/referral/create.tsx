@@ -77,14 +77,12 @@ export default function CreateReferralScreen() {
     }
     return options
   }, [homeQuery.data?.myDoctors, officeQuery.data])
-  const profileOptions = useMemo(
-    () =>
-      profiles.map((profile) => ({
-        id: profile.id,
-        label: t("profileSelf", { name: patientProfileFullName(profile) }),
-      })),
-    [profiles, t],
-  )
+  const profileOptions = useMemo(() => {
+    return profiles.map((profile) => ({
+      id: profile.id,
+      label: t("profileSelf", { name: patientProfileFullName(profile) }),
+    }))
+  }, [profiles, t])
   const specializationOptions = useMemo(
     () =>
       (specializationsQuery.data ?? []).map((item) => ({
@@ -124,7 +122,6 @@ export default function CreateReferralScreen() {
     && specialization != null
     && specialization.trim().length > 0
     && reason.trim().length > 0
-    && !createReferral.isPending
 
   const isPending =
     homeQuery.isPending
@@ -195,6 +192,7 @@ export default function CreateReferralScreen() {
               onValueChange={setProfileId}
               placeholder={t("patient")}
               style={{ width: "100%" }}
+              readOnly={profileOptions.length < 2}
             >
               {profileOptions.map((option) => (
                 <Select.Option key={option.id} value={option.id} label={option.label} />
@@ -225,6 +223,7 @@ export default function CreateReferralScreen() {
 
           <Button
             disabled={!canSubmit}
+            isProcessing={createReferral.isPending}
             onPress={() => {
               if (doctorId == null || profileId == null || specialization == null) {
                 return

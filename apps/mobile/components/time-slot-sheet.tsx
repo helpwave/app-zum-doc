@@ -1,10 +1,10 @@
+import { BottomSheetOverlay } from "@/components/bottom-sheet-overlay"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { isMorningSlot } from "@app-zum-doc/utils/api"
-import { HexColorUtils } from "@helpwave/hightide-design/utils"
 import { IconButton, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { X } from "lucide-react-native"
-import { Modal, Pressable, View } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type TimeSlotSheetProps = {
@@ -31,35 +31,16 @@ export function TimeSlotSheet({
   const afternoon = slots.filter((slot) => !isMorningSlot(slot))
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      statusBarTranslucent
-      navigationBarTranslucent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <Pressable
+    <BottomSheetOverlay visible={visible} onClose={onClose}>
+      <View
         style={{
-          flex: 1,
-          justifyContent: "flex-end",
-          backgroundColor: HexColorUtils.hexWithAlpha(
-            "#000000",
-            0.5
-          ),
+          backgroundColor: theme.colors.surface.color,
+          borderTopLeftRadius: theme.borderRadius.xxl,
+          borderTopRightRadius: theme.borderRadius.xxl,
+          paddingBottom: insets.bottom + theme.spacing.lg,
+          paddingHorizontal: theme.spacing.lg,
         }}
-        onPress={onClose}
       >
-        <Pressable
-          onPress={(event) => event.stopPropagation()}
-          style={{
-            backgroundColor: theme.colors.surface.color,
-            borderTopLeftRadius: theme.borderRadius.xxl,
-            borderTopRightRadius: theme.borderRadius.xxl,
-            paddingBottom: insets.bottom + theme.spacing.lg,
-            paddingHorizontal: theme.spacing.lg,
-          }}
-        >
           <View
             style={{
               flexDirection: "row",
@@ -119,9 +100,8 @@ export function TimeSlotSheet({
               ) : null}
             </View>
           )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+      </View>
+    </BottomSheetOverlay>
   )
 }
 

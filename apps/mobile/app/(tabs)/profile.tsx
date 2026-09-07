@@ -1,3 +1,4 @@
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import {
   LocaleSetting,
   ProfileHeader,
@@ -13,7 +14,8 @@ import { Button, Card, ListActionItem, ListItem, ListNavigationItem, Switch, The
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
 import { Bell, ChevronRight, LogOut, Pill, Scale, Shield } from "lucide-react-native"
-import { Alert, Linking, ScrollView, View } from "react-native"
+import { useState } from "react"
+import { Linking, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAppTranslation } from "../../hooks/useAppTranslation"
 
@@ -25,7 +27,14 @@ export default function ProfileScreen() {
   const profileQuery = usePatientProfile()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
-  const { notificationsEnabled, setNotificationsEnabled } = useAppNotificationPermission()
+  const {
+    notificationsEnabled,
+    setNotificationsEnabled,
+    settingsPrompt,
+    confirmOpenSettings,
+    dismissSettingsPrompt,
+  } = useAppNotificationPermission()
+  const [signOutComingSoonOpen, setSignOutComingSoonOpen] = useState(false)
 
   return (
     <View
@@ -97,7 +106,7 @@ export default function ProfileScreen() {
                   leading={<ThemedIcon icon={LogOut}/>}
                   color={theme.colors.negative}
                   onPress={() => {
-                    Alert.alert(t("tabProfile"), t("placeholderComingSoon"))
+                    setSignOutComingSoonOpen(true)
                   }}
                 />
               </Card>
@@ -146,6 +155,25 @@ export default function ProfileScreen() {
           </ScrollView>
         ) : null}
       </QueryState>
+      <ConfirmationModal
+        isOpen={signOutComingSoonOpen}
+        onIsOpenChange={setSignOutComingSoonOpen}
+        title={t("tabProfile")}
+        message={t("placeholderComingSoon")}
+      />
+      <ConfirmationModal
+        isOpen={settingsPrompt != null}
+        onIsOpenChange={(isOpen) => {
+          if (!isOpen) {
+            dismissSettingsPrompt()
+          }
+        }}
+        title={settingsPrompt?.title ?? ""}
+        message={settingsPrompt?.message ?? ""}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("openSettings")}
+        onConfirm={confirmOpenSettings}
+      />
     </View>
   )
 }

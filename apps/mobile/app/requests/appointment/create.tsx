@@ -1,9 +1,8 @@
 import { AppBar } from "@/components/app-bar"
-import { DatePickerSheet } from "@/components/date-picker-sheet"
+import { DateInput } from "@/components/date-input"
 import { LabeledField } from "@/components/labeled-field"
 import { QueryState } from "@/components/query-state"
-import { SelectionSheet } from "@/components/selection-sheet"
-import { TimeSlotSheet } from "@/components/time-slot-sheet"
+import { TimeSlotInput } from "@/components/time-slot-input"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
@@ -23,16 +22,12 @@ import {
   Button,
   Card,
   ListActionItem,
-  ListItem,
-  ListNavigationItem,
   Select,
   Switch,
   Textarea,
-  ThemedIcon
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { Calendar, ChevronRight } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 
@@ -50,10 +45,12 @@ export default function RequestAppointmentScreen() {
   const homeQuery = useHomeSummary({ parameters: { locale } })
   const profilesQuery = usePatientProfiles()
   const createAppointment = useCreateAppointment()
-  const profiles = useMemo(
-    () => profilesQuery.data ?? [],
-    [profilesQuery.data],
-  )
+  const profileOptions = useMemo(() => {
+    return (profilesQuery.data ?? []).map((profile) => ({
+      id: profile.id,
+      label: t("profileSelf", { name: patientProfileFullName(profile) }),
+    }))
+  }, [profilesQuery.data, t])
 
   const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
   const [profileId, setProfileId] = useState<string | null>(null)
@@ -61,9 +58,6 @@ export default function RequestAppointmentScreen() {
   const [time, setTime] = useState<string | undefined>()
   const [isEmergency, setIsEmergency] = useState(false)
   const [note, setNote] = useState("")
-  const [openSheet, setOpenSheet] = useState<
-    "profile" | "date" | "time" | null
-  >(null)
 
   const officeQuery = useDoctorsOffice({
     parameters: doctorId === null ? undefined : {
@@ -87,8 +81,6 @@ export default function RequestAppointmentScreen() {
     }
     return options
   }, [homeQuery.data?.myDoctors, officeQuery.data])
-  const selectedProfile = profiles.find((profile) => profile.id === profileId)
-  const profileReadonly = profiles.length <= 1
   const openingHours = officeQuery.data?.openingHours
   const timeSlots = useMemo(() => {
     if (!openingHours || !date) {
@@ -104,10 +96,10 @@ export default function RequestAppointmentScreen() {
   }, [initialDoctorId])
 
   useEffect(() => {
-    if (profiles.length === 1 && profiles[0]) {
-      setProfileId(profiles[0].id)
+    if (profileOptions.length === 1 && profileOptions[0]) {
+      setProfileId(profileOptions[0].id)
     }
-  }, [profiles])
+  }, [profileOptions])
 
   useEffect(() => {
     if (!date || !openingHours) {
@@ -130,7 +122,6 @@ export default function RequestAppointmentScreen() {
     && profileId != null
     && date != null
     && time != null
-    && !createAppointment.isPending
 
   return (
     <KeyboardAvoidingView
@@ -179,46 +170,41 @@ export default function RequestAppointmentScreen() {
           </LabeledField>
 
           <LabeledField label={t("selectProfile")}>
-            <Card>
-              {profileReadonly ? (
-                <ListItem
-                  title={selectedProfile ? patientProfileFullName(selectedProfile) : t("selectProfile")}
-                />
-              ) : (
-                <ListNavigationItem
-                  title={selectedProfile ? patientProfileFullName(selectedProfile) : t("selectProfile")}
-                  onPress={() => {
-                    setOpenSheet("profile")
-                  }}
-                />
-              )}
-            </Card>
+            <Select
+              value={profileId}
+              onValueChange={setProfileId}
+              placeholder={t("patient")}
+              style={{ width: "100%" }}
+              readOnly={profileOptions.length < 2}
+            >
+              {profileOptions.map((option) => (
+                <Select.Option key={option.id} value={option.id} label={option.label} />
+              ))}
+            </Select>
           </LabeledField>
 
           <LabeledField label={t("selectDay")}>
-            <Card>
-              <ListActionItem
-                title={date ? formatShortDate(date, locale) : t("selectDay")}
-                disabled={!doctorId || officeQuery.isPending}
-                trailing={<ThemedIcon icon={Calendar} />}
-                onPress={() => {
-                  setOpenSheet("date")
-                }}
-              />
-            </Card>
+            <DateInput
+              value={date}
+              onValueChange={setDate}
+              placeholder={t("selectDay")}
+              title={t("selectDay")}
+              disabled={!doctorId || officeQuery.isPending}
+              isDateEnabled={(nextDate) =>
+                openingHours != null && isOfficeOpenOnDate(openingHours, nextDate)
+              }
+            />
           </LabeledField>
 
           <LabeledField label={t("appointmentTime")}>
-            <Card>
-              <ListActionItem
-                title={time ?? t("selectTimePlaceholder")}
-                disabled={!date}
-                trailing={<ThemedIcon icon={ChevronRight} />}
-                onPress={() => {
-                  setOpenSheet("time")
-                }}
-              />
-            </Card>
+            <TimeSlotInput
+              value={time}
+              onValueChange={setTime}
+              slots={timeSlots}
+              placeholder={t("selectTimePlaceholder")}
+              title={t("selectTime")}
+              disabled={!date}
+            />
           </LabeledField>
 
           <Card>
@@ -246,6 +232,7 @@ export default function RequestAppointmentScreen() {
 
           <Button
             disabled={!canSubmit}
+            isProcessing={createAppointment.isPending}
             onPress={() => {
               if (!date || !time || doctorId == null || profileId == null) {
                 return
@@ -273,59 +260,6 @@ export default function RequestAppointmentScreen() {
           </Button>
         </ScrollView>
       </QueryState>
-
-      <SelectionSheet
-        visible={openSheet === "profile"}
-        title={t("selectProfile")}
-        options={profiles.map((profile) => ({
-          id: profile.id,
-          label: patientProfileFullName(profile),
-        }))}
-        value={profileId}
-        onChange={setProfileId}
-        onCancel={() => {
-          setOpenSheet(null)
-        }}
-        onDone={() => {
-          setOpenSheet(null)
-        }}
-      />
-      <DatePickerSheet
-        visible={openSheet === "date"}
-        title={t("selectDay")}
-        value={date}
-        isDateEnabled={(nextDate) =>
-          openingHours != null && isOfficeOpenOnDate(openingHours, nextDate)
-        }
-        onSelect={(nextDate) => {
-          setDate(nextDate)
-          setOpenSheet(null)
-        }}
-        onClose={() => {
-          setOpenSheet(null)
-        }}
-      />
-      <TimeSlotSheet
-        visible={openSheet === "time"}
-        title={t("selectTime")}
-        slots={timeSlots}
-        value={time}
-        onSelect={(nextTime) => {
-          setTime(nextTime)
-          setOpenSheet(null)
-        }}
-        onClose={() => {
-          setOpenSheet(null)
-        }}
-      />
     </KeyboardAvoidingView>
   )
-}
-
-function formatShortDate(isoDate: string, locale: string): string {
-  return parseIsoDate(isoDate).toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
 }

@@ -1,7 +1,12 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import * as Notifications from "expo-notifications"
 import { useCallback, useEffect, useState } from "react"
-import { Alert, AppState, Linking, Platform } from "react-native"
+import { AppState, Linking, Platform } from "react-native"
+
+export type NotificationSettingsPrompt = {
+  title: string
+  message: string
+}
 
 async function getNotificationPermissionGranted(): Promise<boolean> {
   if (Platform.OS === "web") {
@@ -12,24 +17,10 @@ async function getNotificationPermissionGranted(): Promise<boolean> {
   return permission.granted || permission.status === Notifications.PermissionStatus.GRANTED
 }
 
-function promptOpenSettings(title: string, message: string, openSettingsLabel: string, cancelLabel: string) {
-  Alert.alert(title, message, [
-    {
-      text: cancelLabel,
-      style: "cancel",
-    },
-    {
-      text: openSettingsLabel,
-      onPress: () => {
-        void Linking.openSettings()
-      },
-    },
-  ])
-}
-
 export function useAppNotificationPermission() {
   const t = useAppTranslation()
   const [enabled, setEnabled] = useState(false)
+  const [settingsPrompt, setSettingsPrompt] = useState<NotificationSettingsPrompt | null>(null)
 
   const refresh = useCallback(async () => {
     const granted = await getNotificationPermissionGranted()
@@ -49,6 +40,19 @@ export function useAppNotificationPermission() {
       subscription.remove()
     }
   }, [refresh])
+
+  const promptOpenSettings = useCallback((title: string, message: string) => {
+    setSettingsPrompt({ title, message })
+  }, [])
+
+  const dismissSettingsPrompt = useCallback(() => {
+    setSettingsPrompt(null)
+  }, [])
+
+  const confirmOpenSettings = useCallback(() => {
+    setSettingsPrompt(null)
+    void Linking.openSettings()
+  }, [])
 
   const setNotificationsEnabled = useCallback(async (nextEnabled: boolean) => {
     if (Platform.OS === "web") {
@@ -85,8 +89,6 @@ export function useAppNotificationPermission() {
           promptOpenSettings(
             t("notificationsEnableTitle"),
             t("notificationsEnableMessage"),
-            t("openSettings"),
-            t("cancel"),
           )
         }
         return
@@ -95,8 +97,6 @@ export function useAppNotificationPermission() {
       promptOpenSettings(
         t("notificationsEnableTitle"),
         t("notificationsEnableMessage"),
-        t("openSettings"),
-        t("cancel"),
       )
       return
     }
@@ -104,13 +104,14 @@ export function useAppNotificationPermission() {
     promptOpenSettings(
       t("notificationsDisableTitle"),
       t("notificationsDisableMessage"),
-      t("openSettings"),
-      t("cancel"),
     )
-  }, [t])
+  }, [promptOpenSettings, t])
 
   return {
     notificationsEnabled: enabled,
     setNotificationsEnabled,
+    settingsPrompt,
+    confirmOpenSettings,
+    dismissSettingsPrompt,
   }
 }

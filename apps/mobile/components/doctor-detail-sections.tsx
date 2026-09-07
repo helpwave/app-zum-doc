@@ -1,4 +1,5 @@
 import { AppBar } from "@/components/app-bar"
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import { RequestTile, StartQuickActionCard } from "@/components/home-sections"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
@@ -21,7 +22,6 @@ import {
 } from "lucide-react-native"
 import { useMemo, useRef, useState } from "react"
 import {
-  Alert,
   ColorValue,
   Linking,
   Modal,
@@ -64,6 +64,7 @@ export function DoctorDetailHero({
   const moreButtonRef = useRef<View>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 })
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false)
 
   const closeMenu = () => {
     setMenuOpen(false)
@@ -79,17 +80,7 @@ export function DoctorDetailHero({
   const confirmRemoveDoctor = () => {
     closeMenu()
     setTimeout(() => {
-      Alert.alert(t("removeDoctor"), t("removeDoctorConfirm"), [
-        {
-          text: t("cancel"),
-          style: "cancel",
-        },
-        {
-          text: t("removeDoctor"),
-          style: "destructive",
-          onPress: onRemoveDoctor,
-        },
-      ])
+      setRemoveConfirmOpen(true)
     }, 150)
   }
 
@@ -120,9 +111,7 @@ export function DoctorDetailHero({
                 <IconButton
                   icon={Ellipsis}
                   accessibilityLabel={t("moreOptions")}
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: isRemovingDoctor, busy: isRemovingDoctor }}
-                  disabled={isRemovingDoctor}
+                  isProcessing={isRemovingDoctor}
                   onPress={openMenu}
                   variant="foreground"
                   color={{color:  theme.colors.primary.onColor, onColor: "#FFFFFF00"}}
@@ -157,8 +146,7 @@ export function DoctorDetailHero({
             </View>
           ) : (
             <Button
-              accessibilityRole="button"
-              accessibilityState={{ disabled: isAddingDoctor, busy: isAddingDoctor }}
+              isProcessing={isAddingDoctor}
               onPress={onAddDoctor}
               variant="tonal"
               style={{
@@ -204,6 +192,16 @@ export function DoctorDetailHero({
           </Pressable>
         </Pressable>
       </Modal>
+      <ConfirmationModal
+        isOpen={removeConfirmOpen}
+        onIsOpenChange={setRemoveConfirmOpen}
+        title={t("removeDoctor")}
+        message={t("removeDoctorConfirm")}
+        cancelLabel={t("cancel")}
+        confirmLabel={t("removeDoctor")}
+        confirmColor={theme.colors.negative}
+        onConfirm={onRemoveDoctor}
+      />
     </>
   )
 }

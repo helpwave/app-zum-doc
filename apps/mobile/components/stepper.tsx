@@ -13,6 +13,7 @@ export type StepperProps = {
   forwardLabel: string
   backAccessibilityLabel?: string
   forwardDisabled?: boolean
+  forwardIsProcessing?: boolean
   backDisabled?: boolean
 }
 
@@ -24,6 +25,7 @@ export function Stepper({
   forwardLabel,
   backAccessibilityLabel,
   forwardDisabled = false,
+  forwardIsProcessing = false,
   backDisabled = false,
 }: StepperProps) {
   const t = useAppTranslation()
@@ -76,6 +78,7 @@ export function Stepper({
       <Button
         variant="foreground"
         disabled={forwardDisabled}
+        isProcessing={forwardIsProcessing}
         onPress={onForward}
       >
         {forwardLabel}

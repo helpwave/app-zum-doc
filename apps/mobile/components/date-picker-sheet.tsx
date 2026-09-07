@@ -1,12 +1,13 @@
+import { BottomSheetOverlay } from "@/components/bottom-sheet-overlay"
+import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { toIsoDate } from "@app-zum-doc/utils/api"
-import { HexColorUtils } from "@helpwave/hightide-design/utils"
-import { IconButton, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
+import { Button, IconButton, ListActionItem, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
-import { ChevronLeft, ChevronRight, X } from "lucide-react-native"
+import { Check, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react-native"
 import { useEffect, useMemo, useState } from "react"
-import { Modal, Pressable, View } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type DatePickerSheetProps = {
@@ -16,6 +17,7 @@ type DatePickerSheetProps = {
   startDate?: string
   endDate?: string
   isDateEnabled: (date: Date) => boolean
+  hasYearSelect?: boolean
   onSelect: (isoDate: string) => void
   onClose: () => void
 }
@@ -44,6 +46,7 @@ export function DatePickerSheet({
   startDate,
   endDate,
   isDateEnabled,
+  hasYearSelect = false,
   onSelect,
   onClose,
 }: DatePickerSheetProps) {
@@ -61,9 +64,11 @@ export function DatePickerSheet({
       rangeEnd,
     ),
   )
+  const [isYearSelectOpen, setIsYearSelectOpen] = useState(false)
 
   useEffect(() => {
     if (!visible) {
+      setIsYearSelectOpen(false)
       return
     }
     const nextToday = startOfToday()
@@ -101,37 +106,31 @@ export function DatePickerSheet({
     month: "long",
     year: "numeric",
   })
+  const monthOnlyLabel = visibleMonth.toLocaleDateString(undefined, {
+    month: "long",
+  })
+  const years = useMemo(() => {
+    const startYear = rangeStart.getFullYear()
+    const endYear = (rangeEnd ?? startOfToday()).getFullYear()
+    const list: number[] = []
+    for (let year = endYear; year >= startYear; year -= 1) {
+      list.push(year)
+    }
+    return list
+  }, [rangeEnd, rangeStart])
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      statusBarTranslucent
-      navigationBarTranslucent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <Pressable
+    <>
+    <BottomSheetOverlay visible={visible} onClose={onClose}>
+      <View
         style={{
-          flex: 1,
-          justifyContent: "flex-end",
-          backgroundColor: HexColorUtils.hexWithAlpha(
-            "#000000",
-            0.5
-          ),
+          backgroundColor: theme.colors.surface.color,
+          borderTopLeftRadius: theme.borderRadius.xxl,
+          borderTopRightRadius: theme.borderRadius.xxl,
+          paddingBottom: insets.bottom + theme.spacing.lg,
+          paddingHorizontal: theme.spacing.lg,
         }}
-        onPress={onClose}
       >
-        <Pressable
-          onPress={(event) => event.stopPropagation()}
-          style={{
-            backgroundColor: theme.colors.surface.color,
-            borderTopLeftRadius: theme.borderRadius.xxl,
-            borderTopRightRadius: theme.borderRadius.xxl,
-            paddingBottom: insets.bottom + theme.spacing.lg,
-            paddingHorizontal: theme.spacing.lg,
-          }}
-        >
           <View
             style={{
               flexDirection: "row",
@@ -180,14 +179,37 @@ export function DatePickerSheet({
                 )
               }}
             />
-            <ThemedText
+            <View
               style={{
-                ...theme.typography.body.md,
-                fontWeight: theme.fontWeights.semibold,
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: theme.spacing.sm,
               }}
             >
-              {monthLabel}
-            </ThemedText>
+              <ThemedText
+                style={{
+                  ...theme.typography.body.md,
+                  fontWeight: theme.fontWeights.semibold,
+                }}
+              >
+                {hasYearSelect ? monthOnlyLabel : monthLabel}
+              </ThemedText>
+              {hasYearSelect ? (
+                <Button
+                  size="sm"
+                  variant="foreground"
+                  trailingIcon={ChevronDown}
+                  accessibilityLabel={t("selectYear")}
+                  onPress={() => {
+                    setIsYearSelectOpen(true)
+                  }}
+                >
+                  {String(visibleMonth.getFullYear())}
+                </Button>
+              ) : null}
+            </View>
             <IconButton
               icon={ChevronRight}
               size="sm"
@@ -277,9 +299,128 @@ export function DatePickerSheet({
               )
             })}
           </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+      </View>
+    </BottomSheetOverlay>
+    {hasYearSelect && isYearSelectOpen ? (
+      <YearSelectSheet
+        visible={visible}
+        years={years}
+        selectedYear={visibleMonth.getFullYear()}
+        onSelect={(year) => {
+          setVisibleMonth(
+            clampMonthToRange(
+              new Date(year, visibleMonth.getMonth(), 1),
+              rangeStart,
+              rangeEnd,
+            ),
+          )
+          setIsYearSelectOpen(false)
+        }}
+        onClose={() => {
+          setIsYearSelectOpen(false)
+        }}
+      />
+    ) : null}
+    </>
+  )
+}
+
+function YearSelectSheet({
+  visible,
+  years,
+  selectedYear,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean
+  years: readonly number[]
+  selectedYear: number
+  onSelect: (year: number) => void
+  onClose: () => void
+}) {
+  const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+  const insets = useSafeAreaInsets()
+  const selectedIndex = Math.max(0, years.indexOf(selectedYear))
+  const rowHeight = theme.semantics.control.md.size
+
+  return (
+    <BottomSheetOverlay visible={visible} onClose={onClose}>
+      <View
+        style={{
+          backgroundColor: theme.colors.surface.color,
+          borderTopLeftRadius: theme.borderRadius.xxl,
+          borderTopRightRadius: theme.borderRadius.xxl,
+          paddingBottom: insets.bottom + theme.spacing.lg,
+          height: "60%",
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingTop: theme.spacing.lg,
+            paddingHorizontal: theme.spacing.lg,
+            marginBottom: theme.spacing.md,
+          }}
+        >
+          <View style={{ width: theme.semantics.control.sm.size }} />
+          <ThemedText
+            style={{
+              ...theme.typography.heading.md,
+              fontWeight: theme.fontWeights.bold,
+              textAlign: "center",
+              flex: 1,
+            }}
+          >
+            {t("selectYear")}
+          </ThemedText>
+          <IconButton
+            icon={X}
+            color={theme.colors.surfaceInverse}
+            size="sm"
+            variant="foreground"
+            accessibilityLabel={t("cancel")}
+            onPress={onClose}
+          />
+        </View>
+        <VirtualList
+          data={years}
+          keyExtractor={(year) => String(year)}
+          initialScrollIndex={selectedIndex}
+          getItemLayout={(_, index) => ({
+            length: rowHeight,
+            offset: rowHeight * index,
+            index,
+          })}
+          renderItem={({ item: year }) => {
+            const isSelected = year === selectedYear
+            return (
+              <ListActionItem
+                title={String(year)}
+                onPress={() => {
+                  onSelect(year)
+                }}
+                trailing={
+                  isSelected
+                    ? (
+                      <Check
+                        size={theme.icongraphy.sizes.md}
+                        color={theme.colors.primary.color}
+                      />
+                    )
+                    : undefined
+                }
+                style={{
+                  minHeight: rowHeight,
+                  paddingHorizontal: theme.spacing.lg,
+                }}
+              />
+            )
+          }}
+        />
+      </View>
+    </BottomSheetOverlay>
   )
 }
 

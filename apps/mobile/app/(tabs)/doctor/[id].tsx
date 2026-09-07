@@ -4,6 +4,7 @@ import {
   DoctorRequestsSection,
   OpeningHoursSection,
 } from "@/components/doctor-detail-sections"
+import { ConfirmationModal } from "@/components/confirmation-modal"
 import { QueryState } from "@/components/query-state"
 import { hrefForRequest } from "@/lib/request-routes"
 import { Snackbar } from "@/components/snackbar"
@@ -14,7 +15,7 @@ import { useAddMyDoctor, useDoctorsOffice, useHomeSummary, useMyDoctors, useRemo
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { useCallback, useState } from "react"
-import { Alert, ScrollView, View } from "react-native"
+import { ScrollView, View } from "react-native"
 
 export default function DoctorDetailScreen() {
   const t = useAppTranslation()
@@ -43,6 +44,7 @@ export default function DoctorDetailScreen() {
     (request) => request.doctorsOffice.id === doctorsOfficeId,
   )
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
+  const [infoModal, setInfoModal] = useState<{ title: string, message: string } | null>(null)
   const dismissSnackbar = useCallback(() => {
     setSnackbarMessage(null)
   }, [])
@@ -79,9 +81,6 @@ export default function DoctorDetailScreen() {
               isAddingDoctor={addMyDoctor.isPending}
               isRemovingDoctor={removeMyDoctor.isPending}
               onRemoveDoctor={() => {
-                if (removeMyDoctor.isPending) {
-                  return
-                }
                 removeMyDoctor.mutate({ doctorsOfficeId: office.id }, {
                   onError: () => {
                     setSnackbarMessage(t("errorTitle"))
@@ -89,9 +88,6 @@ export default function DoctorDetailScreen() {
                 })
               }}
               onAddDoctor={() => {
-                if (addMyDoctor.isPending) {
-                  return
-                }
                 addMyDoctor.mutate({ doctorsOfficeId: office.id }, {
                   onError: () => {
                     setSnackbarMessage(t("errorTitle"))
@@ -150,10 +146,16 @@ export default function DoctorDetailScreen() {
               <DoctorOfficeContactSections
                 office={office}
                 onServicesPress={() => {
-                  Alert.alert(t("ourServices"), t("servicesSoon"))
+                  setInfoModal({
+                    title: t("ourServices"),
+                    message: t("servicesSoon"),
+                  })
                 }}
                 onOffersPress={() => {
-                  Alert.alert(t("furtherOffers"), t("offersSoon"))
+                  setInfoModal({
+                    title: t("furtherOffers"),
+                    message: t("offersSoon"),
+                  })
                 }}
               />
             </View>
@@ -161,6 +163,16 @@ export default function DoctorDetailScreen() {
         ) : null}
       </QueryState>
       <Snackbar message={snackbarMessage} onDismiss={dismissSnackbar} />
+      <ConfirmationModal
+        isOpen={infoModal != null}
+        onIsOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setInfoModal(null)
+          }
+        }}
+        title={infoModal?.title ?? ""}
+        message={infoModal?.message ?? ""}
+      />
     </View>
   )
 }
