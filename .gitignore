@@ -4,3 +4,5 @@
 node_modules/
 ios/
 android/
+*.jks
+*.p12

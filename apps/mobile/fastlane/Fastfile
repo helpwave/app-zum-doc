@@ -1,0 +1,56 @@
+default_platform(:android)
+
+platform :android do
+  desc "Upload the Android App Bundle to Google Play"
+  lane :playstore do
+    track = ENV["PLAY_TRACK"].to_s
+    track = "internal" if track.empty?
+    release_status = ENV["PLAY_RELEASE_STATUS"].to_s
+    release_status = "draft" if release_status.empty?
+
+    upload_to_play_store(
+      package_name: "de.helpwave.appzumdoc",
+      json_key: ENV.fetch("PLAY_STORE_JSON_KEY_PATH"),
+      aab: ENV.fetch("AAB_PATH"),
+      track: track,
+      release_status: release_status,
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      metadata_path: "fastlane/metadata/android",
+    )
+  end
+
+  desc "Publish the Android APK as a GitHub Release for F-Droid"
+  lane :fdroid do
+    set_github_release(
+      repository_name: ENV.fetch("GITHUB_REPOSITORY"),
+      api_token: ENV.fetch("GITHUB_TOKEN"),
+      name: "Android #{ENV.fetch("APP_VERSION")}",
+      tag_name: ENV.fetch("GIT_TAG_NAME"),
+      description: "App zum Doc Android #{ENV.fetch("APP_VERSION")}",
+      upload_assets: [ENV.fetch("APK_PATH")],
+      is_prerelease: false,
+    )
+  end
+end
+
+platform :ios do
+  desc "Upload the iOS IPA to App Store Connect"
+  lane :appstore do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_filepath: ENV.fetch("APP_STORE_CONNECT_KEY_PATH"),
+      in_house: false,
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: ENV.fetch("IPA_PATH"),
+      skip_waiting_for_build_processing: true,
+    )
+  end
+end

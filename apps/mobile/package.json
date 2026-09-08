@@ -2,8 +2,13 @@
   "name": "@app-zum-doc/mobile",
   "main": "expo-router/entry",
   "version": "0.0.1",
+  "description": "App zum Doc mobile client",
   "license": "AGPL-3.0-only",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/helpwave/app-zum-doc.git"
+  },
   "scripts": {
     "clean": "rm -rf node_modules && rm -rf ios && rm --rf android",
     "start": "expo start --dev-client",
@@ -12,6 +17,9 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "init": "npx expo prebuild",
+    "prebuild:android": "expo prebuild --platform android --non-interactive",
+    "prebuild:ios": "expo prebuild --platform ios --non-interactive",
+    "android:release": "cd android && ./gradlew assembleRelease bundleRelease",
     "build": "node -e \"process.exit(0)\"",
     "test": "node -e \"process.exit(0)\""
   },

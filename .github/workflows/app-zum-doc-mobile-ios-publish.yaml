@@ -1,0 +1,59 @@
+name: Publish App Store
+
+on:
+  push:
+    tags:
+      - "ios*"
+
+jobs:
+  build:
+    uses: ./.github/workflows/app-zum-doc-mobile-ios-build.yaml
+    secrets: inherit
+
+  # publish-app-store:
+  #   name: Publish to App Store Connect
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: apps/mobile
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Download IPA
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ios-ipa
+  #         path: dist/ipa
+  #
+  #     - name: Set up Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.3"
+  #         bundler-cache: false
+  #         working-directory: apps/mobile
+  #
+  #     - name: Install Fastlane
+  #       run: bundle install
+  #
+  #     - name: Write App Store Connect API key
+  #       env:
+  #         APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+  #       run: |
+  #         printf '%s' "${APP_STORE_CONNECT_API_KEY}" > "${RUNNER_TEMP}/AuthKey.p8"
+  #
+  #     - name: Upload to App Store Connect
+  #       env:
+  #         APP_STORE_CONNECT_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+  #         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+  #         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+  #       run: |
+  #         IPA_PATH="$(find "${GITHUB_WORKSPACE}/dist/ipa" -name '*.ipa' | head -n 1)"
+  #         if [[ -z "${IPA_PATH}" ]]; then
+  #           echo "No IPA artifact found."
+  #           exit 1
+  #         fi
+  #         export IPA_PATH
+  #         bundle exec fastlane ios appstore

@@ -1,0 +1,59 @@
+name: Publish Play Store
+
+on:
+  push:
+    tags:
+      - "android*"
+
+jobs:
+  build:
+    uses: ./.github/workflows/app-zum-doc-mobile-android-build.yaml
+    secrets: inherit
+
+  # publish-play:
+  #   name: Publish to Google Play
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: apps/mobile
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Download AAB
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: android-aab
+  #         path: dist/aab
+  #
+  #     - name: Set up Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.3"
+  #         bundler-cache: false
+  #         working-directory: apps/mobile
+  #
+  #     - name: Install Fastlane
+  #       run: bundle install
+  #
+  #     - name: Write Play Store credentials
+  #       env:
+  #         PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+  #       run: |
+  #         printf '%s' "${PLAY_STORE_JSON_KEY}" > "${RUNNER_TEMP}/play-store.json"
+  #
+  #     - name: Upload to Google Play
+  #       env:
+  #         PLAY_STORE_JSON_KEY_PATH: ${{ runner.temp }}/play-store.json
+  #         PLAY_TRACK: ${{ vars.PLAY_TRACK }}
+  #         PLAY_RELEASE_STATUS: ${{ vars.PLAY_RELEASE_STATUS }}
+  #       run: |
+  #         AAB_PATH="$(find "${GITHUB_WORKSPACE}/dist/aab" -name '*.aab' | head -n 1)"
+  #         if [[ -z "${AAB_PATH}" ]]; then
+  #           echo "No AAB artifact found."
+  #           exit 1
+  #         fi
+  #         export AAB_PATH
+  #         bundle exec fastlane android playstore

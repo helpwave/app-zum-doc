@@ -1,0 +1,256 @@
+name: Build iOS
+
+on:
+  workflow_call:
+    outputs:
+      app_version:
+        description: Resolved iOS version name
+        value: ${{ jobs.build.outputs.app_version }}
+      build_number:
+        description: Resolved iOS build number
+        value: ${{ jobs.build.outputs.build_number }}
+
+jobs:
+  build:
+    runs-on: macos-latest
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
+      build_number: ${{ steps.version.outputs.build_number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.13.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            RAW="${GITHUB_REF_NAME}"
+            VERSION="${RAW#ios}"
+            VERSION="${VERSION#-}"
+            VERSION="${VERSION#/}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="$(node -p "require('./apps/mobile/app.json').expo.version")"
+          fi
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${VERSION}"
+          MAJOR="${MAJOR:-0}"
+          MINOR="${MINOR:-0}"
+          PATCH="${PATCH:-0}"
+          MAJOR="${MAJOR//[^0-9]/}"
+          MINOR="${MINOR//[^0-9]/}"
+          PATCH="${PATCH//[^0-9]/}"
+          MAJOR="${MAJOR:-0}"
+          MINOR="${MINOR:-0}"
+          PATCH="${PATCH:-0}"
+          BUILD_NUMBER=$((10#${MAJOR} * 10000 + 10#${MINOR} * 100 + 10#${PATCH}))
+          if [[ "${BUILD_NUMBER}" -lt 1 ]]; then
+            BUILD_NUMBER=1
+          fi
+          echo "app_version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "build_number=${BUILD_NUMBER}" >> "${GITHUB_OUTPUT}"
+
+      # - name: Install Apple certificate and provisioning profile
+      #   id: signing
+      #   env:
+      #     IOS_DIST_CERTIFICATE_BASE64: ${{ secrets.IOS_DIST_CERTIFICATE_BASE64 }}
+      #     IOS_DIST_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}
+      #     IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+      #   run: |
+      #     set -euo pipefail
+      #     if [[ -z "${IOS_DIST_CERTIFICATE_BASE64}" || -z "${IOS_PROVISIONING_PROFILE_BASE64}" ]]; then
+      #       echo "iOS distribution certificate and provisioning profile secrets are required."
+      #       exit 1
+      #     fi
+      #
+      #     CERTIFICATE_PATH="${RUNNER_TEMP}/dist_certificate.p12"
+      #     PP_PATH="${RUNNER_TEMP}/appstore.mobileprovision"
+      #     KEYCHAIN_PATH="${RUNNER_TEMP}/app-signing.keychain-db"
+      #     KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
+      #     PROFILE_PLIST="${RUNNER_TEMP}/profile.plist"
+      #
+      #     echo -n "${IOS_DIST_CERTIFICATE_BASE64}" | base64 --decode -o "${CERTIFICATE_PATH}"
+      #     echo -n "${IOS_PROVISIONING_PROFILE_BASE64}" | base64 --decode -o "${PP_PATH}"
+      #
+      #     security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+      #     security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
+      #     security unlock-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+      #     security import "${CERTIFICATE_PATH}" -P "${IOS_DIST_CERTIFICATE_PASSWORD}" -A -t cert -f pkcs12 -k "${KEYCHAIN_PATH}"
+      #     security set-key-partition-list -S apple-tool:,apple: -k "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+      #     security list-keychain -d user -s "${KEYCHAIN_PATH}"
+      #
+      #     security cms -D -i "${PP_PATH}" > "${PROFILE_PLIST}"
+      #     UUID="$(plutil -extract UUID raw "${PROFILE_PLIST}")"
+      #     PROFILE_NAME="$(plutil -extract Name raw "${PROFILE_PLIST}")"
+      #     TEAM_ID="$(plutil -extract TeamIdentifier.0 raw "${PROFILE_PLIST}")"
+      #
+      #     mkdir -p "${HOME}/Library/MobileDevice/Provisioning Profiles"
+      #     mkdir -p "${HOME}/Library/Developer/Xcode/UserData/Provisioning Profiles"
+      #     cp "${PP_PATH}" "${HOME}/Library/MobileDevice/Provisioning Profiles/${UUID}.mobileprovision"
+      #     cp "${PP_PATH}" "${HOME}/Library/Developer/Xcode/UserData/Provisioning Profiles/${UUID}.mobileprovision"
+      #
+      #     echo "profile_name=${PROFILE_NAME}" >> "${GITHUB_OUTPUT}"
+      #     echo "team_id=${TEAM_ID}" >> "${GITHUB_OUTPUT}"
+
+      - name: Install JavaScript dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare packages
+        env:
+          EXPO_NO_GIT_STATUS: "1"
+          LANG: en_US.UTF-8
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
+          IOS_BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
+          # IOS_TEAM_ID: ${{ steps.signing.outputs.team_id }}
+        run: |
+          pnpm --filter @app-zum-doc/utils run init
+          pnpm --filter @app-zum-doc/mobile run prebuild:ios
+
+      - name: Build unsigned IPA
+        env:
+          LANG: en_US.UTF-8
+          RCT_NO_LAUNCH_PACKAGER: "1"
+        run: |
+          set -euo pipefail
+          IOS_DIR="${GITHUB_WORKSPACE}/apps/mobile/ios"
+          cd "${IOS_DIR}"
+
+          WORKSPACE="$(find . -maxdepth 1 -name '*.xcworkspace' | head -n 1)"
+          if [[ -z "${WORKSPACE}" ]]; then
+            echo "No Xcode workspace found after prebuild."
+            exit 1
+          fi
+
+          SCHEME="$(xcodebuild -list -json -workspace "${WORKSPACE}" | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          schemes = data.get("workspace", {}).get("schemes", [])
+          for scheme in schemes:
+              if scheme.lower() != "pods":
+                  print(scheme)
+                  break
+          ')"
+          if [[ -z "${SCHEME}" ]]; then
+            echo "No Xcode scheme found after prebuild."
+            exit 1
+          fi
+
+          ARCHIVE_PATH="${RUNNER_TEMP}/AppZumDoc.xcarchive"
+          EXPORT_PATH="${RUNNER_TEMP}/ios-export"
+          mkdir -p "${EXPORT_PATH}"
+
+          xcodebuild archive \
+            -workspace "${WORKSPACE}" \
+            -scheme "${SCHEME}" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "${ARCHIVE_PATH}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+          APP_PATH="$(find "${ARCHIVE_PATH}/Products/Applications" -name '*.app' | head -n 1)"
+          if [[ -z "${APP_PATH}" ]]; then
+            echo "No .app found in the unsigned archive."
+            exit 1
+          fi
+
+          PAYLOAD_DIR="${RUNNER_TEMP}/ipa-payload"
+          rm -rf "${PAYLOAD_DIR}"
+          mkdir -p "${PAYLOAD_DIR}/Payload"
+          cp -R "${APP_PATH}" "${PAYLOAD_DIR}/Payload/"
+          (cd "${PAYLOAD_DIR}" && zip -r "${EXPORT_PATH}/AppZumDoc-unsigned.ipa" Payload)
+
+      # - name: Build signed IPA
+      #   env:
+      #     LANG: en_US.UTF-8
+      #     RCT_NO_LAUNCH_PACKAGER: "1"
+      #     PROFILE_NAME: ${{ steps.signing.outputs.profile_name }}
+      #     TEAM_ID: ${{ steps.signing.outputs.team_id }}
+      #   run: |
+      #     set -euo pipefail
+      #     IOS_DIR="${GITHUB_WORKSPACE}/apps/mobile/ios"
+      #     cd "${IOS_DIR}"
+      #
+      #     find . -name "project.pbxproj" -print0 | xargs -0 sed -i '' \
+      #       -e 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g'
+      #
+      #     WORKSPACE="$(find . -maxdepth 1 -name '*.xcworkspace' | head -n 1)"
+      #     if [[ -z "${WORKSPACE}" ]]; then
+      #       echo "No Xcode workspace found after prebuild."
+      #       exit 1
+      #     fi
+      #
+      #     SCHEME="$(xcodebuild -list -json -workspace "${WORKSPACE}" | python3 -c '
+      #     import json, sys
+      #     data = json.load(sys.stdin)
+      #     schemes = data.get("workspace", {}).get("schemes", [])
+      #     for scheme in schemes:
+      #         if scheme.lower() != "pods":
+      #             print(scheme)
+      #             break
+      #     ')"
+      #     if [[ -z "${SCHEME}" ]]; then
+      #       echo "No Xcode scheme found after prebuild."
+      #       exit 1
+      #     fi
+      #
+      #     ARCHIVE_PATH="${RUNNER_TEMP}/AppZumDoc.xcarchive"
+      #     EXPORT_PATH="${RUNNER_TEMP}/ios-export"
+      #     EXPORT_OPTIONS="${RUNNER_TEMP}/ExportOptions.plist"
+      #
+      #     cat > "${EXPORT_OPTIONS}" <<EOF
+      #     <?xml version="1.0" encoding="UTF-8"?>
+      #     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      #     <plist version="1.0">
+      #     <dict>
+      #       <key>method</key>
+      #       <string>app-store-connect</string>
+      #       <key>destination</key>
+      #       <string>export</string>
+      #       <key>signingStyle</key>
+      #       <string>manual</string>
+      #       <key>teamID</key>
+      #       <string>${TEAM_ID}</string>
+      #       <key>compileBitcode</key>
+      #       <false/>
+      #       <key>provisioningProfiles</key>
+      #       <dict>
+      #         <key>de.helpwave.appzumdoc</key>
+      #         <string>${PROFILE_NAME}</string>
+      #       </dict>
+      #     </dict>
+      #     </plist>
+      #     EOF
+      #
+      #     xcodebuild archive \
+      #       -workspace "${WORKSPACE}" \
+      #       -scheme "${SCHEME}" \
+      #       -configuration Release \
+      #       -destination "generic/platform=iOS" \
+      #       -archivePath "${ARCHIVE_PATH}" \
+      #       CODE_SIGN_STYLE=Manual \
+      #       CODE_SIGN_IDENTITY="Apple Distribution" \
+      #       DEVELOPMENT_TEAM="${TEAM_ID}" \
+      #       PROVISIONING_PROFILE_SPECIFIER="${PROFILE_NAME}"
+      #
+      #     xcodebuild -exportArchive \
+      #       -archivePath "${ARCHIVE_PATH}" \
+      #       -exportOptionsPlist "${EXPORT_OPTIONS}" \
+      #       -exportPath "${EXPORT_PATH}"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ${{ runner.temp }}/ios-export/*.ipa
