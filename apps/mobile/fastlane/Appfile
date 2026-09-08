@@ -1,1 +1,2 @@
 package_name("de.helpwave.appzumdoc")
+app_identifier("de.helpwave.appzumdoc")

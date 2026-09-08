@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "de.helpwave.appzumdoc"
+      "bundleIdentifier": "de.helpwave.appzumdoc",
+      "buildNumber": "1"
     },
     "android": {
       "versionCode": 1,
@@ -26,15 +27,26 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/azd-logo.png"
+      "favicon": "./assets/images/azd-logo.png",
+      "splash": {
+        "image": "./assets/images/azd-logo-foreground.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#057986"
+      }
     },
     "plugins": [
       "expo-router",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/azd-monochrom-logo-foreground.png",
+          "color": "#057986"
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/azd-logo.png",
+          "image": "./assets/images/azd-logo-foreground.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#057986"
@@ -43,6 +55,13 @@
       [
         "expo-font",
         {
+          "fonts": [
+            "./assets/fonts/Inter_28pt-Regular.ttf",
+            "./assets/fonts/SpaceGrotesk-Light.ttf",
+            "./assets/fonts/SpaceGrotesk-Regular.ttf",
+            "./assets/fonts/SpaceGrotesk-Medium.ttf",
+            "./assets/fonts/SpaceGrotesk-Bold.ttf"
+          ],
           "android": {
             "fonts": [
               {
@@ -77,13 +96,15 @@
               }
             ]
           },
-          "ios": [
-            "./assets/fonts/Inter_28pt-Regular.ttf",
-            "./assets/fonts/SpaceGrotesk-Light.ttf",
-            "./assets/fonts/SpaceGrotesk-Regular.ttf",
-            "./assets/fonts/SpaceGrotesk-Medium.ttf",
-            "./assets/fonts/SpaceGrotesk-Bold.ttf"
-          ]
+          "ios": {
+            "fonts": [
+              "./assets/fonts/Inter_28pt-Regular.ttf",
+              "./assets/fonts/SpaceGrotesk-Light.ttf",
+              "./assets/fonts/SpaceGrotesk-Regular.ttf",
+              "./assets/fonts/SpaceGrotesk-Medium.ttf",
+              "./assets/fonts/SpaceGrotesk-Bold.ttf"
+            ]
+          }
         }
       ]
     ],

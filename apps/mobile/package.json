@@ -18,6 +18,7 @@
     "lint": "expo lint",
     "init": "npx expo prebuild",
     "prebuild:android": "expo prebuild --platform android --non-interactive",
+    "prebuild:ios": "expo prebuild --platform ios --non-interactive",
     "android:release": "cd android && ./gradlew assembleRelease bundleRelease",
     "build": "node -e \"process.exit(0)\"",
     "test": "node -e \"process.exit(0)\""

@@ -17,6 +17,18 @@ function resolveVersionCode() {
   return parsed
 }
 
+function resolveIosBuildNumber() {
+  const fromEnv = process.env.IOS_BUILD_NUMBER?.trim()
+  if (fromEnv) {
+    return fromEnv
+  }
+  return String(appJson.expo.ios?.buildNumber ?? resolveVersionCode())
+}
+
+function resolveIosTeamId() {
+  return process.env.IOS_TEAM_ID?.trim() || appJson.expo.ios?.appleTeamId
+}
+
 module.exports = {
   expo: {
     ...appJson.expo,
@@ -24,6 +36,11 @@ module.exports = {
     android: {
       ...appJson.expo.android,
       versionCode: resolveVersionCode(),
+    },
+    ios: {
+      ...appJson.expo.ios,
+      buildNumber: resolveIosBuildNumber(),
+      ...(resolveIosTeamId() ? { appleTeamId: resolveIosTeamId() } : {}),
     },
     plugins: [
       ...(appJson.expo.plugins ?? []),

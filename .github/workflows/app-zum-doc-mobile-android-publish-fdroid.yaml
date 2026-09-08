@@ -5,52 +5,52 @@ on:
     tags:
       - "android*"
 
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 
 jobs:
   build:
     uses: ./.github/workflows/app-zum-doc-mobile-android-build.yaml
     secrets: inherit
 
-  publish-fdroid:
-    name: Publish to F-Droid
-    needs: build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apk
-          path: dist/apk
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: false
-          working-directory: apps/mobile
-
-      - name: Install Fastlane
-        run: bundle install
-
-      - name: Publish GitHub Release for F-Droid
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APP_VERSION: ${{ needs.build.outputs.app_version }}
-          GIT_TAG_NAME: ${{ github.ref_name }}
-        run: |
-          APK_PATH="$(find "${GITHUB_WORKSPACE}/dist/apk" -name '*.apk' | head -n 1)"
-          if [[ -z "${APK_PATH}" ]]; then
-            echo "No APK artifact found."
-            exit 1
-          fi
-          export APK_PATH
-          bundle exec fastlane android fdroid
+  # publish-fdroid:
+  #   name: Publish to F-Droid
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: apps/mobile
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Download APK
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: android-apk
+  #         path: dist/apk
+  #
+  #     - name: Set up Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.3"
+  #         bundler-cache: false
+  #         working-directory: apps/mobile
+  #
+  #     - name: Install Fastlane
+  #       run: bundle install
+  #
+  #     - name: Publish GitHub Release for F-Droid
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         APP_VERSION: ${{ needs.build.outputs.app_version }}
+  #         GIT_TAG_NAME: ${{ github.ref_name }}
+  #       run: |
+  #         APK_PATH="$(find "${GITHUB_WORKSPACE}/dist/apk" -name '*.apk' | head -n 1)"
+  #         if [[ -z "${APK_PATH}" ]]; then
+  #           echo "No APK artifact found."
+  #           exit 1
+  #         fi
+  #         export APK_PATH
+  #         bundle exec fastlane android fdroid
