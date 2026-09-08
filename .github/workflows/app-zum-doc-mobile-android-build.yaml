@@ -94,10 +94,6 @@ jobs:
           fi
           KEYSTORE_PATH="${RUNNER_TEMP}/upload-keystore.p12"
           printf '%s' "${ANDROID_KEYSTORE_BASE64}" | base64 --decode > "${KEYSTORE_PATH}"
-          keytool -list \
-            -storetype PKCS12 \
-            -keystore "${KEYSTORE_PATH}" \
-            -storepass "${ANDROID_KEYSTORE_PASSWORD}"
           {
             echo "storeFile=${KEYSTORE_PATH}"
             echo "storePassword=${ANDROID_KEYSTORE_PASSWORD}"
