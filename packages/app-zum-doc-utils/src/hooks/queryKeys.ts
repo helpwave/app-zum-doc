@@ -84,3 +84,37 @@ export const profileListKeys = {
   all: ['profiles'] as const,
   list: ['profiles', 'list'] as const,
 }
+
+export const practiceKeys = {
+  all: ['practice'] as const,
+  office: (params?: { officeId: string, locale: string }) =>
+    ['practice', 'office', params?.officeId ?? '', params?.locale ?? ''] as const,
+  overview: (params?: { officeId: string, locale: string }) =>
+    ['practice', 'overview', params?.officeId ?? '', params?.locale ?? ''] as const,
+  requests: (params?: {
+    officeId: string,
+    locale: string,
+    kind?: string,
+    status?: string,
+  }) =>
+    [
+      'practice',
+      'requests',
+      params?.officeId ?? '',
+      params?.locale ?? '',
+      params?.kind ?? '',
+      params?.status ?? '',
+    ] as const,
+  request: (params?: { id: string, locale: string }) =>
+    ['practice', 'request', params?.id ?? '', params?.locale ?? ''] as const,
+  patients: ['practice', 'patients'] as const,
+}
+
+export const practiceConversationKeys = {
+  all: ['practiceConversations'] as const,
+  list: ['practiceConversations', 'list'] as const,
+  detail: (params?: { conversationId: string }) =>
+    ['practiceConversations', 'detail', params?.conversationId ?? ''] as const,
+  messages: (params?: { conversationId: string }) =>
+    ['practiceConversations', 'messages', params?.conversationId ?? ''] as const,
+}

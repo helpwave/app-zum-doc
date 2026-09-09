@@ -19,6 +19,8 @@ export type MyDoctors = {
   doctorIds: string[]
 }
 
+export const defaultPracticeOfficeId = "office-moser"
+
 export type DoctorsOffice = {
   id: string
   name: string
@@ -31,6 +33,12 @@ export type DoctorsOffice = {
   services: DoctorService[]
   offers: DoctorService[]
   doctors: Doctor[]
+}
+
+export type UpdateDoctorsOfficeInput = {
+  phoneNumber?: string
+  websiteUrl?: string
+  openingHours?: DoctorsOfficeOpeningHours
 }
 
 export function isMyDoctorsOffice(

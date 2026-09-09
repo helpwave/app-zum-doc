@@ -41,7 +41,10 @@ export function useAppointment({
 }: UseAppointmentProps) {
   return useQuery({
     ...options,
-    queryKey: appointmentKeys.detail(parameters?.appointmentId ?? '', parameters?.locale ?? ''),
+    queryKey: appointmentKeys.detail({
+      id: parameters?.appointmentId ?? '',
+      locale: parameters?.locale ?? '',
+    }),
     queryFn: () => {
       if(parameters === undefined)
         throw Error('parameters cannot be undefined')
@@ -72,7 +75,7 @@ export function useCreateAppointment(
     onSuccess: async (...args) => {
       const [appointment, { locale }] = args
       queryClient.setQueryData(
-        appointmentKeys.detail(appointment.id, locale),
+        appointmentKeys.detail({ id: appointment.id, locale }),
         appointment
       )
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })
@@ -99,7 +102,7 @@ export function useCancelAppointment(
     onSuccess: async (...args) => {
       const [appointment, { locale }] = args
       queryClient.setQueryData(
-        appointmentKeys.detail(appointment.id, locale),
+        appointmentKeys.detail({ id: appointment.id, locale }),
         appointment
       )
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })

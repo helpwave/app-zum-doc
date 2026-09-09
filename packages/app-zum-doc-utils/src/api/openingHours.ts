@@ -5,7 +5,7 @@ const slotStepMinutes = 30
 const afternoonStartMinutes = 13 * 60
 
 export function weekdayFromDate(date: Date): Weekday {
-  return WeekdayUtils.array[(date.getDay() + 6) % 7]
+  return WeekdayUtils.array[(date.getDay() + 6) % 7] ?? "sunday"
 }
 
 export function parseIsoDate(value: string): Date {

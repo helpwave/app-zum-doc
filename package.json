@@ -14,7 +14,9 @@
     "reset": "pnpm run clean && pnpm run init",
     "start": "pnpm --filter \"@app-zum-doc/mobile\" start",
     "android": "pnpm --filter \"@app-zum-doc/mobile\" android",
-    "ios": "pnpm --filter \"@app-zum-doc/mobile\" ios"
+    "ios": "pnpm --filter \"@app-zum-doc/mobile\" ios",
+    "administration": "pnpm --filter \"@app-zum-doc/administration\" start",
+    "administration:dev": "pnpm --filter \"@app-zum-doc/administration\" dev"
   },
   "devEngines": {
     "packageManager": {

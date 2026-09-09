@@ -1,0 +1,42 @@
+{
+  "name": "@app-zum-doc/administration",
+  "version": "0.0.1",
+  "private": true,
+  "description": "App zum Doc administration dashboard",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf node_modules .next",
+    "dev": "next dev --webpack",
+    "build-intl": "build-intl --force -i ./locales -o ./i18n/translations.ts -n administrationTranslation",
+    "build": "pnpm run build-intl && next build",
+    "start": "next start",
+    "lint": "node ./scripts/typecheck.mjs && eslint .",
+    "init": "pnpm run build-intl",
+    "test": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "@app-zum-doc/utils": "workspace:*",
+    "@helpwave/hightide": "0.16.4",
+    "@helpwave/internationalization": "0.4.0",
+    "@tanstack/react-query": "^5.101.3",
+    "clsx": "2.1.1",
+    "lucide-react": "0.561.0",
+    "next": "16.2.9",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@helpwave/eslint-config": "0.0.11",
+    "@tailwindcss/postcss": "4.3.1",
+    "@types/node": "24.5.2",
+    "@types/react": "~19.1.0",
+    "@types/react-dom": "~19.1.0",
+    "autoprefixer": "10.5.0",
+    "eslint": "9.25.0",
+    "postcss": "8.5.15",
+    "postcss-flexbugs-fixes": "5.0.2",
+    "tailwindcss": "4.3.1",
+    "typescript": "~5.9.2"
+  }
+}
