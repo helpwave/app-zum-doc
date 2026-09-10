@@ -39,7 +39,7 @@ function HeroStats({ overview }: { overview: PracticeOverview }) {
       }}
     >
       <DashboardHeroCard>
-        <div className="flex-row-2 items-center text-description">
+        <div className="flex-row-2 items-center text-description text-lg font-semibold">
           <TriangleAlert className="size-5 text-warning" />
           <span>{t('overdueMessages')}</span>
         </div>
@@ -49,7 +49,7 @@ function HeroStats({ overview }: { overview: PracticeOverview }) {
       </DashboardHeroCard>
 
       <DashboardHeroCard>
-        <span className="text-description">{t('appointmentsToday')}</span>
+        <span className="text-description text-lg font-semibold">{t('appointmentsToday')}</span>
         <div className="flex-row-4 items-stretch w-full h-full">
           <div className="flex-col-1 flex-1 justify-between">
             <Chip color="primary" coloringStyle="tonal" size="sm" className="px-2 rounded-full">
@@ -74,7 +74,7 @@ function HeroStats({ overview }: { overview: PracticeOverview }) {
       </DashboardHeroCard>
 
       <DashboardHeroCard>
-        <span className="text-description">{t('requestDistribution')}</span>
+        <span className="text-description text-lg font-semibold">{t('requestDistribution')}</span>
         <div className="flex-row-4 items-center">
           <RequestDistributionDonut distribution={overview.requestDistribution} />
           <ul className="flex-col-1 min-w-0">

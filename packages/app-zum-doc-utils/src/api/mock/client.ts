@@ -1034,12 +1034,18 @@ export async function fetchPracticeOverview(params: {
       .sort((left, right) =>
         right.lastMessage.time.getTime() - left.lastMessage.time.getTime())
       .slice(0, 6)
-      .map((conversation) => ({
-        conversationId: conversation.id,
-        patientName: conversation.user.name,
-        preview: conversation.lastMessage.preview,
-        time: conversation.lastMessage.time,
-      }))
+      .map((conversation) => {
+        const patient = resolvePracticePatient(conversation.user.id)
+        return {
+          conversationId: conversation.id,
+          patientName: conversation.user.name,
+          insuranceLabel: patient
+            ? formatInsuranceChipLabel(patient.insurance)
+            : '',
+          preview: conversation.lastMessage.preview,
+          time: conversation.lastMessage.time,
+        }
+      })
 
     return {
       office: toDoctorsOffice(office, params.locale),
@@ -1174,8 +1180,12 @@ export async function updateDoctorsOffice(params: {
     }
     const next: DoctorsOfficeSeed = {
       ...office,
+      name: params.input.name ?? office.name,
       phoneNumber: params.input.phoneNumber ?? office.phoneNumber,
       websiteUrl: params.input.websiteUrl ?? office.websiteUrl,
+      address: params.input.address
+        ? { ...params.input.address }
+        : office.address,
       openingHours: params.input.openingHours
         ? cloneOpeningHours(params.input.openingHours)
         : office.openingHours,

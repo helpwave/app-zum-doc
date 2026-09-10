@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Forward,
   LayoutDashboard,
+  LoaderCircle,
   MessageSquare,
   Pill,
   Settings,
@@ -224,7 +225,14 @@ export function QueryState({
   const translation = useAdministrationTranslation()
 
   if (isPending) {
-    return <p className="text-description">{loadingLabel}</p>
+    return (
+      <div className="flex flex-1 items-center justify-center w-full h-full">
+        <div className="flex-col-3 items-center justify-center p-6 rounded-2xl surface coloring-solid">
+          <LoaderCircle className="size-8 animate-spin" aria-hidden />
+          <span className="text-description">{loadingLabel}</span>
+        </div>
+      </div>
+    )
   }
 
   if (isError) {

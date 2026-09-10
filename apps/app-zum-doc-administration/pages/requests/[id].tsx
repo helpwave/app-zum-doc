@@ -1,4 +1,5 @@
 import type { NextPage } from 'next'
+import type { ReactNode } from 'react'
 import { useRouter } from 'next/router'
 import { Button } from '@helpwave/hightide'
 import {
@@ -21,6 +22,21 @@ import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministratio
 import { statusActionLabel } from '@/lib/labels'
 import { requestKindPath } from '@/lib/navigation'
 import titleWrapper from '@/utils/titleWrapper'
+
+function RequestAttribute({
+  label,
+  children,
+}: {
+  label: string,
+  children: ReactNode,
+}) {
+  return (
+    <>
+      <dt className="text-description whitespace-nowrap">{label}</dt>
+      <dd className="min-w-0">{children}</dd>
+    </>
+  )
+}
 
 const RequestDetailPage: NextPage = () => {
   const t = useAdministrationTranslation()
@@ -50,7 +66,7 @@ const RequestDetailPage: NextPage = () => {
   }
 
   return (
-    <Page pageTitle={titleWrapper(t('requestDetail'))}>
+    <Page pageTitle={titleWrapper(request?.title ?? t('requestDetail'))}>
       <QueryState
         isPending={requestQuery.isPending || !id}
         isError={requestQuery.isError}
@@ -60,84 +76,66 @@ const RequestDetailPage: NextPage = () => {
       >
         {request && (
           <div className="flex-col-6 max-w-3xl">
-            <BackIconButton
-              className="self-start"
-              onClick={() => void router.push(requestKindPath(request.kind))}
-            />
-            <div className="flex-col-2">
+            <div className="flex-col-2 min-w-0">
+              <header className="flex-row-3 items-center min-w-0">
+                <BackIconButton
+                  className="shrink-0"
+                  onClick={() => void router.push(requestKindPath(request.kind))}
+                />
+                <h1 className="typography-title-lg min-w-0">
+                  {request.title}
+                </h1>
+              </header>
               <div className="flex-row-2 items-center">
                 <RequestTypeChip kind={request.kind} />
                 <RequestStatusChip status={request.status} />
               </div>
-              <h1 className="typography-title-lg">{request.title}</h1>
-              <p className="text-description">
-                {t('patient')}: {patientProfileFullName(request.patient)}
-              </p>
             </div>
 
-            <dl className="flex-col-3">
+            <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 items-start">
+              <RequestAttribute label={t('patient')}>
+                {patientProfileFullName(request.patient)}
+              </RequestAttribute>
               {isPracticeAppointment(request) && (
                 <>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('date')}</dt>
-                    <dd>{request.date}</dd>
-                  </div>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('time')}</dt>
-                    <dd>{request.time}</dd>
-                  </div>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('emergency')}</dt>
-                    <dd>{request.isEmergency ? t('yes') : t('no')}</dd>
-                  </div>
+                  <RequestAttribute label={t('date')}>{request.date}</RequestAttribute>
+                  <RequestAttribute label={t('time')}>{request.time}</RequestAttribute>
+                  <RequestAttribute label={t('emergency')}>
+                    {request.isEmergency ? t('yes') : t('no')}
+                  </RequestAttribute>
                   {request.sickNote && (
-                    <div className="flex-col-0">
-                      <dt className="text-description">{t('sickNote')}</dt>
-                      <dd>{request.sickNote}</dd>
-                    </div>
+                    <RequestAttribute label={t('sickNote')}>
+                      {request.sickNote}
+                    </RequestAttribute>
                   )}
                   {request.note && (
-                    <div className="flex-col-0">
-                      <dt className="text-description">{t('note')}</dt>
-                      <dd>{request.note}</dd>
-                    </div>
+                    <RequestAttribute label={t('note')}>{request.note}</RequestAttribute>
                   )}
                 </>
               )}
               {isPracticePrescription(request) && (
                 <>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('shipByMail')}</dt>
-                    <dd>{request.shipByMail ? t('yes') : t('no')}</dd>
-                  </div>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('medications')}</dt>
-                    <dd>
-                      {request.medications.map((medication) => (
-                        <div key={medication.id}>
-                          {medication.name} ({medication.size})
-                        </div>
-                      ))}
-                    </dd>
-                  </div>
+                  <RequestAttribute label={t('shipByMail')}>
+                    {request.shipByMail ? t('yes') : t('no')}
+                  </RequestAttribute>
+                  <RequestAttribute label={t('medications')}>
+                    {request.medications.map((medication) => (
+                      <div key={medication.id}>
+                        {medication.name} ({medication.size})
+                      </div>
+                    ))}
+                  </RequestAttribute>
                   {request.note && (
-                    <div className="flex-col-0">
-                      <dt className="text-description">{t('note')}</dt>
-                      <dd>{request.note}</dd>
-                    </div>
+                    <RequestAttribute label={t('note')}>{request.note}</RequestAttribute>
                   )}
                 </>
               )}
               {isPracticeReferral(request) && (
                 <>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('specialization')}</dt>
-                    <dd>{request.specialization}</dd>
-                  </div>
-                  <div className="flex-col-0">
-                    <dt className="text-description">{t('reason')}</dt>
-                    <dd>{request.reason}</dd>
-                  </div>
+                  <RequestAttribute label={t('specialization')}>
+                    {request.specialization}
+                  </RequestAttribute>
+                  <RequestAttribute label={t('reason')}>{request.reason}</RequestAttribute>
                 </>
               )}
             </dl>

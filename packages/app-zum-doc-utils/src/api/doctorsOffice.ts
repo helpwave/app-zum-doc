@@ -1,49 +1,51 @@
-import type { Address } from "./address"
-import type { Weekday } from "./enums"
+import type { Address } from './address'
+import type { Weekday } from './enums'
 
 export type DoctorsOfficeOpeningHours = Record<Weekday, string[]>
 
 export type Doctor = {
-  id: string
-  name: string
-  imageUri?: string
+  id: string,
+  name: string,
+  imageUri?: string,
 }
 
 export type DoctorService = {
-  id: string
-  name: string
-  description: string
+  id: string,
+  name: string,
+  description: string,
 }
 
 export type MyDoctors = {
-  doctorIds: string[]
+  doctorIds: string[],
 }
 
-export const defaultPracticeOfficeId = "office-moser"
+export const defaultPracticeOfficeId = 'office-moser'
 
 export type DoctorsOffice = {
-  id: string
-  name: string
-  specialization: string
-  imageUri?: string
-  phoneNumber?: string
-  websiteUrl?: string
-  openingHours: DoctorsOfficeOpeningHours
-  address: Address
-  services: DoctorService[]
-  offers: DoctorService[]
-  doctors: Doctor[]
+  id: string,
+  name: string,
+  specialization: string,
+  imageUri?: string,
+  phoneNumber?: string,
+  websiteUrl?: string,
+  openingHours: DoctorsOfficeOpeningHours,
+  address: Address,
+  services: DoctorService[],
+  offers: DoctorService[],
+  doctors: Doctor[],
 }
 
 export type UpdateDoctorsOfficeInput = {
-  phoneNumber?: string
-  websiteUrl?: string
-  openingHours?: DoctorsOfficeOpeningHours
+  name?: string,
+  phoneNumber?: string,
+  websiteUrl?: string,
+  openingHours?: DoctorsOfficeOpeningHours,
+  address?: Address,
 }
 
 export function isMyDoctorsOffice(
   myDoctors: MyDoctors,
-  doctorsOfficeId: string,
+  doctorsOfficeId: string
 ): boolean {
   return myDoctors.doctorIds.includes(doctorsOfficeId)
 }

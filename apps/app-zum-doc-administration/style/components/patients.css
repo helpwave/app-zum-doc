@@ -25,7 +25,7 @@
   }
 
   .patient-detail-panel [data-name="tab-list-item"] {
-    @apply grow-0 px-3;
+    @apply px-3;
   }
 
   .patient-detail-panel {

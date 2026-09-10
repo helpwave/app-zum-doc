@@ -30,4 +30,15 @@
   .vertical-navigation-item-row:has([aria-current="page"]) {
     @apply bg-primary/15 text-primary;
   }
+
+  .app-page-main-spacer {
+    @apply min-h-4;
+  }
+
+  /* TODO remove this when hightide is fixed */
+  .card-header {
+    &:is(.group\/card[data-size="md"] *) {
+      min-height: auto;
+    }
+  }
 }

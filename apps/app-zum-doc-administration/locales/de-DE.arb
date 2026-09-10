@@ -174,5 +174,13 @@
   "chatsTitle": "Chats",
   "inboxTitle": "Anfragen-Posteingang",
   "inboxDescription": "Termine, Rezepte und Überweisungen von Patientinnen und Patienten.",
-  "hoursHint": "Angaben wie 7:00 - 12:00, 14:00 - 16:00"
+  "hoursHint": "Angaben wie 7:00 - 12:00, 14:00 - 16:00",
+  "basicInformation": "Grunddaten",
+  "clinicName": "Praxisname",
+  "street": "Straße",
+  "streetNumber": "Hausnummer",
+  "postalCode": "PLZ",
+  "city": "Ort",
+  "deleteTimeRange": "Zeitraum löschen",
+  "addTimeRange": "Zeitraum hinzufügen"
 }

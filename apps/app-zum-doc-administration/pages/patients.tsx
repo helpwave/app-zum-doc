@@ -12,7 +12,7 @@ import {
 } from '@helpwave/hightide'
 import { Info, Pencil, Plus } from 'lucide-react'
 import {
-  formatPatientDayMonth,
+  formatPatientDateLong,
   patientProfileFullName,
   toAppLocale,
   type PracticePatient
@@ -178,11 +178,11 @@ const PatientsPage: NextPage = () => {
                     id="dateOfBirth"
                     header={t('patientColumnDateOfBirth')}
                     accessorKey="dateOfBirth"
-                    minSize={150}
-                    size={180}
+                    minSize={200}
+                    size={220}
                     cell={({ row }) => (
                       <TableCell className="whitespace-nowrap">
-                        {formatPatientDayMonth(row.original.dateOfBirth, locale)}
+                        {formatPatientDateLong(row.original.dateOfBirth, locale)}
                       </TableCell>
                     )}
                   />
@@ -202,11 +202,11 @@ const PatientsPage: NextPage = () => {
                       </span>
                     )}
                     accessorKey="lastVisit"
-                    minSize={160}
-                    size={190}
+                    minSize={210}
+                    size={230}
                     cell={({ row }) => (
                       <TableCell className="whitespace-nowrap">
-                        {formatPatientDayMonth(row.original.lastVisit, locale)}
+                        {formatPatientDateLong(row.original.lastVisit, locale)}
                       </TableCell>
                     )}
                   />

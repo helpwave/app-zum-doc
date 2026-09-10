@@ -64,7 +64,7 @@ const RequestsPage: NextPage = () => {
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
-            color="neutral"
+            color={status === undefined ? 'primary' : 'neutral'}
             coloringStyle={status === undefined ? 'solid' : 'tonal'}
             onClick={() => setStatus(undefined)}
           >
@@ -74,7 +74,7 @@ const RequestsPage: NextPage = () => {
             <Button
               key={item}
               size="sm"
-              color="neutral"
+              color={status === item ? 'primary' : 'neutral'}
               coloringStyle={status === item ? 'solid' : 'tonal'}
               onClick={() => setStatus(item)}
             >

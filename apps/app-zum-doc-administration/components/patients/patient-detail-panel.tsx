@@ -57,7 +57,7 @@ export function PatientDetailPanel({
       </div>
 
       <TabSwitcher>
-        <TabList />
+        <TabList className="w-full"/>
         <TabPanel label={t('patientInformation')} initiallyActive>
           <dl className="patient-detail-fields">
             <div className="patient-detail-field">
@@ -98,9 +98,9 @@ export function PatientDetailPanel({
             </div>
           </dl>
 
-          <div className="flex-col-2 mt-6">
+          <div className="flex-row-2 flex-wrap mt-6">
             <Button
-              color="primary"
+              color="negative"
               coloringStyle="text"
               className="self-start !min-w-0"
               onClick={onDelete}
@@ -110,7 +110,7 @@ export function PatientDetailPanel({
               {t('deletePatient')}
             </Button>
             <Button
-              color="primary"
+              color="negative"
               coloringStyle="text"
               className="self-start !min-w-0"
               onClick={onToggleBlocked}

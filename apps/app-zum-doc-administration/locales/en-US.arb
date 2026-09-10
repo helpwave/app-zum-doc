@@ -174,5 +174,13 @@
   "chatsTitle": "Chats",
   "inboxTitle": "Request inbox",
   "inboxDescription": "Appointments, prescriptions and referrals from patients.",
-  "hoursHint": "Use ranges such as 7:00 - 12:00, 14:00 - 16:00"
+  "hoursHint": "Use ranges such as 7:00 - 12:00, 14:00 - 16:00",
+  "basicInformation": "Basic information",
+  "clinicName": "Clinic name",
+  "street": "Street",
+  "streetNumber": "Street number",
+  "postalCode": "Postal code",
+  "city": "City",
+  "deleteTimeRange": "Delete time range",
+  "addTimeRange": "Add time range"
 }
