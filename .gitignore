@@ -6,3 +6,4 @@ ios/
 android/
 *.jks
 *.p12
+tsconfig.tsbuildinfo

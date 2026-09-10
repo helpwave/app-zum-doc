@@ -36,8 +36,8 @@
     "test": "node -e \"process.exit(0)\""
   },
   "dependencies": {
-    "@helpwave/hightide-design": "0.7.3",
-    "@helpwave/hightide-utils": "0.1.3",
+    "@helpwave/hightide-design": "0.7.4",
+    "@helpwave/hightide-utils": "0.1.5",
     "@helpwave/internationalization": "0.4.0"
   },
   "peerDependencies": {

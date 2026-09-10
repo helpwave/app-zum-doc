@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@import "@helpwave/hightide/style/uncompiled/globals.css";
+@import "./style/index.css";
+@source "../../node_modules/@helpwave/hightide";
+@source "./node_modules/@helpwave/hightide";
+
+@theme static {
+  --color-primary: #057986;
+  --color-primary-hover: #046570;
+  --color-highlight: #057986;
+}
+
+@layer base {
+  @variant dark {
+    --color-primary: #046570;
+    --color-primary-hover: #057986;
+  }
+
+  body {
+    @apply w-screen max-w-screen min-h-dvh h-dvh max-h-dvh overflow-hidden;
+  }
+}

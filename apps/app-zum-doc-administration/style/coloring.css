@@ -1,0 +1,109 @@
+@utility appointment {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-appointment);
+  --coloring-on-color: var(--color-on-appointment);
+  --coloring-hover: var(--color-appointment-hover);
+  --color-focus: var(--color-appointment);
+}
+
+@utility referral {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-referral);
+  --coloring-on-color: var(--color-on-referral);
+  --coloring-hover: var(--color-referral-hover);
+  --color-focus: var(--color-referral);
+}
+
+@utility prescription {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-prescription);
+  --coloring-on-color: var(--color-on-prescription);
+  --coloring-hover: var(--color-prescription-hover);
+  --color-focus: var(--color-prescription);
+}
+
+@utility cancelled {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-cancelled);
+  --coloring-on-color: var(--color-on-cancelled);
+  --coloring-hover: var(--color-cancelled-hover);
+  --color-focus: var(--color-cancelled);
+}
+
+@utility requested {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-requested);
+  --coloring-on-color: var(--color-on-requested);
+  --coloring-hover: var(--color-requested-hover);
+  --color-focus: var(--color-requested);
+}
+
+@utility in-progress {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-in-progress);
+  --coloring-on-color: var(--color-on-in-progress);
+  --coloring-hover: var(--color-in-progress-hover);
+  --color-focus: var(--color-in-progress);
+}
+
+@utility ready-for-pickup {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-ready-for-pickup);
+  --coloring-on-color: var(--color-on-ready-for-pickup);
+  --coloring-hover: var(--color-ready-for-pickup-hover);
+  --color-focus: var(--color-ready-for-pickup);
+}
+
+@utility completed {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-completed);
+  --coloring-on-color: var(--color-on-completed);
+  --coloring-hover: var(--color-completed-hover);
+  --color-focus: var(--color-completed);
+}
+
+@utility confirmed {
+  @apply coloring-reset-variables;
+  --coloring-color: var(--color-confirmed);
+  --coloring-on-color: var(--color-on-confirmed);
+  --coloring-hover: var(--color-confirmed-hover);
+  --color-focus: var(--color-confirmed);
+}
+
+@layer utilities {
+  .coloring-color-detect[data-color="appointment"] {
+    @apply appointment;
+  }
+
+  .coloring-color-detect[data-color="referral"] {
+    @apply referral;
+  }
+
+  .coloring-color-detect[data-color="prescription"] {
+    @apply prescription;
+  }
+
+  .coloring-color-detect[data-color="cancelled"] {
+    @apply cancelled;
+  }
+
+  .coloring-color-detect[data-color="requested"] {
+    @apply requested;
+  }
+
+  .coloring-color-detect[data-color="in-progress"] {
+    @apply in-progress;
+  }
+
+  .coloring-color-detect[data-color="ready-for-pickup"] {
+    @apply ready-for-pickup;
+  }
+
+  .coloring-color-detect[data-color="completed"] {
+    @apply completed;
+  }
+
+  .coloring-color-detect[data-color="confirmed"] {
+    @apply confirmed;
+  }
+}

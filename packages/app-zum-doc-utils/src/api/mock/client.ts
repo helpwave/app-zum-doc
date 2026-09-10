@@ -9,6 +9,10 @@ import {
   patientMedicationsSeed,
   patientProfileSeed,
   patientProfilesSeed,
+  practiceConversationsSeed,
+  practiceMessagesByConversation,
+  practicePatientsSeed,
+  practiceTodayAppointmentsSeed,
   prescriptionsSeed,
   referralsSeed,
   specializationsSeed,
@@ -37,6 +41,12 @@ import {
   type PatientProfile,
   type PatientProfileSummary,
   type PatientRequest,
+  type PatientRequestStatus,
+  type PatientRequestType,
+  type PracticeOverview,
+  type PracticePatient,
+  type PracticeRequest,
+  type CreatePracticePatientInput,
   type Prescription,
   type PrescriptionRecord,
   type Referral,
@@ -45,13 +55,28 @@ import {
   type SearchCity,
   type SearchSpecialization,
   type StructuredCardMessage,
-  type TextMessage
+  type TextMessage,
+  type UpdateDoctorsOfficeInput
 } from '../types'
 import {
   formatAppointmentRequestTitle,
   formatPrescriptionRequestTitle,
   formatReferralRequestTitle
 } from '../requestTitle'
+import {
+  formatInsuranceChipLabel,
+  findInsuranceCompany
+} from '../insurance'
+import {
+  patientProfileFullName,
+  toPatientProfileSummary
+} from '../patientProfile'
+import { defaultPracticeOfficeId } from '../doctorsOffice'
+import { parseIsoDate } from '../openingHours'
+import {
+  canTransitionPatientRequestStatus,
+  isOpenPatientRequestStatus
+} from '../requests'
 
 type HomeSummary = {
   myDoctors: DoctorsOffice[],
@@ -60,15 +85,84 @@ type HomeSummary = {
 
 const delayMs = 550
 
+function isoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+function listedTodayAppointmentRecords(): AppointmentRecord[] {
+  const date = isoDate(new Date())
+  return practiceTodayAppointmentsSeed
+    .filter((item) => item.listed !== false)
+    .map((item): AppointmentRecord => {
+      const record: AppointmentRecord = {
+        id: item.id,
+        profileId: item.profileId,
+        time: item.time,
+        note: item.note,
+        isEmergency: false,
+        status: item.status,
+        doctorsOfficeId: defaultPracticeOfficeId,
+        date,
+      }
+      if (item.sickNote) {
+        record.sickNote = item.sickNote
+      }
+      return record
+    })
+}
+
+function createAppointmentsState(): AppointmentRecord[] {
+  return [
+    ...structuredClone(appointmentsSeed),
+    ...listedTodayAppointmentRecords(),
+  ]
+}
+
+function ensureListedTodayAppointments(): void {
+  const date = isoDate(new Date())
+  const listed = listedTodayAppointmentRecords()
+  const byId = new Map(appointmentsState.map((item) => [item.id, item]))
+  const next = appointmentsState.map((item) => {
+    if (!listed.some((today) => today.id === item.id)) {
+      return item
+    }
+    return { ...item, date }
+  })
+  for (const record of listed) {
+    if (!byId.has(record.id)) {
+      next.push(record)
+    }
+  }
+  appointmentsState = next
+}
+
+function resolvePracticePatient(profileId: string): PatientProfile | undefined {
+  return practicePatientsState.find((item) => item.id === profileId)
+}
+
+function startOfToday(): Date {
+  const now = new Date()
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+}
+
 let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
 let messagesState: Record<string, Message[]> = structuredClone(
   messagesByConversation
 )
 let myDoctorIds = new Set<string>(initialMyDoctorIds)
 let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
-let appointmentsState: AppointmentRecord[] = structuredClone(appointmentsSeed)
+let appointmentsState: AppointmentRecord[] = createAppointmentsState()
 let prescriptionsState: PrescriptionRecord[] = structuredClone(prescriptionsSeed)
 let referralsState: ReferralRecord[] = structuredClone(referralsSeed)
+let doctorsOfficesState: Record<string, DoctorsOfficeSeed> = structuredClone(doctorsOfficesSeed)
+let practiceConversationsState: ConversationPreview[] = structuredClone(practiceConversationsSeed)
+let practiceMessagesState: Record<string, Message[]> = structuredClone(
+  practiceMessagesByConversation
+)
+let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
+let blockedPracticePatientIds = new Set<string>()
 
 export const mockApiConfig = {
   forceFail: false,
@@ -89,7 +183,7 @@ async function withMockLatency<T>(
   const shouldFail =
     mockApiConfig.forceFail ||
     options?.failKey?.toLowerCase() === 'fehler' ||
-    process.env.EXPO_PUBLIC_MOCK_FAIL === '1'
+    process.env['EXPO_PUBLIC_MOCK_FAIL'] === '1'
 
   if (shouldFail) {
     throw new Error('Die Daten konnten nicht geladen werden. Bitte erneut versuchen.')
@@ -224,7 +318,7 @@ export async function resolveCardAction(
 export async function fetchHomeSummary(params: { locale: AppLocale }): Promise<HomeSummary> {
   return withMockLatency(() => ({
     myDoctors: [...myDoctorIds].flatMap((id) => {
-      const office = doctorsOfficesSeed[id]
+      const office = doctorsOfficesState[id]
       return office ? [toDoctorsOffice(office, params.locale)] : []
     }),
     recentRequests: buildRecentRequests(params.locale),
@@ -239,10 +333,120 @@ export async function fetchPatientProfileById(params: {
   profileId: string,
 }): Promise<PatientProfile> {
   return withMockLatency(() => {
-    if (patientProfileSeed.id === params.profileId) {
-      return { ...patientProfileSeed }
+    const profile = resolvePracticePatient(params.profileId)
+    if (profile) {
+      return {
+        ...profile,
+        insurance: { ...profile.insurance },
+        medicationList: profile.medicationList.map((item) => ({ ...item })),
+      }
     }
     throw new Error('Profil nicht gefunden.')
+  })
+}
+
+export async function fetchPracticePatients(): Promise<PracticePatient[]> {
+  return withMockLatency(() => {
+    ensureListedTodayAppointments()
+    return practicePatientsState.map((profile) => toPracticePatient(profile))
+  })
+}
+
+function clonePatientProfile(profile: PatientProfile): PatientProfile {
+  return {
+    ...profile,
+    insurance: { ...profile.insurance },
+    medicationList: profile.medicationList.map((item) => ({ ...item })),
+  }
+}
+
+function lastVisitFor(profileId: string): Date | undefined {
+  const dates: Date[] = []
+  for (const appointment of appointmentsState) {
+    if (appointment.profileId !== profileId || appointment.status === 'cancelled') {
+      continue
+    }
+    const date = parseIsoDate(appointment.date)
+    const [hoursText, minutesText] = appointment.time.split(':')
+    date.setHours(Number(hoursText ?? 0), Number(minutesText ?? 0), 0, 0)
+    dates.push(date)
+  }
+  dates.sort((left, right) => right.getTime() - left.getTime())
+  return dates[0]
+}
+
+function fallbackLastVisit(profileId: string): Date {
+  const index = Math.max(0, practicePatientsState.findIndex((item) => item.id === profileId))
+  return new Date(2025, 3, 24 + index, 8, 33)
+}
+
+function toPracticePatient(profile: PatientProfile): PracticePatient {
+  const lastVisit = lastVisitFor(profile.id) ?? fallbackLastVisit(profile.id)
+  return {
+    ...clonePatientProfile(profile),
+    lastVisit,
+    lastChangedAt: lastVisit,
+    lastChangedBy: 'Max Mustermann',
+    insuranceCardCurrent: true,
+    blocked: blockedPracticePatientIds.has(profile.id),
+  }
+}
+
+export async function createPracticePatient(
+  input: CreatePracticePatientInput
+): Promise<PracticePatient> {
+  return withMockLatency(() => {
+    const firstName = input.firstName.trim()
+    const lastName = input.lastName.trim()
+    if (!firstName || !lastName || !input.dateOfBirth) {
+      throw new Error('Bitte Vorname, Nachname und Geburtsdatum angeben.')
+    }
+    const id = `patient-${Date.now()}`
+    const insuranceNumber = String(51_247_32 + practicePatientsState.length)
+    const profile: PatientProfile = {
+      id,
+      firstName,
+      lastName,
+      dateOfBirth: parseIsoDate(input.dateOfBirth),
+      email: `${firstName}.${lastName}@mail.de`.toLowerCase().replaceAll(' ', ''),
+      phone: '',
+      insurance: {
+        insuranceProviderId: 'techniker-krankenkasse',
+        insuranceNumber,
+      },
+      medicationList: [],
+    }
+    practicePatientsState = [profile, ...practicePatientsState]
+    return toPracticePatient(profile)
+  })
+}
+
+export async function deletePracticePatient(profileId: string): Promise<void> {
+  return withMockLatency(() => {
+    const exists = practicePatientsState.some((item) => item.id === profileId)
+    if (!exists) {
+      throw new Error('Profil nicht gefunden.')
+    }
+    practicePatientsState = practicePatientsState.filter((item) => item.id !== profileId)
+    blockedPracticePatientIds.delete(profileId)
+  })
+}
+
+export async function setPracticePatientBlocked(params: {
+  profileId: string,
+  blocked: boolean,
+}): Promise<PracticePatient> {
+  return withMockLatency(() => {
+    const profile = resolvePracticePatient(params.profileId)
+    if (!profile) {
+      throw new Error('Profil nicht gefunden.')
+    }
+    if (params.blocked) {
+      blockedPracticePatientIds.add(params.profileId)
+    } else {
+      blockedPracticePatientIds.delete(params.profileId)
+    }
+    return toPracticePatient(profile)
   })
 }
 
@@ -255,7 +459,7 @@ function resolveDoctorsOffice(
   doctorsOfficeId: string,
   locale: AppLocale
 ): DoctorsOffice {
-  const office = doctorsOfficesSeed[doctorsOfficeId]
+  const office = doctorsOfficesState[doctorsOfficeId]
   if (!office) {
     throw new Error('Arztpraxis nicht gefunden.')
   }
@@ -326,7 +530,7 @@ export async function createAppointment(
   locale: AppLocale
 ): Promise<Appointment> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[input.doctorsOfficeId]
+    const office = doctorsOfficesState[input.doctorsOfficeId]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -389,7 +593,7 @@ export async function createPrescription(
   locale: AppLocale
 ): Promise<Prescription> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[input.doctorsOfficeId]
+    const office = doctorsOfficesState[input.doctorsOfficeId]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -458,7 +662,7 @@ export async function createReferral(
   locale: AppLocale
 ): Promise<Referral> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[input.doctorsOfficeId]
+    const office = doctorsOfficesState[input.doctorsOfficeId]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -640,7 +844,7 @@ export async function fetchDoctorsOffice(params: {
   locale: AppLocale,
 }): Promise<DoctorsOffice> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[params.id]
+    const office = doctorsOfficesState[params.id]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -650,7 +854,7 @@ export async function fetchDoctorsOffice(params: {
 
 export async function addMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[doctorsOfficeId]
+    const office = doctorsOfficesState[doctorsOfficeId]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -661,7 +865,7 @@ export async function addMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
 
 export async function removeMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
   return withMockLatency(() => {
-    const office = doctorsOfficesSeed[doctorsOfficeId]
+    const office = doctorsOfficesState[doctorsOfficeId]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -711,7 +915,7 @@ export async function fetchDoctors(
     const query = filters.query?.trim().toLowerCase() ?? ''
     const cityById = new Map(citiesSeed.map((city) => [city.id, city]))
 
-    return Object.values(doctorsOfficesSeed)
+    return Object.values(doctorsOfficesState)
       .filter((office) => {
         if (filters.cityId && office.cityId !== filters.cityId) {
           return false
@@ -736,12 +940,368 @@ export async function fetchDoctors(
   }, { failKey: filters.query })
 }
 
+function resolvePatientSummary(profileId: string): PatientProfileSummary {
+  const practicePatient = resolvePracticePatient(profileId)
+  if (practicePatient) {
+    return toPatientProfileSummary(practicePatient)
+  }
+  const summary = patientProfilesSeed.find((item) => item.id === profileId)
+  if (summary) {
+    return { ...summary }
+  }
+  return toPatientProfileSummary(patientProfileSeed)
+}
+
+function toPracticeRequest(request: PatientRequest): PracticeRequest {
+  return {
+    ...request,
+    patient: resolvePatientSummary(request.profileId),
+  }
+}
+
+function practiceRequestsForOffice(
+  officeId: string,
+  locale: AppLocale
+): PracticeRequest[] {
+  return buildRecentRequests(locale)
+    .filter((request) => request.doctorsOffice.id === officeId)
+    .map(toPracticeRequest)
+}
+
+export async function fetchPracticeOverview(params: {
+  officeId: string,
+  locale: AppLocale,
+}): Promise<PracticeOverview> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesState[params.officeId]
+    if (!office) {
+      throw new Error('Arztpraxis nicht gefunden.')
+    }
+    ensureListedTodayAppointments()
+    const requests = practiceRequestsForOffice(params.officeId, params.locale)
+    const open = requests.filter((request) =>
+      isOpenPatientRequestStatus(request.status))
+    const today = isoDate(new Date())
+    const todayStart = startOfToday()
+    let todayAppointmentsGkv = 0
+    let todayAppointmentsPkv = 0
+    let sickNotes = 0
+    let openAppointmentsWithoutSickNote = 0
+
+    for (const seed of practiceTodayAppointmentsSeed) {
+      const patient = resolvePracticePatient(seed.profileId) ?? patientProfileSeed
+      const company = findInsuranceCompany(patient.insurance.insuranceProviderId)
+      if (company?.type === 'private') {
+        todayAppointmentsPkv += 1
+      } else {
+        todayAppointmentsGkv += 1
+      }
+      if (seed.sickNote) {
+        sickNotes += 1
+      } else {
+        openAppointmentsWithoutSickNote += 1
+      }
+    }
+
+    const todayAppointments = appointmentsState
+      .filter((item) => (
+        item.doctorsOfficeId === params.officeId
+        && item.date === today
+      ))
+      .sort((left, right) => left.time.localeCompare(right.time))
+      .map((item) => {
+        const patient = resolvePracticePatient(item.profileId) ?? patientProfileSeed
+        return {
+          id: item.id,
+          time: item.time,
+          date: item.date,
+          patientName: patientProfileFullName(patient),
+          insuranceLabel: formatInsuranceChipLabel(patient.insurance),
+          reason: item.note,
+        }
+      })
+
+    const unreadChatCount = practiceConversationsState.reduce(
+      (sum, conversation) => sum + conversation.unreadCount,
+      0
+    )
+    const overdueMessageCount = practiceConversationsState.filter((conversation) => (
+      conversation.unreadCount > 0
+      && conversation.lastMessage.time < todayStart
+    )).length
+
+    const recentMessages = [...practiceConversationsState]
+      .sort((left, right) =>
+        right.lastMessage.time.getTime() - left.lastMessage.time.getTime())
+      .slice(0, 6)
+      .map((conversation) => {
+        const patient = resolvePracticePatient(conversation.user.id)
+        return {
+          conversationId: conversation.id,
+          patientName: conversation.user.name,
+          insuranceLabel: patient
+            ? formatInsuranceChipLabel(patient.insurance)
+            : '',
+          preview: conversation.lastMessage.preview,
+          time: conversation.lastMessage.time,
+        }
+      })
+
+    return {
+      office: toDoctorsOffice(office, params.locale),
+      openAppointments: open.filter((request) => request.kind === 'appointment').length,
+      openPrescriptions: open.filter((request) => request.kind === 'prescription').length,
+      openReferrals: open.filter((request) => request.kind === 'referral').length,
+      patientCount: practicePatientsState.length,
+      overdueMessageCount,
+      unreadChatCount,
+      todayAppointmentsGkv,
+      todayAppointmentsPkv,
+      requestDistribution: {
+        sickNotes,
+        referrals: open.filter((request) => request.kind === 'referral').length,
+        appointments: openAppointmentsWithoutSickNote,
+      },
+      todayAppointments,
+      recentMessages,
+      recentRequests: requests.slice(0, 5),
+    }
+  })
+}
+
+export async function fetchPracticeRequests(params: {
+  officeId: string,
+  locale: AppLocale,
+  kind?: PatientRequestType,
+  status?: PatientRequestStatus,
+}): Promise<PracticeRequest[]> {
+  return withMockLatency(() => {
+    ensureListedTodayAppointments()
+    return practiceRequestsForOffice(params.officeId, params.locale).filter((request) => {
+      if (params.kind && request.kind !== params.kind) {
+        return false
+      }
+      if (params.status && request.status !== params.status) {
+        return false
+      }
+      return true
+    })
+  })
+}
+
+export async function fetchPracticeRequest(params: {
+  id: string,
+  locale: AppLocale,
+}): Promise<PracticeRequest> {
+  return withMockLatency(() => {
+    const appointment = appointmentsState.find((item) => item.id === params.id)
+    if (appointment) {
+      return toPracticeRequest(toAppointment(appointment, params.locale))
+    }
+    const prescription = prescriptionsState.find((item) => item.id === params.id)
+    if (prescription) {
+      return toPracticeRequest(toPrescription(prescription, params.locale))
+    }
+    const referral = referralsState.find((item) => item.id === params.id)
+    if (referral) {
+      return toPracticeRequest(toReferral(referral, params.locale))
+    }
+    throw new Error('Anfrage nicht gefunden.')
+  })
+}
+
+export async function updatePatientRequestStatus(params: {
+  id: string,
+  kind: PatientRequestType,
+  status: PatientRequestStatus,
+  locale: AppLocale,
+}): Promise<PracticeRequest> {
+  return withMockLatency(() => {
+    if (params.kind === 'appointment') {
+      const existing = appointmentsState.find((item) => item.id === params.id)
+      if (!existing) {
+        throw new Error('Termin nicht gefunden.')
+      }
+      if (!canTransitionPatientRequestStatus('appointment', existing.status, params.status)) {
+        throw new Error('Dieser Statuswechsel ist nicht möglich.')
+      }
+      const appointment: AppointmentRecord = {
+        ...existing,
+        status: params.status,
+      }
+      appointmentsState = appointmentsState.map((item) =>
+        item.id === params.id ? appointment : item)
+      return toPracticeRequest(toAppointment(appointment, params.locale))
+    }
+
+    if (params.kind === 'prescription') {
+      const existing = prescriptionsState.find((item) => item.id === params.id)
+      if (!existing) {
+        throw new Error('Rezept nicht gefunden.')
+      }
+      if (!canTransitionPatientRequestStatus('prescription', existing.status, params.status)) {
+        throw new Error('Dieser Statuswechsel ist nicht möglich.')
+      }
+      const prescription: PrescriptionRecord = {
+        ...existing,
+        status: params.status,
+      }
+      prescriptionsState = prescriptionsState.map((item) =>
+        item.id === params.id ? prescription : item)
+      return toPracticeRequest(toPrescription(prescription, params.locale))
+    }
+
+    const existing = referralsState.find((item) => item.id === params.id)
+    if (!existing) {
+      throw new Error('Überweisung nicht gefunden.')
+    }
+    if (!canTransitionPatientRequestStatus('referral', existing.status, params.status)) {
+      throw new Error('Dieser Statuswechsel ist nicht möglich.')
+    }
+    const referral: ReferralRecord = {
+      ...existing,
+      status: params.status,
+    }
+    referralsState = referralsState.map((item) =>
+      item.id === params.id ? referral : item)
+    return toPracticeRequest(toReferral(referral, params.locale))
+  })
+}
+
+export async function updateDoctorsOffice(params: {
+  officeId: string,
+  locale: AppLocale,
+  input: UpdateDoctorsOfficeInput,
+}): Promise<DoctorsOffice> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesState[params.officeId]
+    if (!office) {
+      throw new Error('Arztpraxis nicht gefunden.')
+    }
+    const next: DoctorsOfficeSeed = {
+      ...office,
+      name: params.input.name ?? office.name,
+      phoneNumber: params.input.phoneNumber ?? office.phoneNumber,
+      websiteUrl: params.input.websiteUrl ?? office.websiteUrl,
+      address: params.input.address
+        ? { ...params.input.address }
+        : office.address,
+      openingHours: params.input.openingHours
+        ? cloneOpeningHours(params.input.openingHours)
+        : office.openingHours,
+    }
+    doctorsOfficesState = {
+      ...doctorsOfficesState,
+      [params.officeId]: next,
+    }
+    return toDoctorsOffice(next, params.locale)
+  })
+}
+
+export async function fetchPracticeConversations(): Promise<ConversationPreview[]> {
+  return withMockLatency(() =>
+    practiceConversationsState.map((conversation) => ({ ...conversation })))
+}
+
+export async function fetchPracticeConversation(params: {
+  conversationId: string,
+}): Promise<ConversationPreview> {
+  return withMockLatency(() => {
+    const conversation = practiceConversationsState.find(
+      (item) => item.id === params.conversationId
+    )
+    if (!conversation) {
+      throw new Error('Unterhaltung nicht gefunden.')
+    }
+    return { ...conversation }
+  })
+}
+
+export async function fetchPracticeMessages(params: {
+  conversationId: string,
+}): Promise<Message[]> {
+  return withMockLatency(() => {
+    const messages = practiceMessagesState[params.conversationId] ?? []
+    return messages.map((message) => ({ ...message }))
+  })
+}
+
+export async function markPracticeConversationRead(
+  conversationId: string
+): Promise<ConversationPreview[]> {
+  return withMockLatency(() => {
+    practiceConversationsState = practiceConversationsState.map((conversation) => {
+      if (conversation.id !== conversationId) {
+        return conversation
+      }
+      return { ...conversation, unreadCount: 0 }
+    })
+    return practiceConversationsState.map((conversation) => ({ ...conversation }))
+  })
+}
+
+export async function sendPracticeMessage(
+  conversationId: string,
+  body: string
+): Promise<Message[]> {
+  return withMockLatency(() => {
+    const conversation = practiceConversationsState.find(
+      (item) => item.id === conversationId
+    )
+    if (!conversation) {
+      throw new Error('Unterhaltung nicht gefunden.')
+    }
+
+    const now = new Date()
+    const message: TextMessage = {
+      id: `practice-msg-local-${Date.now()}`,
+      type: 'text',
+      direction: 'outgoing',
+      status: 'sent',
+      body,
+      time: now,
+    }
+
+    const existing = practiceMessagesState[conversationId] ?? []
+    practiceMessagesState = {
+      ...practiceMessagesState,
+      [conversationId]: [...existing, message],
+    }
+
+    const lastMessage: MessagePreview = {
+      id: message.id,
+      preview: body,
+      time: now,
+      direction: 'outgoing',
+      status: 'sent',
+    }
+
+    practiceConversationsState = practiceConversationsState.map((item) => {
+      if (item.id !== conversationId) {
+        return item
+      }
+      return {
+        ...item,
+        lastMessage,
+        unreadCount: 0,
+      }
+    })
+
+    return (practiceMessagesState[conversationId] ?? []).map((item) => ({ ...item }))
+  })
+}
+
 export function resetMockStore(): void {
   conversationsState = structuredClone(conversationsSeed)
   messagesState = structuredClone(messagesByConversation)
   myDoctorIds = new Set<string>(initialMyDoctorIds)
   patientMedicationsState = structuredClone(patientMedicationsSeed)
-  appointmentsState = structuredClone(appointmentsSeed)
+  appointmentsState = createAppointmentsState()
   prescriptionsState = structuredClone(prescriptionsSeed)
   referralsState = structuredClone(referralsSeed)
+  doctorsOfficesState = structuredClone(doctorsOfficesSeed)
+  practiceConversationsState = structuredClone(practiceConversationsSeed)
+  practiceMessagesState = structuredClone(practiceMessagesByConversation)
+  practicePatientsState = structuredClone(practicePatientsSeed)
+  blockedPracticePatientIds = new Set<string>()
 }

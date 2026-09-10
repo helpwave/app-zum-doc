@@ -1,0 +1,45 @@
+@theme {
+  --color-on-primary: #ffffff;
+  --color-secondary: #458ab9;
+  --color-on-secondary: #ffffff;
+  --color-secondary-hover: color-mix(in srgb, var(--color-secondary), black 16%);
+  --color-tertiary: #771d9b;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-hover: color-mix(in srgb, var(--color-tertiary), black 16%);
+
+  --color-appointment: var(--color-secondary);
+  --color-on-appointment: var(--color-on-secondary);
+  --color-appointment-hover: var(--color-secondary-hover);
+
+  --color-referral: var(--color-tertiary);
+  --color-on-referral: var(--color-on-tertiary);
+  --color-referral-hover: var(--color-tertiary-hover);
+
+  --color-prescription: var(--color-primary);
+  --color-on-prescription: var(--color-on-primary);
+  --color-prescription-hover: var(--color-primary-hover);
+
+  --color-cancelled: var(--color-negative);
+  --color-on-cancelled: var(--color-on-negative);
+  --color-cancelled-hover: var(--color-negative-hover);
+
+  --color-requested: var(--color-warning);
+  --color-on-requested: var(--color-on-warning);
+  --color-requested-hover: var(--color-warning-hover);
+
+  --color-in-progress: var(--color-warning);
+  --color-on-in-progress: var(--color-on-warning);
+  --color-in-progress-hover: var(--color-warning-hover);
+
+  --color-ready-for-pickup: var(--color-positive);
+  --color-on-ready-for-pickup: var(--color-on-positive);
+  --color-ready-for-pickup-hover: var(--color-positive-hover);
+
+  --color-completed: var(--color-positive);
+  --color-on-completed: var(--color-on-positive);
+  --color-completed-hover: var(--color-positive-hover);
+
+  --color-confirmed: var(--color-positive);
+  --color-on-confirmed: var(--color-on-positive);
+  --color-confirmed-hover: var(--color-positive-hover);
+}

@@ -1,0 +1,54 @@
+@layer components {
+  .patients-layout {
+    @apply flex flex-col gap-6 w-full min-w-0;
+
+    @variant tablet {
+      @apply flex-row items-start;
+    }
+  }
+
+  .patients-table [data-name="table-container"] {
+    @apply border border-divider bg-surface rounded-xl shadow-around-md;
+  }
+
+  [data-name="table-body-row"].patient-row-active {
+    @apply bg-primary/10;
+
+    td {
+      @apply bg-primary/10;
+    }
+  }
+
+  .patient-detail-panel [data-name="tab-list"] {
+    @apply flex justify-start;
+    grid-template-columns: none;
+  }
+
+  .patient-detail-panel [data-name="tab-list-item"] {
+    @apply px-3;
+  }
+
+  .patient-detail-panel {
+    @apply flex-col-4 w-full p-5 rounded-2xl bg-surface shadow-around-md;
+
+    @variant tablet {
+      @apply w-96 max-w-96 shrink-0;
+    }
+  }
+
+  .patient-detail-fields {
+    @apply flex-col-3 w-full pt-4;
+  }
+
+  .patient-detail-field {
+    @apply flex-row-3 items-start justify-between gap-x-4 w-full;
+
+    dt {
+      @apply text-description;
+    }
+
+    dd {
+      @apply text-right;
+    }
+  }
+}

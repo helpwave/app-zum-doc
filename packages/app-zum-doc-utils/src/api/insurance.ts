@@ -159,3 +159,40 @@ export function findInsuranceCompany(
 ): InsuranceCompany | undefined {
   return insuranceCompanies.find((company) => company.id === insuranceProviderId)
 }
+
+export function insuranceCompanyShortName(
+  company: Pick<InsuranceCompany, "name">,
+): string {
+  const lower = company.name.toLowerCase()
+  if (lower.includes("techniker")) {
+    return "TK"
+  }
+  if (lower.includes("hkk")) {
+    return "HKK"
+  }
+  if (lower.startsWith("aok")) {
+    return "AOK"
+  }
+  if (lower.includes("barmer")) {
+    return "BARMER"
+  }
+  if (lower.startsWith("dak")) {
+    return "DAK"
+  }
+  if (lower.includes("debeka")) {
+    return "Debeka"
+  }
+  if (lower.includes("allianz")) {
+    return "Allianz"
+  }
+  const first = company.name.split(/[\s–-]/)[0]
+  return first ?? company.name
+}
+
+export function formatInsuranceChipLabel(
+  insurance: PatientInsuranceInformation,
+): string {
+  const company = findInsuranceCompany(insurance.insuranceProviderId)
+  const shortName = company ? insuranceCompanyShortName(company) : insurance.insuranceProviderId
+  return `${shortName} ${insurance.insuranceNumber}`
+}
