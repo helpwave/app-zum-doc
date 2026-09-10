@@ -15,6 +15,7 @@ import { practiceNews } from '@/lib/news'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import { practiceOfficeId } from '@/lib/navigation'
 import titleWrapper from '@/utils/titleWrapper'
+import { Chip } from '@helpwave/hightide'
 
 function distributionPercent(value: number, total: number): string {
   if (total <= 0) {
@@ -49,22 +50,22 @@ function HeroStats({ overview }: { overview: PracticeOverview }) {
 
       <DashboardHeroCard>
         <span className="text-description">{t('appointmentsToday')}</span>
-        <div className="flex-row-4 items-stretch w-full">
-          <div className="flex-col-1">
-            <div className="flex-row-1 items-center text-description">
+        <div className="flex-row-4 items-stretch w-full h-full">
+          <div className="flex-col-1 flex-1 justify-between">
+            <Chip color="primary" coloringStyle="tonal" size="sm" className="px-2 rounded-full">
               <Shield className="size-4" />
               <span>{t('insurancePublic')}</span>
-            </div>
+            </Chip>
             <DashboardHeroMetric>
               {overview.todayAppointmentsGkv}
             </DashboardHeroMetric>
           </div>
           <div className="w-px bg-divider self-stretch" />
-          <div className="flex-col-1">
-            <div className="flex-row-1 items-center text-description">
+          <div className="flex-col-1 flex-1 justify-between">
+            <Chip color="primary" coloringStyle="tonal" size="sm" className="px-2 rounded-full">
               <Shield className="size-4" />
               <span>{t('insurancePrivate')}</span>
-            </div>
+            </Chip>
             <DashboardHeroMetric>
               {overview.todayAppointmentsPkv}
             </DashboardHeroMetric>
@@ -126,51 +127,51 @@ const OverviewPage: NextPage = () => {
             <h1 className="typography-title-lg text-primary">{t('navOverview')}</h1>
             <HeroStats overview={overview} />
 
-            <div className="grid grid-cols-1 desktop:grid-cols-3 gap-6 w-full">
-              <section className="flex-col-3 min-w-0">
-                <div className="flex-col-0">
-                  <span className="text-description">{todayLabel}</span>
+            <div className="flex-col-1">
+              <span className="text-description">{todayLabel}</span>
+              <div className="grid grid-cols-1 desktop:grid-cols-3 gap-6 w-full">
+                <section className="flex-col-3 min-w-0">
                   <h2 className="typography-title-md text-primary">{t('appointmentsToday')}</h2>
-                </div>
-                {overview.todayAppointments.length === 0 ? (
-                  <p className="text-description">{t('noAppointmentsToday')}</p>
-                ) : (
-                  <div className="flex-col-3">
-                    {overview.todayAppointments.map((appointment) => (
-                      <DashboardAppointmentRow
-                        key={appointment.id}
-                        appointment={appointment}
-                      />
+                  {overview.todayAppointments.length === 0 ? (
+                    <p className="text-description">{t('noAppointmentsToday')}</p>
+                  ) : (
+                    <div className="flex-col-3">
+                      {overview.todayAppointments.map((appointment) => (
+                        <DashboardAppointmentRow
+                          key={appointment.id}
+                          appointment={appointment}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section className="flex-col-3 min-w-0">
+                  <h2 className="typography-title-md text-primary">{t('messagesTitle')}</h2>
+                  {overview.recentMessages.length === 0 ? (
+                    <p className="text-description">{t('noMessages')}</p>
+                  ) : (
+                    <div className="flex-col-3">
+                      {overview.recentMessages.map((message) => (
+                        <DashboardMessageRow
+                          key={message.conversationId}
+                          message={message}
+                          locale={locale}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section className="flex-col-3 min-w-0">
+                  <h2 className="typography-title-md text-primary">{t('newsTitle')}</h2>
+                  <div className="flex-col-4">
+                    {practiceNews.map((item) => (
+                      <DashboardNewsCard key={item.id} item={item} locale={locale} />
                     ))}
                   </div>
-                )}
-              </section>
-
-              <section className="flex-col-3 min-w-0">
-                <h2 className="typography-title-md text-primary">{t('messagesTitle')}</h2>
-                {overview.recentMessages.length === 0 ? (
-                  <p className="text-description">{t('noMessages')}</p>
-                ) : (
-                  <div className="flex-col-3">
-                    {overview.recentMessages.map((message) => (
-                      <DashboardMessageRow
-                        key={message.conversationId}
-                        message={message}
-                        locale={locale}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="flex-col-3 min-w-0">
-                <h2 className="typography-title-md text-primary">{t('newsTitle')}</h2>
-                <div className="flex-col-4">
-                  {practiceNews.map((item) => (
-                    <DashboardNewsCard key={item.id} item={item} locale={locale} />
-                  ))}
-                </div>
-              </section>
+                </section>
+              </div>
             </div>
           </div>
         )}

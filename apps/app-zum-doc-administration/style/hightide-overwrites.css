@@ -19,6 +19,10 @@
     @apply desktop:pr-6;
   }
 
+  [data-name="vertical-navigation-menu"] {
+    @apply gap-1;
+  }
+
   .vertical-navigation-item:last-child {
     @apply mt-2 pt-2 border-t border-divider;
   }

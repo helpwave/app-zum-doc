@@ -5,6 +5,9 @@ import {
   fetchPracticeMessages,
   fetchPracticeOverview,
   fetchPracticePatients,
+  createPracticePatient,
+  deletePracticePatient,
+  setPracticePatientBlocked,
   fetchPracticeRequest,
   fetchPracticeRequests,
   markPracticeConversationRead,
@@ -17,11 +20,12 @@ import type {
   ConversationPreview,
   DoctorsOffice,
   Message,
-  PatientProfile,
   PatientRequestStatus,
   PatientRequestType,
   PracticeOverview,
+  PracticePatient,
   PracticeRequest,
+  CreatePracticePatientInput,
   UpdateDoctorsOfficeInput
 } from '../api/types'
 import {
@@ -65,12 +69,68 @@ export function usePracticeOverview({
 }
 
 export function usePracticePatients(
-  options: QueryHookOptions<undefined, PatientProfile[]> = {}
+  options: QueryHookOptions<undefined, PracticePatient[]> = {}
 ) {
   return useQuery({
     ...options,
     queryKey: practiceKeys.patients,
     queryFn: fetchPracticePatients,
+  })
+}
+
+export function useCreatePracticePatient(
+  options: MutationHookOptions<PracticePatient, CreatePracticePatientInput> = {}
+) {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
+
+  return useMutation({
+    ...rest,
+    mutationFn: createPracticePatient,
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({ queryKey: practiceKeys.all })
+      await onSuccess?.(...args)
+    },
+  })
+}
+
+export function useDeletePracticePatient(
+  options: MutationHookOptions<void, string> = {}
+) {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
+
+  return useMutation({
+    ...rest,
+    mutationFn: deletePracticePatient,
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({ queryKey: practiceKeys.all })
+      await onSuccess?.(...args)
+    },
+  })
+}
+
+type SetPracticePatientBlockedVariables = {
+  profileId: string,
+  blocked: boolean,
+}
+
+export function useSetPracticePatientBlocked(
+  options: MutationHookOptions<
+    PracticePatient,
+    SetPracticePatientBlockedVariables
+  > = {}
+) {
+  const queryClient = useQueryClient()
+  const { onSuccess, ...rest } = options
+
+  return useMutation({
+    ...rest,
+    mutationFn: setPracticePatientBlocked,
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({ queryKey: practiceKeys.all })
+      await onSuccess?.(...args)
+    },
   })
 }
 

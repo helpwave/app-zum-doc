@@ -15,6 +15,7 @@ import {
   useUpdatePatientRequestStatus
 } from '@app-zum-doc/utils/hooks'
 import { Page, QueryState } from '@/components/layout/Page'
+import { BackIconButton } from '@/components/layout/back-icon-button'
 import { RequestStatusChip, RequestTypeChip } from '@/components/request-chips'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import { statusActionLabel } from '@/lib/labels'
@@ -59,13 +60,10 @@ const RequestDetailPage: NextPage = () => {
       >
         {request && (
           <div className="flex-col-6 max-w-3xl">
-            <button
-              type="button"
-              className="text-primary self-start"
+            <BackIconButton
+              className="self-start"
               onClick={() => void router.push(requestKindPath(request.kind))}
-            >
-              {t('back')}
-            </button>
+            />
             <div className="flex-col-2">
               <div className="flex-row-2 items-center">
                 <RequestTypeChip kind={request.kind} />

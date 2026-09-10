@@ -3,7 +3,7 @@ import {
   patientProfileFullName,
   type PracticeRequest
 } from '@app-zum-doc/utils/api'
-import { RequestStatusChip, RequestTypeChip } from '@/components/request-chips'
+import { RequestStatusChip } from '@/components/request-chips'
 
 export function RequestListRow({ request }: { request: PracticeRequest }) {
   const patient = patientProfileFullName(request.patient)
@@ -17,10 +17,7 @@ export function RequestListRow({ request }: { request: PracticeRequest }) {
         <span className="typography-title-sm truncate">{request.title}</span>
         <span className="text-description truncate">{patient}</span>
       </div>
-      <div className="flex-row-2 items-center shrink-0">
-        <RequestTypeChip kind={request.kind} />
-        <RequestStatusChip status={request.status} />
-      </div>
+      <RequestStatusChip status={request.status} />
     </Link>
   )
 }

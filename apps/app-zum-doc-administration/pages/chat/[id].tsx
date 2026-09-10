@@ -23,7 +23,9 @@ import {
   usePracticeMessages,
   useSendPracticeMessage
 } from '@app-zum-doc/utils/hooks'
+import { ChatContainer } from '@/components/chat/chat-container'
 import { Page, QueryState } from '@/components/layout/Page'
+import { BackIconButton } from '@/components/layout/back-icon-button'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import titleWrapper from '@/utils/titleWrapper'
 
@@ -55,16 +57,10 @@ const ChatThreadPage: NextPage = () => {
 
   return (
     <Page pageTitle={titleWrapper(user?.name ?? t('chatsTitle'))} noScrolling>
-      <div className="flex-col-0 h-full min-h-0">
+      <ChatContainer>
         <ChatThreadHeader
           leftActions={(
-            <button
-              type="button"
-              className="text-primary"
-              onClick={() => void router.push('/chat')}
-            >
-              {t('back')}
-            </button>
+            <BackIconButton onClick={() => void router.push('/chat')} />
           )}
           avatar={user ? { name: user.name, status: user.status } : undefined}
           title={user?.name ?? t('chatsTitle')}
@@ -141,7 +137,7 @@ const ChatThreadPage: NextPage = () => {
             onSend={(value) => sendMessage.mutate(value)}
           />
         </QueryState>
-      </div>
+      </ChatContainer>
     </Page>
   )
 }

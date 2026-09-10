@@ -32,6 +32,49 @@
   "searchPatients": "Search patients",
   "loadingPatients": "Loading patients…",
   "openDetails": "Open details",
+  "addPatient": "New patient",
+  "patientNumber": "Patient no. {number}",
+  "@patientNumber": {
+    "placeholders": {
+      "number": { "type": "string" }
+    }
+  },
+  "patientColumnName": "Name",
+  "patientColumnDateOfBirth": "Date of birth",
+  "patientColumnLastVisit": "Last visit",
+  "patientColumnActions": "Actions",
+  "lastVisitHint": "Date of the last practice visit.",
+  "editPatient": "Edit patient",
+  "patientInformation": "Information",
+  "patientPrescriptions": "Prescriptions",
+  "insuranceCard": "Insurance card",
+  "insuranceCardCurrent": "Current",
+  "insuranceCardExpired": "Expired",
+  "lastChanged": "Last changed",
+  "deletePatient": "Delete patient",
+  "blockPatient": "Block patient",
+  "unblockPatient": "Unblock patient",
+  "deletePatientTitle": "Delete patient?",
+  "deletePatientDescription": "Do you really want to delete {name}?",
+  "@deletePatientDescription": {
+    "placeholders": {
+      "name": { "type": "string" }
+    }
+  },
+  "createPatientTitle": "Add a new patient",
+  "createPatientDescription": "Enter the basic details for the new patient.",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "dateOfBirth": "Date of birth",
+  "noPatientSelected": "Select a patient to see details.",
+  "noPatientMedications": "No prescriptions on file.",
+  "patientAge": "({age})",
+  "@patientAge": {
+    "placeholders": {
+      "age": { "type": "string" }
+    }
+  },
+  "patientBlocked": "Blocked",
   "dashboardWelcomeMorning": "Good morning, {name}",
   "@dashboardWelcomeMorning": {
     "placeholders": {

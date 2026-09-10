@@ -1,0 +1,9 @@
+@layer components {
+  .chat-container {
+    @apply flex-col-0 h-full min-h-0 overflow-hidden rounded-2xl bg-surface;
+  }
+
+  .chat-container .chat-message-list {
+    @apply bg-surface;
+  }
+}

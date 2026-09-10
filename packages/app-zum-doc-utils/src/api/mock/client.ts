@@ -44,7 +44,9 @@ import {
   type PatientRequestStatus,
   type PatientRequestType,
   type PracticeOverview,
+  type PracticePatient,
   type PracticeRequest,
+  type CreatePracticePatientInput,
   type Prescription,
   type PrescriptionRecord,
   type Referral,
@@ -70,6 +72,7 @@ import {
   toPatientProfileSummary
 } from '../patientProfile'
 import { defaultPracticeOfficeId } from '../doctorsOffice'
+import { parseIsoDate } from '../openingHours'
 import {
   canTransitionPatientRequestStatus,
   isOpenPatientRequestStatus
@@ -136,10 +139,7 @@ function ensureListedTodayAppointments(): void {
 }
 
 function resolvePracticePatient(profileId: string): PatientProfile | undefined {
-  if (patientProfileSeed.id === profileId) {
-    return patientProfileSeed
-  }
-  return practicePatientsSeed.find((item) => item.id === profileId)
+  return practicePatientsState.find((item) => item.id === profileId)
 }
 
 function startOfToday(): Date {
@@ -161,6 +161,8 @@ let practiceConversationsState: ConversationPreview[] = structuredClone(practice
 let practiceMessagesState: Record<string, Message[]> = structuredClone(
   practiceMessagesByConversation
 )
+let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
+let blockedPracticePatientIds = new Set<string>()
 
 export const mockApiConfig = {
   forceFail: false,
@@ -343,13 +345,109 @@ export async function fetchPatientProfileById(params: {
   })
 }
 
-export async function fetchPracticePatients(): Promise<PatientProfile[]> {
-  return withMockLatency(() =>
-    practicePatientsSeed.map((profile) => ({
-      ...profile,
-      insurance: { ...profile.insurance },
-      medicationList: profile.medicationList.map((item) => ({ ...item })),
-    })))
+export async function fetchPracticePatients(): Promise<PracticePatient[]> {
+  return withMockLatency(() => {
+    ensureListedTodayAppointments()
+    return practicePatientsState.map((profile) => toPracticePatient(profile))
+  })
+}
+
+function clonePatientProfile(profile: PatientProfile): PatientProfile {
+  return {
+    ...profile,
+    insurance: { ...profile.insurance },
+    medicationList: profile.medicationList.map((item) => ({ ...item })),
+  }
+}
+
+function lastVisitFor(profileId: string): Date | undefined {
+  const dates: Date[] = []
+  for (const appointment of appointmentsState) {
+    if (appointment.profileId !== profileId || appointment.status === 'cancelled') {
+      continue
+    }
+    const date = parseIsoDate(appointment.date)
+    const [hoursText, minutesText] = appointment.time.split(':')
+    date.setHours(Number(hoursText ?? 0), Number(minutesText ?? 0), 0, 0)
+    dates.push(date)
+  }
+  dates.sort((left, right) => right.getTime() - left.getTime())
+  return dates[0]
+}
+
+function fallbackLastVisit(profileId: string): Date {
+  const index = Math.max(0, practicePatientsState.findIndex((item) => item.id === profileId))
+  return new Date(2025, 3, 24 + index, 8, 33)
+}
+
+function toPracticePatient(profile: PatientProfile): PracticePatient {
+  const lastVisit = lastVisitFor(profile.id) ?? fallbackLastVisit(profile.id)
+  return {
+    ...clonePatientProfile(profile),
+    lastVisit,
+    lastChangedAt: lastVisit,
+    lastChangedBy: 'Max Mustermann',
+    insuranceCardCurrent: true,
+    blocked: blockedPracticePatientIds.has(profile.id),
+  }
+}
+
+export async function createPracticePatient(
+  input: CreatePracticePatientInput
+): Promise<PracticePatient> {
+  return withMockLatency(() => {
+    const firstName = input.firstName.trim()
+    const lastName = input.lastName.trim()
+    if (!firstName || !lastName || !input.dateOfBirth) {
+      throw new Error('Bitte Vorname, Nachname und Geburtsdatum angeben.')
+    }
+    const id = `patient-${Date.now()}`
+    const insuranceNumber = String(51_247_32 + practicePatientsState.length)
+    const profile: PatientProfile = {
+      id,
+      firstName,
+      lastName,
+      dateOfBirth: parseIsoDate(input.dateOfBirth),
+      email: `${firstName}.${lastName}@mail.de`.toLowerCase().replaceAll(' ', ''),
+      phone: '',
+      insurance: {
+        insuranceProviderId: 'techniker-krankenkasse',
+        insuranceNumber,
+      },
+      medicationList: [],
+    }
+    practicePatientsState = [profile, ...practicePatientsState]
+    return toPracticePatient(profile)
+  })
+}
+
+export async function deletePracticePatient(profileId: string): Promise<void> {
+  return withMockLatency(() => {
+    const exists = practicePatientsState.some((item) => item.id === profileId)
+    if (!exists) {
+      throw new Error('Profil nicht gefunden.')
+    }
+    practicePatientsState = practicePatientsState.filter((item) => item.id !== profileId)
+    blockedPracticePatientIds.delete(profileId)
+  })
+}
+
+export async function setPracticePatientBlocked(params: {
+  profileId: string,
+  blocked: boolean,
+}): Promise<PracticePatient> {
+  return withMockLatency(() => {
+    const profile = resolvePracticePatient(params.profileId)
+    if (!profile) {
+      throw new Error('Profil nicht gefunden.')
+    }
+    if (params.blocked) {
+      blockedPracticePatientIds.add(params.profileId)
+    } else {
+      blockedPracticePatientIds.delete(params.profileId)
+    }
+    return toPracticePatient(profile)
+  })
 }
 
 export async function fetchPatientProfiles(): Promise<PatientProfileSummary[]> {
@@ -948,7 +1046,7 @@ export async function fetchPracticeOverview(params: {
       openAppointments: open.filter((request) => request.kind === 'appointment').length,
       openPrescriptions: open.filter((request) => request.kind === 'prescription').length,
       openReferrals: open.filter((request) => request.kind === 'referral').length,
-      patientCount: practicePatientsSeed.length,
+      patientCount: practicePatientsState.length,
       overdueMessageCount,
       unreadChatCount,
       todayAppointmentsGkv,
@@ -1194,4 +1292,6 @@ export function resetMockStore(): void {
   doctorsOfficesState = structuredClone(doctorsOfficesSeed)
   practiceConversationsState = structuredClone(practiceConversationsSeed)
   practiceMessagesState = structuredClone(practiceMessagesByConversation)
+  practicePatientsState = structuredClone(practicePatientsSeed)
+  blockedPracticePatientIds = new Set<string>()
 }
