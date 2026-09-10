@@ -4,6 +4,8 @@ import type { PracticeOverview } from '@app-zum-doc/utils/api'
 import { toAppLocale } from '@app-zum-doc/utils/api'
 import { usePracticeOverview } from '@app-zum-doc/utils/hooks'
 import { DashboardAppointmentRow } from '@/components/dashboard/appointment-row'
+import { DashboardHeroCard, DashboardHeroMetric } from '@/components/dashboard/hero-card'
+import { DashboardLegendItem } from '@/components/dashboard/legend-item'
 import { DashboardMessageRow } from '@/components/dashboard/message-row'
 import { DashboardNewsCard } from '@/components/dashboard/news-card'
 import { RequestDistributionDonut } from '@/components/dashboard/request-distribution-donut'
@@ -28,77 +30,71 @@ function HeroStats({ overview }: { overview: PracticeOverview }) {
     + overview.requestDistribution.appointments
 
   return (
-    <section className="dashboard-hero">
-      <div className="dashboard-hero-card">
+    <section
+      className="grid grid-cols-1 desktop:grid-cols-3 gap-4 w-full p-4 desktop:p-6 rounded-2xl bg-cover bg-center"
+      style={{
+        backgroundImage:
+          'linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.55)), url("/images/overview-hero.jpg")',
+      }}
+    >
+      <DashboardHeroCard>
         <div className="flex-row-2 items-center text-description">
           <TriangleAlert className="size-5 text-warning" />
           <span>{t('overdueMessages')}</span>
         </div>
-        <span className="dashboard-hero-metric text-warning">
+        <DashboardHeroMetric className="text-warning">
           {overview.overdueMessageCount}
-        </span>
-      </div>
+        </DashboardHeroMetric>
+      </DashboardHeroCard>
 
-      <div className="dashboard-hero-card">
+      <DashboardHeroCard>
         <span className="text-description">{t('appointmentsToday')}</span>
-        <div className="dashboard-hero-split">
+        <div className="flex-row-4 items-stretch w-full">
           <div className="flex-col-1">
             <div className="flex-row-1 items-center text-description">
               <Shield className="size-4" />
               <span>{t('insurancePublic')}</span>
             </div>
-            <span className="dashboard-hero-metric">
+            <DashboardHeroMetric>
               {overview.todayAppointmentsGkv}
-            </span>
+            </DashboardHeroMetric>
           </div>
-          <div className="dashboard-hero-split-divider" />
+          <div className="w-px bg-divider self-stretch" />
           <div className="flex-col-1">
             <div className="flex-row-1 items-center text-description">
               <Shield className="size-4" />
               <span>{t('insurancePrivate')}</span>
             </div>
-            <span className="dashboard-hero-metric">
+            <DashboardHeroMetric>
               {overview.todayAppointmentsPkv}
-            </span>
+            </DashboardHeroMetric>
           </div>
         </div>
-      </div>
+      </DashboardHeroCard>
 
-      <div className="dashboard-hero-card">
+      <DashboardHeroCard>
         <span className="text-description">{t('requestDistribution')}</span>
         <div className="flex-row-4 items-center">
           <RequestDistributionDonut distribution={overview.requestDistribution} />
           <ul className="flex-col-1 min-w-0">
-            <li className="dashboard-legend-item">
-              <span className="dashboard-legend-dot bg-primary" />
-              <span className="truncate">{t('distributionSickNotes')}</span>
-              <span className="dashboard-legend-value">
-                {overview.requestDistribution.sickNotes}
-                {' '}
-                ({distributionPercent(overview.requestDistribution.sickNotes, total)})
-              </span>
-            </li>
-            <li className="dashboard-legend-item">
-              <span className="dashboard-legend-dot bg-secondary" />
-              <span className="truncate">{t('distributionReferrals')}</span>
-              <span className="dashboard-legend-value">
-                {overview.requestDistribution.referrals}
-                {' '}
-                ({distributionPercent(overview.requestDistribution.referrals, total)})
-              </span>
-            </li>
-            <li className="dashboard-legend-item">
-              <span className="dashboard-legend-dot bg-warning" />
-              <span className="truncate">{t('distributionAppointments')}</span>
-              <span className="dashboard-legend-value">
-                {overview.requestDistribution.appointments}
-                {' '}
-                ({distributionPercent(overview.requestDistribution.appointments, total)})
-              </span>
-            </li>
+            <DashboardLegendItem
+              colorClassName="bg-primary"
+              label={t('distributionSickNotes')}
+              value={`${overview.requestDistribution.sickNotes} (${distributionPercent(overview.requestDistribution.sickNotes, total)})`}
+            />
+            <DashboardLegendItem
+              colorClassName="bg-secondary"
+              label={t('distributionReferrals')}
+              value={`${overview.requestDistribution.referrals} (${distributionPercent(overview.requestDistribution.referrals, total)})`}
+            />
+            <DashboardLegendItem
+              colorClassName="bg-warning"
+              label={t('distributionAppointments')}
+              value={`${overview.requestDistribution.appointments} (${distributionPercent(overview.requestDistribution.appointments, total)})`}
+            />
           </ul>
         </div>
-      </div>
+      </DashboardHeroCard>
     </section>
   )
 }
@@ -130,7 +126,7 @@ const OverviewPage: NextPage = () => {
             <h1 className="typography-title-lg text-primary">{t('navOverview')}</h1>
             <HeroStats overview={overview} />
 
-            <div className="dashboard-columns">
+            <div className="grid grid-cols-1 desktop:grid-cols-3 gap-6 w-full">
               <section className="flex-col-3 min-w-0">
                 <div className="flex-col-0">
                   <span className="text-description">{todayLabel}</span>

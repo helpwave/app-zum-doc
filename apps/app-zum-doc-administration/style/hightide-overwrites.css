@@ -1,0 +1,29 @@
+@layer components {
+  [data-name="app-sidebar-container"] {
+    @apply desktop:min-w-68 desktop:max-w-68;
+  }
+
+  .app-page-sidebar-with-navigation-header {
+    @apply items-start mb-4;
+  }
+
+  .app-page-sidebar-with-navigation-footer {
+    @apply pt-0;
+  }
+
+  [data-name="app-page-header"] {
+    @apply justify-between w-full;
+  }
+
+  [data-name="app-page-main-content"] {
+    @apply desktop:pr-6;
+  }
+
+  .vertical-navigation-item:last-child {
+    @apply mt-2 pt-2 border-t border-divider;
+  }
+
+  .vertical-navigation-item-row:has([aria-current="page"]) {
+    @apply bg-primary/15 text-primary;
+  }
+}

@@ -23,7 +23,9 @@ export function DashboardAppointmentRow({
           {appointment.insuranceLabel}
         </Chip>
       </div>
-      <span className="dashboard-list-reason">{appointment.reason}</span>
+      <span className="hidden min-w-0 max-w-40 truncate text-description text-sm tablet:block">
+        {appointment.reason}
+      </span>
       <span className="dashboard-row-action" aria-label={t('openDetails')}>
         <ChevronRight className="size-4" />
       </span>

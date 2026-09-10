@@ -11,8 +11,8 @@ export function DashboardNewsCard({
   locale: AppLocale,
 }) {
   return (
-    <article className="dashboard-news-card">
-      <div className="dashboard-news-image-wrap">
+    <article className="flex-col-2 w-full min-w-0 p-3 rounded-xl bg-surface shadow-around-md">
+      <div className="relative w-full h-32 rounded-lg overflow-hidden">
         <Image
           src={item.imageSrc}
           alt=""
@@ -22,7 +22,7 @@ export function DashboardNewsCard({
         />
       </div>
       <span className="text-description">{formatNewsDate(item.date, locale)}</span>
-      <h3 className="dashboard-news-title">{item.title[locale]}</h3>
+      <h3 className="typography-title-sm text-primary">{item.title[locale]}</h3>
       <p className="text-description">{item.body[locale]}</p>
     </article>
   )
