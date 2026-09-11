@@ -23,7 +23,7 @@
     @apply gap-1;
   }
 
-  .vertical-navigation-item:last-child {
+  .vertical-navigation-item:has([data-nav-divider-before]) {
     @apply mt-2 pt-2 border-t border-divider;
   }
 

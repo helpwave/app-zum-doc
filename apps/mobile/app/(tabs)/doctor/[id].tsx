@@ -44,6 +44,7 @@ export default function DoctorDetailScreen() {
     (request) => request.doctorsOffice.id === doctorsOfficeId,
   )
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
   const [infoModal, setInfoModal] = useState<{ title: string, message: string } | null>(null)
   const dismissSnackbar = useCallback(() => {
     setSnackbarMessage(null)
@@ -142,7 +143,10 @@ export default function DoctorDetailScreen() {
                   }}
                 />
               ) : null}
-              <OpeningHoursSection openingHours={office.openingHours} />
+              <OpeningHoursSection
+                openingHours={office.openingHours}
+                note={office.openingHoursNote}
+              />
               <DoctorOfficeContactSections
                 office={office}
                 onServicesPress={() => {
@@ -150,12 +154,14 @@ export default function DoctorDetailScreen() {
                     title: t("ourServices"),
                     message: t("servicesSoon"),
                   })
+                  setIsOpen(true)
                 }}
                 onOffersPress={() => {
                   setInfoModal({
                     title: t("furtherOffers"),
                     message: t("offersSoon"),
                   })
+                  setIsOpen(true)
                 }}
               />
             </View>
@@ -164,12 +170,8 @@ export default function DoctorDetailScreen() {
       </QueryState>
       <Snackbar message={snackbarMessage} onDismiss={dismissSnackbar} />
       <ConfirmationModal
-        isOpen={infoModal != null}
-        onIsOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setInfoModal(null)
-          }
-        }}
+        isOpen={isOpen}
+        onIsOpenChange={setIsOpen}
         title={infoModal?.title ?? ""}
         message={infoModal?.message ?? ""}
       />

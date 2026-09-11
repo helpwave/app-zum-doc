@@ -3,17 +3,17 @@ import { RequestListView } from '@/components/requests/request-list-view'
 import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslation'
 import { requestStatusFiltersForKind } from '@/lib/navigation'
 
-const RequestsPage: NextPage = () => {
+const PrescriptionRequestsPage: NextPage = () => {
   const t = useAdministrationTranslation()
 
   return (
     <RequestListView
-      title={t('navRequests')}
-      description={t('inboxDescription')}
-      includedStatuses={requestStatusFiltersForKind()}
-      showKindCounts
+      kind="prescription"
+      title={t('navPrescriptions')}
+      description={t('prescriptionsDescription')}
+      includedStatuses={requestStatusFiltersForKind('prescription')}
     />
   )
 }
 
-export default RequestsPage
+export default PrescriptionRequestsPage

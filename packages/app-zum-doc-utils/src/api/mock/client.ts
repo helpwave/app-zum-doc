@@ -18,7 +18,10 @@ import {
   specializationsSeed,
   type DoctorsOfficeSeed,
   type LocalizedDoctorSeed,
-  type LocalizedDoctorServiceSeed
+  type LocalizedDoctorServiceSeed,
+  type LocalizedLabel,
+  type LocalizedTemporaryNotificationTile,
+  type LocalizedTemporaryNotifications
 } from './data'
 import {
   WeekdayUtils,
@@ -71,7 +74,19 @@ import {
   patientProfileFullName,
   toPatientProfileSummary
 } from '../patientProfile'
-import { defaultPracticeOfficeId } from '../doctorsOffice'
+import {
+  defaultDoctorsOfficeEmailNotifications,
+  defaultDoctorsOfficeOnlineServices,
+  defaultDoctorsOfficeTemporaryNotifications,
+  defaultPracticeOfficeId,
+  doctorsOfficeSpecializationIds,
+  temporaryNotificationKeys,
+  type DoctorsOfficeEmailNotifications,
+  type DoctorsOfficeOnlineServices,
+  type DoctorsOfficeTemporaryNotifications,
+  type TemporaryNotificationKey,
+  type TemporaryNotificationTile
+} from '../doctorsOffice'
 import { parseIsoDate } from '../openingHours'
 import {
   canTransitionPatientRequestStatus,
@@ -767,22 +782,120 @@ export async function removePatientMedication(
 }
 
 function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): string {
-  return (
-    office.specialization?.[locale]
-    ?? specializationsSeed.find((item) => item.id === office.specializationId)?.labels[locale]
-    ?? ''
-  )
+  const fromIds = doctorsOfficeSpecializationIds(office)
+    .map((id) => specializationsSeed.find((item) => item.id === id)?.labels[locale])
+    .filter((label): label is string => Boolean(label))
+    .join(' - ')
+  if (fromIds.length > 0) {
+    return fromIds
+  }
+  return office.specialization?.[locale] ?? ''
+}
+
+function officeTemporaryNotificationTile(
+  tile: LocalizedTemporaryNotificationTile | undefined,
+  locale: AppLocale
+): TemporaryNotificationTile {
+  return {
+    enabled: tile?.enabled ?? false,
+    title: tile?.title?.[locale] ?? '',
+    description: tile?.description?.[locale] ?? '',
+  }
+}
+
+function officeTemporaryNotifications(
+  office: DoctorsOfficeSeed,
+  locale: AppLocale
+): DoctorsOfficeTemporaryNotifications {
+  const stored = office.temporaryNotifications ?? {}
+  return temporaryNotificationKeys.reduce((next, key) => {
+    next[key] = officeTemporaryNotificationTile(stored[key], locale)
+    return next
+  }, defaultDoctorsOfficeTemporaryNotifications())
+}
+
+function setTemporaryNotificationTile(
+  existing: LocalizedTemporaryNotificationTile | undefined,
+  locale: AppLocale,
+  next: TemporaryNotificationTile
+): LocalizedTemporaryNotificationTile {
+  return {
+    enabled: next.enabled,
+    title: setOptionalLocalizedLabel(existing?.title, locale, next.title),
+    description: setOptionalLocalizedLabel(existing?.description, locale, next.description),
+  }
+}
+
+function setTemporaryNotifications(
+  existing: LocalizedTemporaryNotifications | undefined,
+  locale: AppLocale,
+  next: DoctorsOfficeTemporaryNotifications
+): LocalizedTemporaryNotifications {
+  return temporaryNotificationKeys.reduce((tiles, key) => {
+    tiles[key] = setTemporaryNotificationTile(existing?.[key], locale, next[key])
+    return tiles
+  }, {} as LocalizedTemporaryNotifications)
+}
+
+function officeEmailNotifications(
+  office: DoctorsOfficeSeed
+): DoctorsOfficeEmailNotifications {
+  return {
+    ...defaultDoctorsOfficeEmailNotifications(),
+    ...(office.emailNotifications ?? {}),
+  }
+}
+
+function officeOnlineServices(
+  office: DoctorsOfficeSeed
+): DoctorsOfficeOnlineServices {
+  return {
+    ...defaultDoctorsOfficeOnlineServices(),
+    ...(office.onlineServices ?? {}),
+  }
+}
+
+function setLocalizedLabel(
+  existing: LocalizedLabel | undefined,
+  locale: AppLocale,
+  value: string
+): LocalizedLabel {
+  return {
+    'de-DE': locale === 'de-DE' ? value : (existing?.['de-DE'] ?? value),
+    'en-US': locale === 'en-US' ? value : (existing?.['en-US'] ?? value),
+  }
+}
+
+function setOptionalLocalizedLabel(
+  existing: LocalizedLabel | undefined,
+  locale: AppLocale,
+  value: string | undefined
+): LocalizedLabel | undefined {
+  const trimmed = value?.trim() ?? ''
+  if (!existing && trimmed.length === 0) {
+    return undefined
+  }
+  const next = setLocalizedLabel(existing, locale, trimmed)
+  if (next['de-DE'].trim().length === 0 && next['en-US'].trim().length === 0) {
+    return undefined
+  }
+  return next
 }
 
 function localizedDoctorServices(
   services: LocalizedDoctorServiceSeed[],
   locale: AppLocale
 ) {
-  return services.map((service) => ({
-    id: service.id,
-    name: service.name[locale],
-    description: service.description[locale],
-  }))
+  return services.map((service) => {
+    const description = service.description?.[locale]?.trim() ?? ''
+    const url = service.url?.trim() ?? ''
+    return {
+      id: service.id,
+      name: service.name[locale],
+      ...(description.length > 0 ? { description } : {}),
+      ...(url.length > 0 ? { url } : {}),
+    }
+  })
 }
 
 function localizedDoctors(
@@ -813,7 +926,9 @@ function toDoctorsOffice(
     id: office.id,
     name: office.name,
     specialization: localizedSpecialty(office, locale),
+    specializationIds: doctorsOfficeSpecializationIds(office),
     phoneNumber: office.phoneNumber,
+    faxNumber: office.faxNumber,
     ...(office.imageUri ? { imageUri: office.imageUri } : {}),
     services: localizedDoctorServices(office.services ?? [], locale),
     offers: localizedDoctorServices(office.offers ?? [], locale),
@@ -830,6 +945,10 @@ function toDoctorsOffice(
     address: { ...office.address },
     websiteUrl: office.websiteUrl,
     openingHours: cloneOpeningHours(office.openingHours),
+    openingHoursNote: office.openingHoursNote?.[locale] ?? '',
+    onlineServices: officeOnlineServices(office),
+    emailNotifications: officeEmailNotifications(office),
+    temporaryNotifications: officeTemporaryNotifications(office, locale),
   }
 }
 
@@ -922,7 +1041,7 @@ export async function fetchDoctors(
         }
         if (
           filters.specializationId
-          && office.specializationId !== filters.specializationId
+          && !doctorsOfficeSpecializationIds(office).includes(filters.specializationId)
         ) {
           return false
         }
@@ -1049,6 +1168,7 @@ export async function fetchPracticeOverview(params: {
 
     return {
       office: toDoctorsOffice(office, params.locale),
+      requestCount: requests.length,
       openAppointments: open.filter((request) => request.kind === 'appointment').length,
       openPrescriptions: open.filter((request) => request.kind === 'prescription').length,
       openReferrals: open.filter((request) => request.kind === 'referral').length,
@@ -1178,10 +1298,56 @@ export async function updateDoctorsOffice(params: {
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
+    const specializationIds = params.input.specializationIds
+      ? params.input.specializationIds.filter((id) => id.trim().length > 0)
+      : doctorsOfficeSpecializationIds(office)
+    const onlineServices = params.input.onlineServices
+      ? {
+        ...defaultDoctorsOfficeOnlineServices(),
+        ...params.input.onlineServices,
+        shipPrescriptionByMail: params.input.onlineServices.orderPrescriptions
+          ? params.input.onlineServices.shipPrescriptionByMail
+          : false,
+      }
+      : officeOnlineServices(office)
+    const emailNotifications = params.input.emailNotifications
+      ? {
+        ...defaultDoctorsOfficeEmailNotifications(),
+        ...params.input.emailNotifications,
+      }
+      : officeEmailNotifications(office)
+    const temporaryNotifications = params.input.temporaryNotifications
+      ? setTemporaryNotifications(
+        office.temporaryNotifications,
+        params.locale,
+        params.input.temporaryNotifications
+      )
+      : office.temporaryNotifications
+    const services = params.input.services
+      ? params.input.services.map((service) => {
+        const existing = (office.services ?? []).find((item) => item.id === service.id)
+        return {
+          id: service.id,
+          name: setLocalizedLabel(existing?.name, params.locale, service.name),
+          description: setOptionalLocalizedLabel(
+            existing?.description,
+            params.locale,
+            service.description
+          ),
+          ...(service.url?.trim()
+            ? { url: service.url.trim() }
+            : {}),
+        }
+      })
+      : office.services
     const next: DoctorsOfficeSeed = {
       ...office,
       name: params.input.name ?? office.name,
+      imageUri: params.input.imageUri !== undefined
+        ? (params.input.imageUri.trim() || undefined)
+        : office.imageUri,
       phoneNumber: params.input.phoneNumber ?? office.phoneNumber,
+      faxNumber: params.input.faxNumber ?? office.faxNumber,
       websiteUrl: params.input.websiteUrl ?? office.websiteUrl,
       address: params.input.address
         ? { ...params.input.address }
@@ -1189,6 +1355,19 @@ export async function updateDoctorsOffice(params: {
       openingHours: params.input.openingHours
         ? cloneOpeningHours(params.input.openingHours)
         : office.openingHours,
+      openingHoursNote: params.input.openingHoursNote !== undefined
+        ? setLocalizedLabel(
+          office.openingHoursNote,
+          params.locale,
+          params.input.openingHoursNote
+        )
+        : office.openingHoursNote,
+      specializationId: specializationIds[0] ?? office.specializationId,
+      specializationIds,
+      onlineServices,
+      emailNotifications,
+      temporaryNotifications,
+      services,
     }
     doctorsOfficesState = {
       ...doctorsOfficesState,

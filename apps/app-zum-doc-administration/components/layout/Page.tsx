@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -7,16 +7,13 @@ import {
   AppPage,
   AppZumDocBadge,
   AppZumDocLogo,
-  Button,
-  LanguageDialog,
-  Menu,
-  MenuItem,
   type AppPageNavigationItem
 } from '@helpwave/hightide'
 import {
+  Building2,
   CalendarDays,
-  ChevronDown,
   Forward,
+  Inbox,
   LayoutDashboard,
   LoaderCircle,
   MessageSquare,
@@ -30,7 +27,6 @@ import { NavLabel } from '@/components/layout/nav-label'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import {
   activeNavUrl,
-  parseRequestKind,
   practiceOfficeId,
   requestKindPath
 } from '@/lib/navigation'
@@ -50,7 +46,6 @@ export const Page = ({
   const router = useRouter()
   const { locale: localizationLocale } = useLocale()
   const locale = toAppLocale(localizationLocale)
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const overviewQuery = usePracticeOverview({
     parameters: {
       officeId: practiceOfficeId,
@@ -77,6 +72,12 @@ export const Page = ({
       label: <NavLabel label={translation('navChat')} count={counts?.unreadChatCount} />,
       url: '/chat',
       icon: <MessageSquare className="size-5" />,
+    },
+    {
+      id: 'requests',
+      label: <NavLabel label={translation('navRequests')} count={counts?.requestCount} hasDividerBefore />,
+      url: '/requests',
+      icon: <Inbox className="size-5" />,
     },
     {
       id: 'appointments',
@@ -112,16 +113,31 @@ export const Page = ({
       icon: <Forward className="size-5" />,
     },
     {
+      id: 'my-doctors-office',
+      label: (
+        <NavLabel
+          label={translation('navMyDoctorsOffice')}
+          hasDividerBefore
+        />
+      ),
+      url: '/my-doctors-office',
+      icon: <Building2 className="size-5" />,
+    },
+    {
       id: 'settings',
-      label: <NavLabel label={translation('navSettings')} />,
-      url: '/practice',
+      label: (
+        <NavLabel
+          label={translation('navSettings')}
+          hasDividerBefore
+        />
+      ),
+      url: '/settings',
       icon: <Settings className="size-5" />,
     },
   ], [counts, translation])
 
   const practiceName = counts?.office.name ?? translation('appName')
   const path = router.asPath.split('?')[0] ?? '/'
-  const requestKind = parseRequestKind(router.query['kind'])
 
   return (
     <AppPage
@@ -132,7 +148,7 @@ export const Page = ({
           </Link>
         ),
         items: sidebarItems,
-        activeUrl: activeNavUrl(path, requestKind),
+        activeUrl: activeNavUrl(path),
         LinkComponent: Link,
         footer: (
           <span className="text-description text-xs px-2 pb-3">
@@ -148,49 +164,12 @@ export const Page = ({
           </div>
         ),
         (
-          <Menu
+          <span
             key="user"
-            options={{
-              horizontalAlignment: 'afterEnd',
-              verticalAlignment: 'afterEnd',
-            }}
-            aria-label={translation('userMenu')}
-            trigger={(bag, ref) => (
-              <Button
-                ref={ref}
-                size="sm"
-                color="primary"
-                coloringStyle="solid"
-                className="rounded-full !min-w-0"
-                aria-label={translation('userMenu')}
-                onClick={bag.toggleOpen}
-              >
-                {translation('staffName')}
-                <ChevronDown className="size-4" />
-              </Button>
-            )}
+            className="inline-flex shrink-0 items-center rounded-full px-3 py-1 whitespace-nowrap surface coloring-solid coloring-primary typography-label-md"
           >
-            {(bag) => (
-              <>
-                <MenuItem
-                  onClick={() => {
-                    bag.close()
-                    void router.push('/practice')
-                  }}
-                >
-                  {translation('navSettings')}
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    bag.close()
-                    setIsLanguageOpen(true)
-                  }}
-                >
-                  {translation('language')}
-                </MenuItem>
-              </>
-            )}
-          </Menu>
+            {translation('staffName')}
+          </span>
         ),
       ]}
       noScrolling={noScrolling}
@@ -198,10 +177,6 @@ export const Page = ({
       <Head>
         <title>{titleWrapper(pageTitle)}</title>
       </Head>
-      <LanguageDialog
-        isOpen={isLanguageOpen}
-        onClose={() => setIsLanguageOpen(false)}
-      />
       {children}
     </AppPage>
   )

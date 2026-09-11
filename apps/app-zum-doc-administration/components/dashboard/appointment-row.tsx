@@ -4,19 +4,21 @@ import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslatio
 
 export function DashboardAppointmentRow({
   appointment,
+  onSelect,
 }: {
   appointment: PracticeDashboardAppointment,
+  onSelect: (requestId: string) => void,
 }) {
   const t = useAdministrationTranslation()
 
   return (
     <DashboardListRow
-      href={`/requests/${appointment.id}?kind=appointment`}
       time={appointment.time}
       name={appointment.patientName}
       insuranceLabel={appointment.insuranceLabel}
       detail={appointment.reason}
       actionLabel={t('openDetails')}
+      onClick={() => onSelect(appointment.id)}
     />
   )
 }
