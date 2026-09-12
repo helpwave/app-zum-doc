@@ -8,7 +8,7 @@ export function LoadingView() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       <ActivityIndicator color={color} />
-      <Text>Initializing</Text>
+      <Text style={{ color, ...theme.typography.body.md }}>Initializing</Text>
     </View>
   )
 }

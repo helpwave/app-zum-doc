@@ -20,7 +20,7 @@
     "prebuild:android": "expo prebuild --platform android --non-interactive",
     "prebuild:ios": "expo prebuild --platform ios --non-interactive",
     "android:release": "cd android && ./gradlew assembleRelease bundleRelease",
-    "build": "node -e \"process.exit(0)\"",
+    "build": "expo export --platform web --non-interactive",
     "test": "node -e \"process.exit(0)\""
   },
   "dependencies": {
