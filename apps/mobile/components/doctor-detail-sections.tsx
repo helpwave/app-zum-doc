@@ -347,13 +347,16 @@ export function DoctorRequestsSection({
 
 type OpeningHoursSectionProps = {
   openingHours: DoctorsOffice["openingHours"]
+  note?: string
 }
 
 export function OpeningHoursSection({
   openingHours,
+  note,
 }: OpeningHoursSectionProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
+  const noteText = note?.trim() ?? ""
 
   return (
     <Section title={t("openingHours")}>
@@ -405,6 +408,16 @@ export function OpeningHoursSection({
           )
         })}
       </Card>
+      {noteText.length > 0 ? (
+        <ThemedText
+          appearance="description"
+          style={{
+            ...theme.typography.body.md,
+          }}
+        >
+          {noteText}
+        </ThemedText>
+      ) : null}
     </Section>
   )
 }

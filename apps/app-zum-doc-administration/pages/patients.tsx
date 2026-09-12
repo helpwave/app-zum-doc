@@ -109,7 +109,7 @@ const PatientsPage: NextPage = () => {
           onRetry={() => void patientsQuery.refetch()}
           loadingLabel={t('loadingPatients')}
         >
-          <div className="patients-layout">
+          <div className="flex flex-col gap-6 w-full min-w-0 tablet:flex-row tablet:items-start">
             <div className="flex-col-3 min-w-0 flex-1">
               <div className="flex-row-3 items-start justify-between gap-y-2 flex-wrap">
                 <FilterList

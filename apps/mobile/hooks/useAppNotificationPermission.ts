@@ -21,6 +21,7 @@ export function useAppNotificationPermission() {
   const t = useAppTranslation()
   const [enabled, setEnabled] = useState(false)
   const [settingsPrompt, setSettingsPrompt] = useState<NotificationSettingsPrompt | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   const refresh = useCallback(async () => {
     const granted = await getNotificationPermissionGranted()
@@ -43,14 +44,15 @@ export function useAppNotificationPermission() {
 
   const promptOpenSettings = useCallback((title: string, message: string) => {
     setSettingsPrompt({ title, message })
+    setIsOpen(true)
   }, [])
 
   const dismissSettingsPrompt = useCallback(() => {
-    setSettingsPrompt(null)
+    setIsOpen(false)
   }, [])
 
   const confirmOpenSettings = useCallback(() => {
-    setSettingsPrompt(null)
+    setIsOpen(false)
     void Linking.openSettings()
   }, [])
 
@@ -111,6 +113,7 @@ export function useAppNotificationPermission() {
     notificationsEnabled: enabled,
     setNotificationsEnabled,
     settingsPrompt,
+    isOpen,
     confirmOpenSettings,
     dismissSettingsPrompt,
   }

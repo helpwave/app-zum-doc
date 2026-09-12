@@ -1,4 +1,4 @@
-import { Chip, IconButton, Input } from '@helpwave/hightide'
+import { Chip, IconButton, Input, Textarea } from '@helpwave/hightide'
 import { Plus, Trash2 } from 'lucide-react'
 import {
   WeekdayUtils,
@@ -10,14 +10,19 @@ import {
   type OpeningHoursRange
 } from '@/lib/opening-hours-form'
 import { weekdayLabel } from '@/lib/labels'
+import { SettingsField } from '@/components/practice/settings-field'
 import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslation'
 
 export function OpeningHoursEditor({
   value,
   onChange,
+  note,
+  onNoteChange,
 }: {
   value: Record<Weekday, OpeningHoursRange[]>,
   onChange: (next: Record<Weekday, OpeningHoursRange[]>) => void,
+  note: string,
+  onNoteChange: (note: string) => void,
 }) {
   const t = useAdministrationTranslation()
 
@@ -105,6 +110,14 @@ export function OpeningHoursEditor({
           </div>
         )
       })}
+      <SettingsField label={t('openingHoursNote')}>
+        <Textarea
+          value={note}
+          rows={3}
+          placeholder={t('openingHoursNotePlaceholder')}
+          onValueChange={onNoteChange}
+        />
+      </SettingsField>
     </div>
   )
 }

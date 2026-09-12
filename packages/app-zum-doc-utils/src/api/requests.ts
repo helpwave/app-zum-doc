@@ -47,6 +47,7 @@ export type PracticeRequestDistribution = {
 
 export type PracticeOverview = {
   office: DoctorsOffice,
+  requestCount: number,
   openAppointments: number,
   openPrescriptions: number,
   openReferrals: number,

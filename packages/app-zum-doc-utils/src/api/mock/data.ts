@@ -3,7 +3,9 @@ import type {
   AppointmentRecord,
   ConversationPreview,
   DoctorsOffice,
+  DoctorsOfficeEmailNotifications,
   DoctorsOfficeOpeningHours,
+  DoctorsOfficeOnlineServices,
   Medication,
   MedicationCatalogItem,
   Message,
@@ -31,10 +33,24 @@ export type LocalizedLabel = {
   "en-US": string
 }
 
+export type LocalizedTemporaryNotificationTile = {
+  enabled?: boolean
+  title?: LocalizedLabel
+  description?: LocalizedLabel
+}
+
+export type LocalizedTemporaryNotifications = {
+  profile?: LocalizedTemporaryNotificationTile
+  appointments?: LocalizedTemporaryNotificationTile
+  prescriptions?: LocalizedTemporaryNotificationTile
+  referrals?: LocalizedTemporaryNotificationTile
+}
+
 export type LocalizedDoctorServiceSeed = {
   id: string
   name: LocalizedLabel
-  description: LocalizedLabel
+  description?: LocalizedLabel
+  url?: string
 }
 
 export type LocalizedDoctorSeed = {
@@ -45,11 +61,24 @@ export type LocalizedDoctorSeed = {
 
 export type DoctorsOfficeSeed = Omit<
   DoctorsOffice,
-  "specialization" | "services" | "offers" | "doctors"
+  | "specialization"
+  | "specializationIds"
+  | "services"
+  | "offers"
+  | "doctors"
+  | "onlineServices"
+  | "emailNotifications"
+  | "temporaryNotifications"
+  | "openingHoursNote"
 > & {
   cityId: string
   specializationId: string
+  specializationIds?: string[]
   specialization?: LocalizedLabel
+  onlineServices?: DoctorsOfficeOnlineServices
+  emailNotifications?: DoctorsOfficeEmailNotifications
+  temporaryNotifications?: LocalizedTemporaryNotifications
+  openingHoursNote?: LocalizedLabel
   services?: LocalizedDoctorServiceSeed[]
   offers?: LocalizedDoctorServiceSeed[]
   doctors?: LocalizedDoctorSeed[]
@@ -99,17 +128,148 @@ export const citiesSeed: {
   { id: "koeln", labels: { "de-DE": "Köln", "en-US": "Cologne" } },
 ]
 
+const specializationIdOverrides: Record<string, string> = {
+  "Allgemeinmedizin": "general-medicine",
+  "Innere Medizin": "internal-medicine",
+  "Innere Medizin und Kardiologie": "cardiology",
+  "Zahnmedizin": "dentistry",
+  "Radiologie": "radiology",
+  "Orthopädie und Unfallchirurgie": "orthopedics",
+}
+
+function specializationIdFromLabel(labelDe: string): string {
+  const trimmed = labelDe.trim()
+  const override = specializationIdOverrides[trimmed]
+  if (override) {
+    return override
+  }
+  return trimmed
+    .toLowerCase()
+    .replaceAll("ä", "ae")
+    .replaceAll("ö", "oe")
+    .replaceAll("ü", "ue")
+    .replaceAll("ß", "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+const specializationLabels: Array<[string, string]> = [
+  ["Allgemeinmedizin", "General medicine"],
+  ["Allgemeinmedizin - Hausärztliche Versorgung", "General medicine - primary care"],
+  ["Anästhesiologie", "Anesthesiology"],
+  ["Anatomie", "Anatomy"],
+  ["Arbeitsmedizin", "Occupational medicine"],
+  ["Augenheilkunde", "Ophthalmology"],
+  ["Biochemie", "Biochemistry"],
+  ["Allgemeine Chirurgie", "General surgery"],
+  ["Gefäßchirurgie", "Vascular surgery"],
+  ["Herzchirurgie", "Cardiac surgery"],
+  ["Kinderchirurgie", "Pediatric surgery"],
+  ["Orthopädie und Unfallchirurgie", "Orthopedics and trauma surgery"],
+  ["Plastische und Ästhetische Chirurgie", "Plastic and aesthetic surgery"],
+  ["Thoraxchirurgie", "Thoracic surgery"],
+  ["Visceralchirurgie", "Visceral surgery"],
+  ["Frauenheilkunde und Geburtshilfe", "Gynecology and obstetrics"],
+  ["Gynäkologische Endokrinologie und Reproduktionsmedizin", "Gynecological endocrinology and reproductive medicine"],
+  ["Gynäkologische Onkologie", "Gynecological oncology"],
+  ["Spezielle Geburtshilfe und Perinatalmedizin", "Specialized obstetrics and perinatal medicine"],
+  ["Hals-Nasen-Ohrenheilkunde", "Otorhinolaryngology"],
+  ["Sprach-, Stimm- und kindliche Hörstörungen", "Speech, voice and pediatric hearing disorders"],
+  ["Haut- und Geschlechtskrankheiten", "Dermatology and venereology"],
+  ["Humangenetik", "Human genetics"],
+  ["Hygiene und Umweltmedizin", "Hygiene and environmental medicine"],
+  ["Innere Medizin", "Internal medicine"],
+  ["Innere Medizin - Hausärztliche Versorgung", "Internal medicine - primary care"],
+  ["Innere und Allgemeinmedizin", "Internal and general medicine"],
+  ["Innere Medizin und Angiologie", "Internal medicine and angiology"],
+  ["Innere Medizin und Endokrinologie und Diabetologie", "Internal medicine and endocrinology and diabetology"],
+  ["Innere Medizin und Gastroenterologie", "Internal medicine and gastroenterology"],
+  ["Innere Medizin und Hämatologie und Onkologie", "Internal medicine and hematology and oncology"],
+  ["Innere Medizin und Hämatologie und Onkologie, Gastroenterologie", "Internal medicine and hematology and oncology, gastroenterology"],
+  ["Innere Medizin und Kardiologie", "Internal medicine and cardiology"],
+  ["Innere Medizin und Nephrologie", "Internal medicine and nephrology"],
+  ["Innere Medizin und Pneumologie", "Internal medicine and pulmonology"],
+  ["Innere Medizin und Rheumatologie", "Internal medicine and rheumatology"],
+  ["Innere und Allgemeinmedizin - Hausärztliche Versorgung", "Internal and general medicine - primary care"],
+  ["Kinder- und Jugendmedizin", "Pediatrics"],
+  ["Kinder-Hämatologie und Kinder-Onkologie", "Pediatric hematology and oncology"],
+  ["Kinder-Kardiologie", "Pediatric cardiology"],
+  ["Neonatologie", "Neonatology"],
+  ["Neuropädiatrie", "Neuropediatrics"],
+  ["Kinder- und Jugendpsychiatrie und -psychotherapie", "Child and adolescent psychiatry and psychotherapy"],
+  ["Laboratoriumsmedizin", "Laboratory medicine"],
+  ["Mikrobiologie, Virologie und Infektionsepidemiologie", "Microbiology, virology and infection epidemiology"],
+  ["Mund-Kiefer-Gesichtschirurgie", "Oral and maxillofacial surgery"],
+  ["Neurochirurgie", "Neurosurgery"],
+  ["Neurologie", "Neurology"],
+  ["Neurologie und Psychiatrie", "Neurology and psychiatry"],
+  ["Nuklearmedizin", "Nuclear medicine"],
+  ["Palliativärztlicher Konsiliardienst (PKD)", "Palliative care consultation service (PKD)"],
+  ["Pathologie", "Pathology"],
+  ["Neuropathologie", "Neuropathology"],
+  ["Pharmakologie", "Pharmacology"],
+  ["Pharmakologie und Toxikologie", "Pharmacology and toxicology"],
+  ["Physikalische und Rehabilitative Medizin", "Physical and rehabilitative medicine"],
+  ["Physiologie", "Physiology"],
+  ["Praktischer Arzt - Hausärztliche Versorgung", "General practitioner - primary care"],
+  ["Psychiatrie und Psychotherapie", "Psychiatry and psychotherapy"],
+  ["Psychosomatische Medizin und Psychotherapie", "Psychosomatic medicine and psychotherapy"],
+  ["Radiologie", "Radiology"],
+  ["Kinderradiologie", "Pediatric radiology"],
+  ["Neuroradiologie", "Neuroradiology"],
+  ["Rechtsmedizin", "Forensic medicine"],
+  ["Strahlentherapie", "Radiation therapy"],
+  ["Transfusionsmedizin", "Transfusion medicine"],
+  ["Urologie", "Urology"],
+  ["Zahnmedizin", "Dentistry"],
+  ["Akupunktur", "Acupuncture"],
+  ["Allergologie", "Allergology"],
+  ["Andrologie", "Andrology"],
+  ["Dermatohistologie", "Dermatohistology"],
+  ["Diabetologie", "Diabetology"],
+  ["Flugmedizin", "Aviation medicine"],
+  ["Geriatrie", "Geriatrics"],
+  ["Gynäkologische Exfoliativ-Zytologie", "Gynecological exfoliative cytology"],
+  ["Hämostaseologie", "Hemostaseology"],
+  ["Handchirurgie", "Hand surgery"],
+  ["Homöopathie", "Homeopathy"],
+  ["Infektiologie", "Infectiology"],
+  ["Intensivmedizin", "Intensive care medicine"],
+  ["Kinder-Endokrinologie und Kinder-Diabetologie", "Pediatric endocrinology and diabetology"],
+  ["Kinder-Gastroenterologie", "Pediatric gastroenterology"],
+  ["Kinder-Nephrologie", "Pediatric nephrology"],
+  ["Kinder-Orthopädie", "Pediatric orthopedics"],
+  ["Kinder-Pneumologie", "Pediatric pulmonology"],
+  ["Kinder-Rheumatologie", "Pediatric rheumatology"],
+  ["Magnetresonanztomographie", "Magnetic resonance imaging"],
+  ["Manuelle Medizin/Chirotherapie", "Manual medicine/chiropractic therapy"],
+  ["Medikamentöse Tumortherapie", "Drug-based tumor therapy"],
+  ["Naturheilverfahren", "Naturopathy"],
+  ["Orthopädische Rheumatologie", "Orthopedic rheumatology"],
+  ["Palliativmedizin", "Palliative medicine"],
+  ["Phlebologie", "Phlebology"],
+  ["Physikalische Therapie und Balneologie", "Physical therapy and balneology"],
+  ["Plastische Operationen", "Plastic surgery procedures"],
+  ["Proktologie", "Proctology"],
+  ["Psychoanalyse", "Psychoanalysis"],
+  ["Psychotherapie", "Psychotherapy"],
+  ["Röntgendiagnostik", "Diagnostic radiology"],
+  ["Schlafmedizin", "Sleep medicine"],
+  ["Sexualmedizin", "Sexual medicine"],
+  ["Sozialmedizin", "Social medicine"],
+  ["Sportmedizin", "Sports medicine"],
+  ["Strabologie", "Strabology"],
+  ["Suchtmedizinische Grundversorgung", "Addiction medicine basic care"],
+  ["Tropenmedizin", "Tropical medicine"],
+]
+
 export const specializationsSeed: {
   id: string
   labels: LocalizedLabel
-}[] = [
-  { id: "general-medicine", labels: { "de-DE": "Allgemeinmedizin", "en-US": "General medicine" } },
-  { id: "internal-medicine", labels: { "de-DE": "Innere Medizin", "en-US": "Internal medicine" } },
-  { id: "cardiology", labels: { "de-DE": "Kardiologie", "en-US": "Cardiology" } },
-  { id: "dentistry", labels: { "de-DE": "Zahnmedizin", "en-US": "Dentistry" } },
-  { id: "radiology", labels: { "de-DE": "Radiologie", "en-US": "Radiology" } },
-  { id: "orthopedics", labels: { "de-DE": "Orthopädie", "en-US": "Orthopedics" } },
-]
+}[] = specializationLabels.map(([labelDe, labelEn]) => ({
+  id: specializationIdFromLabel(labelDe),
+  labels: { "de-DE": labelDe, "en-US": labelEn },
+}))
 
 export const conversationsSeed: ConversationPreview[] = [
   {
@@ -676,6 +836,7 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
     id: "office-moser",
     name: "Dr. Moser",
     phoneNumber: "040 3187612001",
+    faxNumber: "040 3187612002",
     imageUri: "doctor-portrait",
     openingHours: openingHours({
       monday: ["7:00 - 16:00"],
@@ -684,11 +845,23 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
       thursday: ["7:00 - 16:00"],
       friday: ["7:00 - 12:00"],
     }),
+    openingHoursNote: {
+      "de-DE": "Termine nach Vereinbarung möglich.",
+      "en-US": "Appointments available by arrangement.",
+    },
     address: address("Teichweg", 12, "22637", "Nordberg"),
     websiteUrl: "https://www.dr-moser.de",
     specialization: {
       "de-DE": "Allgemeinmedizin - Innere Medizin",
       "en-US": "General medicine - Internal medicine",
+    },
+    specializationIds: ["general-medicine", "internal-medicine"],
+    onlineServices: {
+      orderPrescriptions: true,
+      shipPrescriptionByMail: true,
+      orderReferrals: true,
+      receiveDocuments: true,
+      requestAppointments: true,
     },
     offers: [
       {
@@ -711,6 +884,7 @@ export const doctorsOfficesSeed: Record<string, DoctorsOfficeSeed> = {
           "de-DE": "Standard- und Reiseimpfungen",
           "en-US": "Standard and travel vaccinations",
         },
+        url: "https://www.dr-moser.de/impfungen",
       },
       {
         id: "preventive-checkup",

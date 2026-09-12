@@ -1,45 +1,66 @@
 import {
   defaultPracticeOfficeId,
+  PatientRequestStatusUtils,
+  type PatientRequestStatus,
   type PatientRequestType
 } from '@app-zum-doc/utils/api'
 
 export const practiceOfficeId = defaultPracticeOfficeId
 
 export function requestKindPath(kind: PatientRequestType): string {
-  return `/requests?kind=${kind}`
+  return `/requests/${kind}`
 }
 
 export function parseRequestKind(
-  value: string | string[] | undefined
+  value: string | undefined
 ): PatientRequestType | undefined {
-  const raw = Array.isArray(value) ? value[0] : value
-  if (raw === 'appointment' || raw === 'prescription' || raw === 'referral') {
-    return raw
+  if (value === 'appointment' || value === 'prescription' || value === 'referral') {
+    return value
   }
   return undefined
 }
 
-export function activeNavUrl(
-  path: string,
+export function parseRequestKindFromPath(
+  path: string
+): PatientRequestType | undefined {
+  const segment = path.split('/').filter(Boolean)[1]
+  return parseRequestKind(segment)
+}
+
+export function requestStatusFiltersForKind(
   kind?: PatientRequestType
-): string {
+): PatientRequestStatus[] {
+  if (kind === 'appointment') {
+    return ['requested', 'confirmed', 'completed', 'cancelled']
+  }
+  if (kind === 'prescription') {
+    return ['inProgress', 'readyForPickup', 'completed', 'cancelled']
+  }
+  if (kind === 'referral') {
+    return ['inProgress', 'completed', 'cancelled']
+  }
+  return [...PatientRequestStatusUtils.array]
+}
+
+export function activeNavUrl(path: string): string {
   if (path.startsWith('/patients')) {
     return '/patients'
   }
   if (path.startsWith('/chat')) {
     return '/chat'
   }
-  if (path.startsWith('/practice')) {
-    return '/practice'
+  if (path.startsWith('/my-doctors-office') || path.startsWith('/practice') || path.startsWith('/app-entry')) {
+    return '/my-doctors-office'
+  }
+  if (path.startsWith('/settings')) {
+    return '/settings'
   }
   if (path.startsWith('/requests')) {
-    if (kind === 'prescription') {
-      return requestKindPath('prescription')
+    const kind = parseRequestKindFromPath(path)
+    if (kind) {
+      return requestKindPath(kind)
     }
-    if (kind === 'referral') {
-      return requestKindPath('referral')
-    }
-    return requestKindPath('appointment')
+    return '/requests'
   }
   return '/'
 }

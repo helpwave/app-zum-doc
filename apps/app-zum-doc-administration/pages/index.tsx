@@ -1,4 +1,5 @@
 import type { NextPage } from 'next'
+import { useState } from 'react'
 import { Shield, TriangleAlert } from 'lucide-react'
 import type { PracticeOverview } from '@app-zum-doc/utils/api'
 import { toAppLocale } from '@app-zum-doc/utils/api'
@@ -10,6 +11,7 @@ import { DashboardMessageRow } from '@/components/dashboard/message-row'
 import { DashboardNewsCard } from '@/components/dashboard/news-card'
 import { RequestDistributionDonut } from '@/components/dashboard/request-distribution-donut'
 import { Page, QueryState } from '@/components/layout/Page'
+import { RequestDetailDialog } from '@/components/requests/request-detail-dialog'
 import { formatDashboardDateHeading } from '@/lib/datetime'
 import { practiceNews } from '@/lib/news'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
@@ -112,6 +114,8 @@ const OverviewPage: NextPage = () => {
   })
   const overview = overviewQuery.data
   const todayLabel = formatDashboardDateHeading(new Date(), locale)
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
 
   return (
     <Page pageTitle={titleWrapper(t('navOverview'))}>
@@ -140,6 +144,10 @@ const OverviewPage: NextPage = () => {
                         <DashboardAppointmentRow
                           key={appointment.id}
                           appointment={appointment}
+                          onSelect={(requestId) => {
+                            setSelectedRequestId(requestId)
+                            setIsOpen(true)
+                          }}
                         />
                       ))}
                     </div>
@@ -176,6 +184,11 @@ const OverviewPage: NextPage = () => {
           </div>
         )}
       </QueryState>
+      <RequestDetailDialog
+        isOpen={isOpen}
+        requestId={selectedRequestId}
+        onClose={() => setIsOpen(false)}
+      />
     </Page>
   )
 }

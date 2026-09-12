@@ -31,6 +31,7 @@ export default function ProfileScreen() {
     notificationsEnabled,
     setNotificationsEnabled,
     settingsPrompt,
+    isOpen,
     confirmOpenSettings,
     dismissSettingsPrompt,
   } = useAppNotificationPermission()
@@ -162,9 +163,9 @@ export default function ProfileScreen() {
         message={t("placeholderComingSoon")}
       />
       <ConfirmationModal
-        isOpen={settingsPrompt != null}
-        onIsOpenChange={(isOpen) => {
-          if (!isOpen) {
+        isOpen={isOpen}
+        onIsOpenChange={(nextIsOpen) => {
+          if (!nextIsOpen) {
             dismissSettingsPrompt()
           }
         }}
