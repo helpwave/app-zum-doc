@@ -1,14 +1,46 @@
 @font-face {
   font-family: "Inter";
-  src: url("/fonts/Inter_28pt-Regular.ttf") format("truetype");
+  src: url("/fonts/Inter-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "SpaceGrotesk";
-  src: url("/fonts/SpaceGrotesk-Light.ttf") format("truetype");
+  src: url("/fonts/SpaceGrotesk-Light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -16,7 +48,7 @@
 
 @font-face {
   font-family: "SpaceGrotesk";
-  src: url("/fonts/SpaceGrotesk-Regular.ttf") format("truetype");
+  src: url("/fonts/SpaceGrotesk-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -24,7 +56,7 @@
 
 @font-face {
   font-family: "SpaceGrotesk";
-  src: url("/fonts/SpaceGrotesk-Medium.ttf") format("truetype");
+  src: url("/fonts/SpaceGrotesk-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -32,7 +64,15 @@
 
 @font-face {
   font-family: "SpaceGrotesk";
-  src: url("/fonts/SpaceGrotesk-Bold.ttf") format("truetype");
+  src: url("/fonts/SpaceGrotesk-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SpaceGrotesk";
+  src: url("/fonts/SpaceGrotesk-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;

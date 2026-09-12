@@ -16,7 +16,9 @@
     "android": "pnpm --filter \"@app-zum-doc/mobile\" android",
     "ios": "pnpm --filter \"@app-zum-doc/mobile\" ios",
     "administration": "pnpm --filter \"@app-zum-doc/administration\" start",
-    "administration:dev": "pnpm --filter \"@app-zum-doc/administration\" dev"
+    "administration:dev": "pnpm --filter \"@app-zum-doc/administration\" dev",
+    "build:administration": "pnpm --filter @app-zum-doc/utils run init && pnpm --filter @app-zum-doc/administration run init && pnpm --filter @app-zum-doc/administration run build",
+    "build:mobile": "pnpm --filter @app-zum-doc/utils run init && pnpm --filter @app-zum-doc/mobile run build"
   },
   "devEngines": {
     "packageManager": {

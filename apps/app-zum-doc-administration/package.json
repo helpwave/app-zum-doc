@@ -6,11 +6,11 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules .next",
+    "clean": "rm -rf node_modules .next out",
     "dev": "next dev --webpack",
     "build-intl": "build-intl --force -i ./locales -o ./i18n/translations.ts -n administrationTranslation",
     "build": "pnpm run build-intl && next build",
-    "start": "next start",
+    "start": "npx serve out",
     "lint": "node ./scripts/typecheck.mjs && eslint .",
     "init": "pnpm run build-intl",
     "test": "node -e \"process.exit(0)\""
@@ -22,7 +22,7 @@
     "@tanstack/react-query": "^5.101.3",
     "clsx": "2.1.1",
     "lucide-react": "0.561.0",
-    "next": "16.2.9",
+    "next": "16.3.5",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

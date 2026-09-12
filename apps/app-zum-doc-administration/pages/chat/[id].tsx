@@ -11,6 +11,7 @@ import {
   ChatSystemLine,
   ChatThreadHeader
 } from '@helpwave/hightide'
+import { spaStaticPaths, spaStaticProps } from '@/lib/static-page'
 import {
   formatDateDivider,
   formatMessageTime,
@@ -141,5 +142,9 @@ const ChatThreadPage: NextPage = () => {
     </Page>
   )
 }
+
+export const getStaticPaths = spaStaticPaths
+
+export const getStaticProps = spaStaticProps
 
 export default ChatThreadPage
