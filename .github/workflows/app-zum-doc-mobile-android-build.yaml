@@ -1,6 +1,13 @@
 name: Build Android
 
 on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "apps/mobile/**"
+      - "packages/app-zum-doc-utils/**"
+      - ".github/workflows/app-zum-doc-mobile-android-build.yaml"
   workflow_call:
     outputs:
       app_version:
@@ -88,9 +95,9 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [[ -z "${ANDROID_KEYSTORE_BASE64}" ]]; then
-            echo "No release keystore configured; Gradle will fall back to the debug keystore."
-            exit 0
+          if [[ -z "${ANDROID_KEYSTORE_BASE64}" || -z "${ANDROID_KEYSTORE_PASSWORD}" || -z "${ANDROID_KEY_ALIAS}" || -z "${ANDROID_KEY_PASSWORD}" ]]; then
+            echo "Android release keystore secrets are required."
+            exit 1
           fi
           KEYSTORE_PATH="${RUNNER_TEMP}/upload-keystore.p12"
           printf '%s' "${ANDROID_KEYSTORE_BASE64}" | base64 --decode > "${KEYSTORE_PATH}"
