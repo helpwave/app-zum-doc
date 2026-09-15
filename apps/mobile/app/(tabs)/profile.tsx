@@ -6,14 +6,13 @@ import {
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
-import { useAppNotificationPermission } from "@/hooks/useAppNotificationPermission"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { formatPatientDateOfBirth, patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
-import { Button, Card, ListActionItem, ListItem, ListNavigationItem, Switch, ThemedIcon } from "@helpwave/hightide-native/components"
+import { Button, Card, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
-import { Bell, ChevronRight, LogOut, Pill, Scale, Shield } from "lucide-react-native"
+import { ChevronRight, LogOut, Pill, Scale, Shield } from "lucide-react-native"
 import { useState } from "react"
 import { Linking, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -27,14 +26,6 @@ export default function ProfileScreen() {
   const profileQuery = usePatientProfile()
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
-  const {
-    notificationsEnabled,
-    setNotificationsEnabled,
-    settingsPrompt,
-    isOpen,
-    confirmOpenSettings,
-    dismissSettingsPrompt,
-  } = useAppNotificationPermission()
   const [signOutComingSoonOpen, setSignOutComingSoonOpen] = useState(false)
 
   return (
@@ -115,21 +106,6 @@ export default function ProfileScreen() {
             
             <Section title={t("settingsSection")}>
               <Card>
-                <ListActionItem 
-                  title={t("notifications")}
-                  onPress={() => {
-                    setNotificationsEnabled(!notificationsEnabled)
-                  }}
-                  leading={<ThemedIcon icon={Bell}/>}
-                  trailing={
-                    <Switch
-                      value={notificationsEnabled}
-                      onValueChange={(value) => {
-                        setNotificationsEnabled(value)
-                      }}
-                    />
-                  }
-                />
                 <ThemeModeSetting />
                 <LocaleSetting />
               </Card>
@@ -161,19 +137,6 @@ export default function ProfileScreen() {
         onIsOpenChange={setSignOutComingSoonOpen}
         title={t("tabProfile")}
         message={t("placeholderComingSoon")}
-      />
-      <ConfirmationModal
-        isOpen={isOpen}
-        onIsOpenChange={(nextIsOpen) => {
-          if (!nextIsOpen) {
-            dismissSettingsPrompt()
-          }
-        }}
-        title={settingsPrompt?.title ?? ""}
-        message={settingsPrompt?.message ?? ""}
-        cancelLabel={t("cancel")}
-        confirmLabel={t("openSettings")}
-        onConfirm={confirmOpenSettings}
       />
     </View>
   )

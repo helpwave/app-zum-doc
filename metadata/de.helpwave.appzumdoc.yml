@@ -11,9 +11,50 @@ Changelog: https://github.com/helpwave/app-zum-doc/releases
 
 Name: App zum Doc
 AutoName: App zum Doc
+Summary: End-to-end encrypted patient portal
+Description: |-
+    Book appointments and send prescriptions, referrals and imaging requests
+    over an end-to-end encrypted channel between patient and practice.
 
 RepoType: git
 Repo: https://github.com/helpwave/app-zum-doc.git
 
+Builds:
+  - versionName: 0.0.7
+    versionCode: 7
+    commit: android@0.0.7
+    subdir: apps/mobile
+    sudo:
+      - apt-get update
+      - apt-get install -y npm openjdk-17-jdk-headless
+      - corepack enable
+    init:
+      - cd ../..
+      - corepack prepare pnpm@11.13.0 --activate
+      - pnpm install --frozen-lockfile
+      - pnpm --filter @app-zum-doc/utils run init
+    output: android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
+    prebuild:
+      - export EXPO_NO_GIT_STATUS=1
+      - npx expo prebuild --platform android --non-interactive --clean
+      - sed -i -e '/signingConfig /d' android/app/build.gradle
+    scanignore:
+      - node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
+      - node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
+      - node_modules/expo-modules-autolinking/scripts/android/autolinking_implementation.gradle
+      - node_modules/react-native-reanimated/android/build.gradle
+      - node_modules/react-native-svg/android/build.gradle
+      - node_modules/react-native-screens/android/build.gradle
+      - node_modules/react-native-safe-area-context/android/build.gradle
+      - node_modules/@react-native-async-storage/async-storage/android/build.gradle
+    scandelete:
+      - node_modules
+    build:
+      - cd android
+      - gradle assembleRelease
+
+AutoUpdateMode: Version
 UpdateCheckMode: Tags ^android@
-AutoUpdateMode: None
+UpdateCheckData: apps/mobile/app.json|"versionCode":\s(\d+)|.|"version":\s"([\d.]+)"
+CurrentVersion: 0.0.7
+CurrentVersionCode: 7

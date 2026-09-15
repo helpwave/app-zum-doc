@@ -128,16 +128,19 @@ jobs:
           EXPECTED_CODE: ${{ steps.version.outputs.version_code }}
         run: |
           set -euo pipefail
-          APK="$(find apps/mobile/android/app/build/outputs/apk/release -name '*.apk' | head -n 1)"
-          [[ -n "${APK}" ]] || { echo "No release APK found."; exit 1; }
+          APK_DIR="apps/mobile/android/app/build/outputs/apk/release"
+          mapfile -t APKS < <(find "${APK_DIR}" -maxdepth 1 -name '*.apk' | sort)
+          [[ ${#APKS[@]} -gt 0 ]] || { echo "No release APK found."; exit 1; }
           AAPT2="$(find "${ANDROID_HOME}/build-tools" -name aapt2 -type f | sort -V | tail -n 1)"
-          BADGING="$("${AAPT2}" dump badging "${APK}" | head -n 1)"
-          echo "${BADGING}"
-          GOT_VERSION="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
-          GOT_CODE="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
-          echo "APK: ${GOT_VERSION} (${GOT_CODE}) — expected ${EXPECTED_VERSION} (${EXPECTED_CODE})"
-          [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "versionName mismatch"; exit 1; }
-          [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "versionCode mismatch"; exit 1; }
+          for APK in "${APKS[@]}"; do
+            BADGING="$("${AAPT2}" dump badging "${APK}" | head -n 1)"
+            echo "${BADGING}"
+            GOT_VERSION="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
+            GOT_CODE="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
+            echo "APK $(basename "${APK}"): ${GOT_VERSION} (${GOT_CODE}) — expected ${EXPECTED_VERSION} (${EXPECTED_CODE})"
+            [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "versionName mismatch"; exit 1; }
+            [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "versionCode mismatch"; exit 1; }
+          done
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

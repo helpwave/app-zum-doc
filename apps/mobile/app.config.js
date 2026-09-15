@@ -52,6 +52,7 @@ module.exports = {
     plugins: [
       ...(appJson.expo.plugins ?? []),
       "./plugins/with-android-release-signing.js",
+      "./plugins/with-android-abi-splits.js",
     ],
   },
 }
