@@ -23,14 +23,18 @@ platform :android do
     )
   end
 
-  desc "Publish the Android APK as a GitHub Release for F-Droid"
+  def store_version(raw)
+    raw.to_s.sub(/\A(ios|android)@/i, "").sub(/\A@/, "")
+  end
+
   lane :fdroid do
+    version = store_version(ENV.fetch("APP_VERSION"))
     set_github_release(
       repository_name: ENV.fetch("GITHUB_REPOSITORY"),
       api_token: ENV.fetch("GITHUB_TOKEN"),
-      name: "Android #{ENV.fetch("APP_VERSION")}",
+      name: "Android #{version}",
       tag_name: ENV.fetch("GIT_TAG_NAME"),
-      description: "App zum Doc Android #{ENV.fetch("APP_VERSION")}",
+      description: "App zum Doc Android #{version}.",
       upload_assets: [ENV.fetch("APK_PATH")],
       is_prerelease: false,
     )

@@ -38,7 +38,7 @@ jobs:
           else
             echo "not a tag (${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}); skipping tag check"
           fi
-          echo "app_version=$(scripts/mobile-sync.sh get appVersion)" >> "${GITHUB_OUTPUT}"
+          echo "app_version=$(scripts/mobile-sync.sh store-version)" >> "${GITHUB_OUTPUT}"
           echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
 
   build:

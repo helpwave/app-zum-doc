@@ -1,0 +1,19 @@
+Categories:
+  - Sports & Health
+License: AGPL-3.0-only
+AuthorName: helpwave GmbH
+AuthorEmail: contact@helpwave.de
+AuthorWebSite: https://helpwave.de
+WebSite: https://app-zum-doc.de/
+SourceCode: https://github.com/helpwave/app-zum-doc
+IssueTracker: https://github.com/helpwave/app-zum-doc/issues
+Changelog: https://github.com/helpwave/app-zum-doc/releases
+
+Name: App zum Doc
+AutoName: App zum Doc
+
+RepoType: git
+Repo: https://github.com/helpwave/app-zum-doc.git
+
+UpdateCheckMode: Tags ^android@
+AutoUpdateMode: None

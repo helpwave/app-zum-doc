@@ -13,6 +13,8 @@ scripts/mobile-sync.sh check
 scripts/mobile-sync.sh tag [ios|android|all] [--push]
 ```
 
-`version` writes `build-metadata.json` and applies derived values. `apply` writes `app.json` (`expo.version` is `@x.y.z`), `package.json` (`x.y.z`), and `# @sync` workflow literals. `check` fails if any derived file drifted. Tags are `ios@x.y.z` / `android@x.y.z`. The native build version is `@x.y.z`.
+`version` writes `build-metadata.json` and applies derived values. `apply` writes `app.json` (`expo.version` is `x.y.z`), `package.json` (`x.y.z`), and `# @sync` workflow literals. `check` fails if any derived file drifted. Tags are `ios@x.y.z` / `android@x.y.z`. The native build version is `x.y.z`.
 
 CI runs `scripts/mobile-sync.sh check` on every mobile build and publish. When a tag is pushed, it also runs `scripts/mobile-sync.sh check-tag` so the tag name matches `build-metadata.json`.
+
+`android@x.y.z` / `ios@x.y.z` publish from the existing platform build. If that build is still queued or running, tag publish waits (up to two hours) via `scripts/mobile-wait-build.sh`. Write `fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt` before an `android@` tag. Do not edit store copy by hand in GitHub Releases.

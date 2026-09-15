@@ -2,8 +2,8 @@
 .idea/
 .pnpm-store/
 node_modules/
-ios/
-android/
+/ios/
+/android/
 *.jks
 *.p12
 tsconfig.tsbuildinfo

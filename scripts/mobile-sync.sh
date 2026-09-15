@@ -20,7 +20,8 @@ scripts/mobile-sync.sh version x.y.z    set version in build-metadata.json, then
 scripts/mobile-sync.sh check-tag <tag>  exit 1 unless <tag> (ios@x.y.z / android@x.y.z) matches metadata version
 scripts/mobile-sync.sh tag [ios|android|all] [--push]
                                         create ios@<ver> / android@<ver> tags from metadata version
-scripts/mobile-sync.sh get <key>        print one value, e.g. get version, get appVersion, get ios.xcode, get android.sdkPackages
+scripts/mobile-sync.sh store-version [raw]  print x.y.z (strips ios@ / android@ / leading @; default: metadata version)
+scripts/mobile-sync.sh get <key>        print one value, e.g. get version, get ios.xcode, get android.sdkPackages
 EOF
   exit "${1:-0}"
 }
@@ -28,6 +29,19 @@ EOF
 [[ -f "${META}" ]] || die "not found: ${META}"
 
 require_semver() { [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "'$1' is not a plain x.y.z version"; }
+
+store_version() {
+  local raw="${1:-$(get_key version)}" p
+  for p in "${PLATFORMS[@]}"; do
+    if [[ "${raw}" == "${p}@"* ]]; then
+      raw="${raw#"${p}@"}"
+      break
+    fi
+  done
+  raw="${raw#@}"
+  require_semver "${raw}"
+  echo "${raw}"
+}
 
 resolve_key() {
   node -e '
@@ -42,15 +56,9 @@ resolve_key() {
       }
       return "platform-tools platforms;android-" + compile + " build-tools;" + tools;
     }
-    function appVersion() {
-      if (!m.version) fail("version is required to derive appVersion");
-      return "@" + m.version;
-    }
     let v;
     if (key === "android.sdkPackages") {
       v = sdkPackages();
-    } else if (key === "appVersion") {
-      v = appVersion();
     } else {
       v = key.split(".").reduce((o, k) => (o == null ? undefined : o[k]), m);
     }
@@ -98,7 +106,6 @@ function walkAtomic(node, prefix) {
     const key = prefix ? `${prefix}.${k}` : k;
     if (k.startsWith("$")) fail(`build-metadata.json must not contain '${key}'`);
     if (key === "android.sdkPackages") fail("android.sdkPackages is derived from android.compileSdkVersion and android.buildToolsVersion; do not store it");
-    if (key === "appVersion") fail("appVersion is derived from version; do not store it");
     if (v !== null && typeof v === "object" && !Array.isArray(v)) walkAtomic(v, key);
     else assertAtomic(v, key);
   }
@@ -121,13 +128,8 @@ function sdkPackages() {
   return `platform-tools platforms;android-${compile} build-tools;${tools}`;
 }
 
-function appVersion() {
-  return `@${version}`;
-}
-
 function getKey(key) {
   if (key === "android.sdkPackages") return sdkPackages();
-  if (key === "appVersion") return appVersion();
   const v = key.split(".").reduce((o, k) => (o == null ? undefined : o[k]), meta);
   if (v === undefined) fail(`workflow references unknown key '${key}'`);
   if (v !== null && typeof v === "object") fail(`workflow key '${key}' is not atomic`);
@@ -152,9 +154,8 @@ function emit(file, before, after, what) {
   const app = JSON.parse(before);
   const ios = app.expo.ios || {};
   const android = app.expo.android || {};
-  const released = appVersion();
   const sameVersion =
-    app.expo.version === released &&
+    app.expo.version === version &&
     ios.buildNumber === String(code) &&
     android.versionCode === code;
 
@@ -179,7 +180,7 @@ function emit(file, before, after, what) {
   }
 
   if (!sameVersion || (hasBuildProps && !sameBuildProps)) {
-    app.expo.version = released;
+    app.expo.version = version;
     app.expo.ios = { ...ios, buildNumber: String(code) };
     app.expo.android = { ...android, versionCode: code };
     if (hasBuildProps) {
@@ -205,7 +206,7 @@ function emit(file, before, after, what) {
       app.expo.plugins = plugins;
     }
     emit(APP_JSON, before, JSON.stringify(app, null, 2) + "\n",
-      `expo.version=${released} ios.buildNumber=${code} android.versionCode=${code}${hasBuildProps ? " expo-build-properties" : ""}`);
+      `expo.version=${version} ios.buildNumber=${code} android.versionCode=${code}${hasBuildProps ? " expo-build-properties" : ""}`);
   } else if (MODE === "apply" && !hasBuildProps) {
     console.log("note: expo-build-properties is not a dependency of apps/mobile; compileSdk/targetSdk/deploymentTarget not applied to app.json");
   }
@@ -271,10 +272,12 @@ cmd_get() {
   if [[ "$1" == "code" ]]; then version_code "$(get_key version)"; else get_key "$1"; echo; fi
 }
 
+cmd_store_version() { store_version "${1:-}"; }
+
 cmd_version() {
   local v="${1:-}"
   [[ -n "${v}" ]] || usage 1
-  require_semver "${v}"
+  v="$(store_version "${v}")"
   version_code "${v}" >/dev/null
   node -e '
     const fs = require("fs");
@@ -331,6 +334,7 @@ main() {
   case "${cmd}" in
     apply)     cmd_apply "$@" ;;
     check)     cmd_check "$@" ;;
+    store-version) cmd_store_version "$@" ;;
     version)   cmd_version "$@" ;;
     check-tag) cmd_check_tag "$@" ;;
     tag)       cmd_tag "$@" ;;

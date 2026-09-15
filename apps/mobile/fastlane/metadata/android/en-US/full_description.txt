@@ -1,0 +1,17 @@
+App zum Doc is an end-to-end encrypted booking tool and patient portal by helpwave. Appointments, prescriptions, referrals, imaging results and inpatient pre-admission forms travel over a structured, encrypted channel between the practice and the patient. No extra hardware, PVS-independent, hosted in Germany.
+
+<b>For patients</b>
+A personal key pair is created on the device. The private key never leaves the phone. Book and shift appointments, request prescriptions, referrals and imaging, fill pre-admission questionnaires at home, and keep pharmacy emergency services and medical emergency numbers at hand. The app does not look into message contents and does not profile you.
+
+<b>For practices</b>
+The practice owns the practice key pair. Every request arrives as one structured entry instead of phone ping-pong across inboxes. Create request forms, attach proactive notes, and keep practice info up to date.
+
+<b>Privacy you can prove</b>
+Each practice has its own public key. Patients encrypt every message with their private key and the practice public key. We host ciphertext in a certified German data centre. There is no master key and no backdoor.
+
+<b>Platforms</b>
+iOS, Android and modern browsers. Same protocol everywhere.
+
+Website: https://app-zum-doc.de/
+Source: https://github.com/helpwave/app-zum-doc
+License: GNU Affero General Public License v3.0 (apps/mobile/LICENSE)

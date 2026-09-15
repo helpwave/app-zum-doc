@@ -1,8 +1,15 @@
 const appJson = require("./app.json")
 
+function storeVersion(raw) {
+  let value = String(raw ?? "").trim()
+  value = value.replace(/^(ios|android)@/i, "")
+  value = value.replace(/^@/, "")
+  return value
+}
+
 function resolveVersion() {
   const fromEnv = process.env.APP_VERSION?.trim()
-  return fromEnv || appJson.expo.version
+  return storeVersion(fromEnv || appJson.expo.version)
 }
 
 function resolveVersionCode() {

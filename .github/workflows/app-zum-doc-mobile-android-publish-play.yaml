@@ -27,7 +27,7 @@ jobs:
           else
             echo "not a tag (${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}); skipping tag check"
           fi
-          echo "app_version=$(scripts/mobile-sync.sh get appVersion)" >> "${GITHUB_OUTPUT}"
+          echo "app_version=$(scripts/mobile-sync.sh store-version)" >> "${GITHUB_OUTPUT}"
           echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
 
   publish:
@@ -45,27 +45,17 @@ jobs:
           echo "app_version=${APP_VERSION}" >> "${GITHUB_OUTPUT}"
           echo "version_code=${VERSION_CODE}" >> "${GITHUB_OUTPUT}"
 
-      - name: Find the Build Android run for this commit
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for the Build Android run
         id: find
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          RUN_ID="$(gh run list \
-            --repo "${GITHUB_REPOSITORY}" \
-            --workflow "Build Android" \
-            --commit "${GITHUB_SHA}" \
-            --status success \
-            --limit 1 \
-            --json databaseId \
-            --jq '.[0].databaseId // empty')"
-          if [[ -z "${RUN_ID}" ]]; then
-            echo "No successful 'Build Android' run found for ${GITHUB_SHA}."
-            echo "Push the commit first, wait for the build to go green, then push the tag."
-            exit 1
-          fi
-          echo "Using Build Android run ${RUN_ID}"
-          echo "run_id=${RUN_ID}" >> "${GITHUB_OUTPUT}"
+          chmod +x scripts/mobile-wait-build.sh
+          echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
 
       - name: Download AAB from that run
         uses: actions/download-artifact@v4
@@ -99,9 +89,6 @@ jobs:
           [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "Refusing to upload: version mismatch."; exit 1; }
           [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "Refusing to upload: version code mismatch."; exit 1; }
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
@@ -115,8 +102,8 @@ jobs:
       - name: Write Play Store credentials
         env:
           PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
-          PLAY_TRACK: ${{ secrets.PLAY_TRACK }}
-          PLAY_RELEASE_STATUS: ${{ secrets.PLAY_RELEASE_STATUS }}
+          PLAY_TRACK: ${{ vars.PLAY_TRACK }}
+          PLAY_RELEASE_STATUS: ${{ vars.PLAY_RELEASE_STATUS }}
         run: |
           set -euo pipefail
           if [[ -z "${PLAY_STORE_JSON_KEY}" || -z "${PLAY_TRACK}" || -z "${PLAY_RELEASE_STATUS}" ]]; then
@@ -129,8 +116,8 @@ jobs:
       - name: Upload to Google Play
         env:
           PLAY_STORE_JSON_KEY_PATH: ${{ runner.temp }}/play-store.json
-          PLAY_TRACK: ${{ secrets.PLAY_TRACK }}
-          PLAY_RELEASE_STATUS: ${{ secrets.PLAY_RELEASE_STATUS }}
+          PLAY_TRACK: ${{ vars.PLAY_TRACK }}
+          PLAY_RELEASE_STATUS: ${{ vars.PLAY_RELEASE_STATUS }}
         working-directory: apps/mobile
         run: bundle exec fastlane android playstore
 
