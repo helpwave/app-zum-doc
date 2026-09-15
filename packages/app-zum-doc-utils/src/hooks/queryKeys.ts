@@ -118,3 +118,9 @@ export const practiceConversationKeys = {
   messages: (params?: { conversationId: string }) =>
     ['practiceConversations', 'messages', params?.conversationId ?? ''] as const,
 }
+
+export const onboardingKeys = {
+  all: ['onboarding'] as const,
+  status: ['onboarding', 'status'] as const,
+  myData: ['onboarding', 'myData'] as const,
+}

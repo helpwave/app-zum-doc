@@ -4,6 +4,7 @@ export {
   fetchConversations,
   fetchDoctors,
   fetchDoctorsOffice,
+  fetchEncryptionKeyTest,
   fetchHomeSummary,
   fetchMyDoctors,
   fetchMessages,
@@ -15,6 +16,8 @@ export {
   fetchPracticeConversation,
   fetchPracticeConversations,
   fetchPracticeMessages,
+  fetchPracticeMyData,
+  fetchPracticeOnboardingStatus,
   fetchPracticeOverview,
   fetchPracticePatients,
   createPracticePatient,
@@ -38,6 +41,7 @@ export {
   cancelAppointment,
   cancelPrescription,
   cancelReferral,
+  completePracticeOnboarding,
   createAppointment,
   createPrescription,
   createReferral,
@@ -45,4 +49,5 @@ export {
   removePatientMedication,
   updateDoctorsOffice,
   updatePatientRequestStatus,
-} from "./mock/client"
+  uploadPracticePublicKey,
+} from './mock/client'

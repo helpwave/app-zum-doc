@@ -5,6 +5,7 @@ import Link from 'next/link'
 import {
   AppPage,
   AppZumDocBadge,
+  HelpwaveLogo,
   type AppPageNavigationItem
 } from '@helpwave/hightide'
 import {
@@ -126,8 +127,12 @@ export const Page = ({
         activeUrl: activeNavUrl(path),
         LinkComponent: Link,
         footer: (
-          <span className="text-description text-xs px-2 pb-3">
+          <span className="flex-row-2 items-center whitespace-nowrap text-description text-xs px-2 pb-3">
             {translation('sidebarFooter')}
+            <span className="flex-row-1 items-center font-bold">
+              <HelpwaveLogo className="size-6 shrink-0" width={24} height={24} />
+              helpwave
+            </span>
           </span>
         ),
       }}

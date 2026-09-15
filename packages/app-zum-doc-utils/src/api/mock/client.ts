@@ -59,8 +59,13 @@ import {
   type SearchSpecialization,
   type StructuredCardMessage,
   type TextMessage,
-  type UpdateDoctorsOfficeInput
+  type UpdateDoctorsOfficeInput,
+  type CompletePracticeOnboardingInput,
+  type EncryptionKeyTest,
+  type PracticeMyData,
+  type PracticeOnboardingStatus
 } from '../types'
+import { encryptWithPublicKey, encryptionTestPlaintext } from '../encryption'
 import {
   formatAppointmentRequestTitle,
   formatPrescriptionRequestTitle,
@@ -84,7 +89,6 @@ import {
   type DoctorsOfficeEmailNotifications,
   type DoctorsOfficeOnlineServices,
   type DoctorsOfficeTemporaryNotifications,
-  type TemporaryNotificationKey,
   type TemporaryNotificationTile
 } from '../doctorsOffice'
 import { parseIsoDate } from '../openingHours'
@@ -178,6 +182,51 @@ let practiceMessagesState: Record<string, Message[]> = structuredClone(
 )
 let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
 let blockedPracticePatientIds = new Set<string>()
+
+const practiceAccountStorageKey = 'app-zum-doc-practice-account'
+
+type PracticeAccountState = {
+  hasDoctorsOffice: boolean,
+  publicKey: string | null,
+}
+
+function defaultPracticeAccount(): PracticeAccountState {
+  return {
+    hasDoctorsOffice: false,
+    publicKey: null,
+  }
+}
+
+function readPracticeAccount(): PracticeAccountState {
+  if (typeof window === 'undefined') {
+    return defaultPracticeAccount()
+  }
+  const raw = window.localStorage.getItem(practiceAccountStorageKey)
+  if (!raw) {
+    return defaultPracticeAccount()
+  }
+  try {
+    const parsed = JSON.parse(raw) as PracticeAccountState
+    return {
+      hasDoctorsOffice: parsed.hasDoctorsOffice === true,
+      publicKey: typeof parsed.publicKey === 'string' && parsed.publicKey.length > 0
+        ? parsed.publicKey
+        : null,
+    }
+  } catch {
+    return defaultPracticeAccount()
+  }
+}
+
+function writePracticeAccount(next: PracticeAccountState): void {
+  practiceAccountState = next
+  if (typeof window === 'undefined') {
+    return
+  }
+  window.localStorage.setItem(practiceAccountStorageKey, JSON.stringify(next))
+}
+
+let practiceAccountState: PracticeAccountState = readPracticeAccount()
 
 export const mockApiConfig = {
   forceFail: false,
@@ -1377,6 +1426,76 @@ export async function updateDoctorsOffice(params: {
   })
 }
 
+export async function fetchPracticeOnboardingStatus(): Promise<PracticeOnboardingStatus> {
+  return withMockLatency(() => ({
+    hasDoctorsOffice: practiceAccountState.hasDoctorsOffice,
+    hasPublicKey: practiceAccountState.publicKey != null,
+  }))
+}
+
+export async function fetchPracticeMyData(): Promise<PracticeMyData> {
+  return withMockLatency(() => {
+    const office = doctorsOfficesState[defaultPracticeOfficeId]
+    if (!office) {
+      throw new Error('Arztpraxis nicht gefunden.')
+    }
+    return {
+      name: office.name,
+      address: { ...office.address },
+    }
+  })
+}
+
+export async function uploadPracticePublicKey(publicKey: string): Promise<PracticeOnboardingStatus> {
+  return withMockLatency(() => {
+    const trimmed = publicKey.trim()
+    if (!trimmed.includes('BEGIN PUBLIC KEY')) {
+      throw new Error('Ungültiger öffentlicher Schlüssel.')
+    }
+    writePracticeAccount({
+      ...practiceAccountState,
+      publicKey: trimmed,
+    })
+    return {
+      hasDoctorsOffice: practiceAccountState.hasDoctorsOffice,
+      hasPublicKey: true,
+    }
+  })
+}
+
+export async function fetchEncryptionKeyTest(): Promise<EncryptionKeyTest> {
+  const publicKey = practiceAccountState.publicKey
+  if (!publicKey) {
+    throw new Error('Kein öffentlicher Schlüssel vorhanden.')
+  }
+  await sleep(delayMs)
+  const ciphertext = await encryptWithPublicKey(publicKey, encryptionTestPlaintext)
+  if (mockApiConfig.forceFail) {
+    throw new Error('Die Daten konnten nicht geladen werden. Bitte erneut versuchen.')
+  }
+  return { ciphertext }
+}
+
+export async function completePracticeOnboarding(params: {
+  locale: AppLocale,
+  input: CompletePracticeOnboardingInput,
+}): Promise<DoctorsOffice> {
+  const office = await updateDoctorsOffice({
+    officeId: defaultPracticeOfficeId,
+    locale: params.locale,
+    input: {
+      name: params.input.name,
+      address: params.input.address,
+      specializationIds: params.input.specializationIds,
+    },
+  })
+  writePracticeAccount({
+    ...practiceAccountState,
+    hasDoctorsOffice: true,
+  })
+  return office
+}
+
 export async function fetchPracticeConversations(): Promise<ConversationPreview[]> {
   return withMockLatency(() =>
     practiceConversationsState.map((conversation) => ({ ...conversation })))
@@ -1483,4 +1602,5 @@ export function resetMockStore(): void {
   practiceMessagesState = structuredClone(practiceMessagesByConversation)
   practicePatientsState = structuredClone(practicePatientsSeed)
   blockedPracticePatientIds = new Set<string>()
+  writePracticeAccount(defaultPracticeAccount())
 }

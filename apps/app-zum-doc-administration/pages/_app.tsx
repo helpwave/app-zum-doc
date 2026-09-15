@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { HightideProvider } from '@helpwave/hightide'
 import titleWrapper from '@/utils/titleWrapper'
 import { queryClient } from '@/lib/query-client'
+import { OnboardingGate } from '@/components/onboarding/onboarding-gate'
 import { administrationTranslation } from '@/i18n/translations'
 import '../globals.css'
 
@@ -23,7 +24,9 @@ function AdministrationApp({
             content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
           />
         </Head>
-        <Component {...pageProps} />
+        <OnboardingGate>
+          <Component {...pageProps} />
+        </OnboardingGate>
       </QueryClientProvider>
     </HightideProvider>
   )
