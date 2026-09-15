@@ -11,7 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "de.helpwave.appzumdoc",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "config": { "usesNonExemptEncryption": false }
     },
     "android": {
       "versionCode": 1,
