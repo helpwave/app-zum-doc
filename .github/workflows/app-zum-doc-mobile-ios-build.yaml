@@ -7,6 +7,8 @@ on:
     paths:
       - "apps/mobile/**"
       - "packages/app-zum-doc-utils/**"
+      - "scripts/mobile-sync.sh"
+      - "apps/mobile/build-metadata.json"
       - ".github/workflows/app-zum-doc-mobile-ios-build.yaml"
   workflow_call:
     outputs:
@@ -19,8 +21,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  verify:
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
+      code: ${{ steps.version.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-sync.sh
+          scripts/mobile-sync.sh check
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            scripts/mobile-sync.sh check-tag "${GITHUB_REF_NAME}"
+          else
+            echo "not a tag (${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}); skipping tag check"
+          fi
+          echo "app_version=$(scripts/mobile-sync.sh get appVersion)" >> "${GITHUB_OUTPUT}"
+          echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
+
   build:
-    runs-on: macos-latest
+    needs: verify
+    runs-on: "macos-15" # @sync ios.runner
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
       build_number: ${{ steps.version.outputs.build_number }}
@@ -29,42 +52,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Select Xcode
+        env:
+          XCODE: "26.3" # @sync ios.xcode
+        run: |
+          set -euo pipefail
+          XCODE_APP="/Applications/Xcode_${XCODE}.app"
+          if [[ ! -d "${XCODE_APP}" ]]; then
+            echo "Xcode ${XCODE} is not installed on this runner image. Available:"
+            ls -d /Applications/Xcode*.app
+            echo "Update ios.xcode or ios.runner in apps/mobile/build-metadata.json."
+            exit 1
+          fi
+          sudo xcode-select -s "${XCODE_APP}/Contents/Developer"
+          xcodebuild -version
+
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.13.0
+          version: "11.13.0" # @sync pnpm
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: "24" # @sync node
           cache: pnpm
 
       - name: Resolve version
         id: version
+        env:
+          APP_VERSION: ${{ needs.verify.outputs.app_version }}
+          BUILD_NUMBER: ${{ needs.verify.outputs.code }}
         run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            RAW="${GITHUB_REF_NAME}"
-            VERSION="${RAW#ios}"
-            VERSION="${VERSION#-}"
-            VERSION="${VERSION#/}"
-            VERSION="${VERSION#v}"
-          else
-            VERSION="$(node -p "require('./apps/mobile/app.json').expo.version")"
-          fi
-          IFS='.' read -r MAJOR MINOR PATCH <<< "${VERSION}"
-          MAJOR="${MAJOR:-0}"
-          MINOR="${MINOR:-0}"
-          PATCH="${PATCH:-0}"
-          MAJOR="${MAJOR//[^0-9]/}"
-          MINOR="${MINOR//[^0-9]/}"
-          PATCH="${PATCH//[^0-9]/}"
-          MAJOR="${MAJOR:-0}"
-          MINOR="${MINOR:-0}"
-          PATCH="${PATCH:-0}"
-          BUILD_NUMBER=$((10#${MAJOR} * 10000 + 10#${MINOR} * 100 + 10#${PATCH}))
-          if [[ "${BUILD_NUMBER}" -lt 1 ]]; then
-            BUILD_NUMBER=1
-          fi
-          echo "app_version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "version=${APP_VERSION} build_number=${BUILD_NUMBER}"
+          echo "app_version=${APP_VERSION}" >> "${GITHUB_OUTPUT}"
           echo "build_number=${BUILD_NUMBER}" >> "${GITHUB_OUTPUT}"
 
       - name: Install Apple certificate and provisioning profile
@@ -100,7 +119,6 @@ jobs:
           security list-keychain -d user -s "${KEYCHAIN_PATH}" login.keychain-db
           security default-keychain -s "${KEYCHAIN_PATH}"
 
-          # Fail loudly now rather than deep inside xcodebuild.
           security find-identity -v -p codesigning "${KEYCHAIN_PATH}" | grep -q "Apple Distribution" || {
             echo "No 'Apple Distribution' identity found in the imported .p12."
             security find-identity -v -p codesigning "${KEYCHAIN_PATH}"
@@ -151,8 +169,6 @@ jobs:
           IOS_DIR="${GITHUB_WORKSPACE}/apps/mobile/ios"
           cd "${IOS_DIR}"
 
-          # Expo prebuild writes CODE_SIGN_STYLE = Automatic; CI has no Xcode account.
-          # Only touch the app project, never Pods.xcodeproj.
           find . -maxdepth 2 -name project.pbxproj -not -path './Pods/*' -print0 | xargs -0 sed -i '' \
             -e 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g'
 
@@ -233,6 +249,19 @@ jobs:
           fi
           mv "${IPA}" "${EXPORT_PATH}/AppZumDoc.ipa"
           codesign -dv --verbose=2 "${EXPORT_PATH}/AppZumDoc.ipa" 2>&1 || true
+
+      - name: Verify IPA version
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.app_version }}
+          EXPECTED_BUILD: ${{ steps.version.outputs.build_number }}
+        run: |
+          set -euo pipefail
+          unzip -p "${RUNNER_TEMP}/ios-export/AppZumDoc.ipa" 'Payload/*.app/Info.plist' > "${RUNNER_TEMP}/Info.plist"
+          GOT_VERSION="$(plutil -extract CFBundleShortVersionString raw "${RUNNER_TEMP}/Info.plist")"
+          GOT_BUILD="$(plutil -extract CFBundleVersion raw "${RUNNER_TEMP}/Info.plist")"
+          echo "IPA: ${GOT_VERSION} (${GOT_BUILD}) — expected ${EXPECTED_VERSION} (${EXPECTED_BUILD})"
+          [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "CFBundleShortVersionString mismatch"; exit 1; }
+          [[ "${GOT_BUILD}" == "${EXPECTED_BUILD}" ]] || { echo "CFBundleVersion mismatch"; exit 1; }
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}

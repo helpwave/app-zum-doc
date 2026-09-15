@@ -23,11 +23,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.13.0
+          version: "11.13.0" # @sync pnpm
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: "24" # @sync node
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile

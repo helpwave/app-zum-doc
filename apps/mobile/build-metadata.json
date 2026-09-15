@@ -1,0 +1,17 @@
+{
+  "version": "0.0.5",
+  "node": "24",
+  "pnpm": "11.13.0",
+  "android": {
+    "runner": "ubuntu-24.04",
+    "java": "17",
+    "compileSdkVersion": 35,
+    "targetSdkVersion": 35,
+    "buildToolsVersion": "35.0.0"
+  },
+  "ios": {
+    "runner": "macos-15",
+    "xcode": "26.3",
+    "deploymentTarget": "15.1"
+  }
+}

@@ -42,6 +42,31 @@ To learn more about developing your project with Expo, look at the following res
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
+## Versioning
+
+`apps/mobile/build-metadata.json` is the source of truth for the app version and the mobile CI toolchain. Change the version from the repository root:
+
+```bash
+scripts/mobile-sync.sh version 1.2.3
+```
+
+That updates `build-metadata.json` and writes the derived values into `app.json` (`expo.version` is `@x.y.z`, plus `ios.buildNumber` and `android.versionCode`), `package.json` (`x.y.z`), and every `# @sync` literal in `.github/workflows`. Do not edit those derived fields directly. The binary version name is `@x.y.z`.
+
+After a manual metadata edit (for example a Java or Xcode bump), apply and verify:
+
+```bash
+scripts/mobile-sync.sh apply
+scripts/mobile-sync.sh check
+```
+
+Create matching git tags (`ios@1.2.3`, `android@1.2.3`) from the metadata version:
+
+```bash
+scripts/mobile-sync.sh tag all
+```
+
+CI runs `scripts/mobile-sync.sh check` on every mobile build and publish so `app.json`, `package.json`, and the workflow literals stay coherent with `build-metadata.json`. When a new `ios@*` or `android@*` tag is pushed, CI also runs `scripts/mobile-sync.sh check-tag` and fails if the tag version does not match `build-metadata.json`.
+
 ## Join the community
 
 Join our community of developers creating universal apps.

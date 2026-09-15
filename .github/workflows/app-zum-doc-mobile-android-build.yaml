@@ -7,6 +7,8 @@ on:
     paths:
       - "apps/mobile/**"
       - "packages/app-zum-doc-utils/**"
+      - "scripts/mobile-sync.sh"
+      - "apps/mobile/build-metadata.json"
       - ".github/workflows/app-zum-doc-mobile-android-build.yaml"
   workflow_call:
     outputs:
@@ -19,8 +21,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  verify:
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
+      code: ${{ steps.version.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-sync.sh
+          scripts/mobile-sync.sh check
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            scripts/mobile-sync.sh check-tag "${GITHUB_REF_NAME}"
+          else
+            echo "not a tag (${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}); skipping tag check"
+          fi
+          echo "app_version=$(scripts/mobile-sync.sh get appVersion)" >> "${GITHUB_OUTPUT}"
+          echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
+
   build:
-    runs-on: ubuntu-latest
+    needs: verify
+    runs-on: "ubuntu-24.04" # @sync android.runner
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
       version_code: ${{ steps.version.outputs.version_code }}
@@ -31,50 +54,33 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.13.0
+          version: "11.13.0" # @sync pnpm
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: "24" # @sync node
           cache: pnpm
 
       - name: Resolve version
         id: version
+        env:
+          APP_VERSION: ${{ needs.verify.outputs.app_version }}
+          VERSION_CODE: ${{ needs.verify.outputs.code }}
         run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            RAW="${GITHUB_REF_NAME}"
-            VERSION="${RAW#android}"
-            VERSION="${VERSION#-}"
-            VERSION="${VERSION#/}"
-            VERSION="${VERSION#v}"
-          else
-            VERSION="$(node -p "require('./apps/mobile/app.json').expo.version")"
-          fi
-          IFS='.' read -r MAJOR MINOR PATCH <<< "${VERSION}"
-          MAJOR="${MAJOR:-0}"
-          MINOR="${MINOR:-0}"
-          PATCH="${PATCH:-0}"
-          MAJOR="${MAJOR//[^0-9]/}"
-          MINOR="${MINOR//[^0-9]/}"
-          PATCH="${PATCH//[^0-9]/}"
-          MAJOR="${MAJOR:-0}"
-          MINOR="${MINOR:-0}"
-          PATCH="${PATCH:-0}"
-          VERSION_CODE=$((10#${MAJOR} * 10000 + 10#${MINOR} * 100 + 10#${PATCH}))
-          if [[ "${VERSION_CODE}" -lt 1 ]]; then
-            VERSION_CODE=1
-          fi
-          echo "app_version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "version=${APP_VERSION} version_code=${VERSION_CODE}"
+          echo "app_version=${APP_VERSION}" >> "${GITHUB_OUTPUT}"
           echo "version_code=${VERSION_CODE}" >> "${GITHUB_OUTPUT}"
 
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "17" # @sync android.java
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-35 build-tools;35.0.0" # @sync android.sdkPackages
 
       - name: Install JavaScript dependencies
         run: pnpm install --frozen-lockfile
@@ -115,6 +121,23 @@ jobs:
 
       - name: Build
         run: pnpm --filter @app-zum-doc/mobile run android:release
+
+      - name: Verify APK version
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.app_version }}
+          EXPECTED_CODE: ${{ steps.version.outputs.version_code }}
+        run: |
+          set -euo pipefail
+          APK="$(find apps/mobile/android/app/build/outputs/apk/release -name '*.apk' | head -n 1)"
+          [[ -n "${APK}" ]] || { echo "No release APK found."; exit 1; }
+          AAPT2="$(find "${ANDROID_HOME}/build-tools" -name aapt2 -type f | sort -V | tail -n 1)"
+          BADGING="$("${AAPT2}" dump badging "${APK}" | head -n 1)"
+          echo "${BADGING}"
+          GOT_VERSION="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
+          GOT_CODE="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
+          echo "APK: ${GOT_VERSION} (${GOT_CODE}) — expected ${EXPECTED_VERSION} (${EXPECTED_CODE})"
+          [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "versionName mismatch"; exit 1; }
+          [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "versionCode mismatch"; exit 1; }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
