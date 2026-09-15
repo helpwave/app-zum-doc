@@ -29,17 +29,27 @@ platform :android do
 
   lane :fdroid do
     version = store_version(ENV.fetch("APP_VERSION"))
-    apks = Dir.glob("#{ENV.fetch("APK_DIR")}/*.apk")
+    apks = Dir.glob("#{ENV.fetch("APK_DIR")}/*.apk").sort
     UI.user_error!("No APKs in #{ENV.fetch("APK_DIR")}") if apks.empty?
-    set_github_release(
-      repository_name: ENV.fetch("GITHUB_REPOSITORY"),
-      api_token: ENV.fetch("GITHUB_TOKEN"),
-      name: "Android #{version}",
-      tag_name: ENV.fetch("GIT_TAG_NAME"),
-      description: "App zum Doc Android #{version}.",
-      upload_assets: apks,
-      is_prerelease: false,
-    )
+
+    tag = ENV.fetch("GIT_TAG_NAME")
+    repo = ENV.fetch("GITHUB_REPOSITORY")
+    title = "Android #{version}"
+    notes = "App zum Doc Android #{version}."
+
+    if system("gh", "release", "view", tag, "--repo", repo, out: File::NULL, err: File::NULL)
+      sh("gh", "release", "edit", tag, "--repo", repo, "--title", title, "--notes", notes)
+      sh("gh", "release", "upload", tag, "--repo", repo, "--clobber", *apks)
+    else
+      sh(
+        "gh", "release", "create", tag,
+        "--repo", repo,
+        "--title", title,
+        "--notes", notes,
+        "--verify-tag",
+        *apks,
+      )
+    end
   end
 end
 

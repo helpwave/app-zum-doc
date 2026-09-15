@@ -16,7 +16,7 @@ jobs:
       app_version: ${{ steps.version.outputs.app_version }}
       code: ${{ steps.version.outputs.code }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: version
         run: |
           set -euo pipefail
@@ -46,7 +46,7 @@ jobs:
           echo "version_code=${VERSION_CODE}" >> "${GITHUB_OUTPUT}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Wait for the Build Android run
         id: find
@@ -58,7 +58,7 @@ jobs:
           echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
 
       - name: Download AAB from that run
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: android-aab
           path: ${{ runner.temp }}/aab
@@ -66,7 +66,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17" # @sync android.java
@@ -85,9 +85,12 @@ jobs:
           MANIFEST="$(java -jar "${RUNNER_TEMP}/bundletool.jar" dump manifest --bundle="${AAB_PATH}")"
           GOT_VERSION="$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' <<< "${MANIFEST}" | head -n 1)"
           GOT_CODE="$(sed -n 's/.*android:versionCode="\([^"]*\)".*/\1/p' <<< "${MANIFEST}" | head -n 1)"
-          echo "AAB: ${GOT_VERSION} (${GOT_CODE}) — tag ${GITHUB_REF_NAME} expects ${EXPECTED_VERSION} (${EXPECTED_CODE})"
+          GOT_TARGET="$(sed -n 's/.*android:targetSdkVersion="\([^"]*\)".*/\1/p' <<< "${MANIFEST}" | head -n 1)"
+          echo "AAB: ${GOT_VERSION} (${GOT_CODE}) targetSdk ${GOT_TARGET:-unset} — tag ${GITHUB_REF_NAME} expects ${EXPECTED_VERSION} (${EXPECTED_CODE}) targetSdk >= 36"
           [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "Refusing to upload: version mismatch."; exit 1; }
           [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "Refusing to upload: version code mismatch."; exit 1; }
+          [[ -n "${GOT_TARGET}" ]] || { echo "Refusing to upload: targetSdkVersion missing from manifest."; exit 1; }
+          [[ "${GOT_TARGET}" -ge 36 ]] || { echo "Refusing to upload: targetSdk ${GOT_TARGET} is too low."; exit 1; }
 
       - uses: ruby/setup-ruby@v1
         with:

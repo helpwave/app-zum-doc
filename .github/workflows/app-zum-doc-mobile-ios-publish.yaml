@@ -16,7 +16,7 @@ jobs:
       app_version: ${{ steps.version.outputs.app_version }}
       code: ${{ steps.version.outputs.code }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: version
         run: |
           set -euo pipefail
@@ -46,7 +46,7 @@ jobs:
           echo "build_number=${BUILD_NUMBER}" >> "${GITHUB_OUTPUT}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Wait for the Build iOS run
         id: find
@@ -58,7 +58,7 @@ jobs:
           echo "run_id=$(scripts/mobile-wait-build.sh "Build iOS")" >> "${GITHUB_OUTPUT}"
 
       - name: Download IPA from that run
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ios-ipa
           path: ${{ runner.temp }}/ipa

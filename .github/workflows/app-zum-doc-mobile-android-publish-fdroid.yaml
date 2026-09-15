@@ -16,7 +16,7 @@ jobs:
       app_version: ${{ steps.version.outputs.app_version }}
       code: ${{ steps.version.outputs.code }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: version
         run: |
           set -euo pipefail
@@ -34,6 +34,9 @@ jobs:
     needs: verify
     name: Publish existing APK as F-Droid GitHub Release
     runs-on: "ubuntu-24.04" # @sync android.runner
+    permissions:
+      actions: read
+      contents: write
 
     steps:
       - name: Resolve version
@@ -46,24 +49,25 @@ jobs:
           echo "version_code=${VERSION_CODE}" >> "${GITHUB_OUTPUT}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Wait for the Build Android run
         id: find
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           chmod +x scripts/mobile-wait-build.sh
           echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
 
       - name: Download APK from that run
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: android-apk
           path: ${{ runner.temp }}/apk
           run-id: ${{ steps.find.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
 
       - name: Verify APK version matches tag
         env:
@@ -78,10 +82,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y aapt
           while IFS= read -r apk; do
-            BADGING="$(aapt dump badging "${apk}" | head -n 1)"
-            echo "${BADGING}"
-            GOT_VERSION="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
-            GOT_CODE="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "${BADGING}")"
+            BADGING="$(aapt dump badging "${apk}")"
+            PACKAGE_LINE="$(grep -m 1 '^package:' <<< "${BADGING}")"
+            echo "${PACKAGE_LINE}"
+            GOT_VERSION="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "${PACKAGE_LINE}")"
+            GOT_CODE="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "${PACKAGE_LINE}")"
             echo "APK $(basename "${apk}"): ${GOT_VERSION} (${GOT_CODE}) — tag ${GITHUB_REF_NAME} expects ${EXPECTED_VERSION} (${EXPECTED_CODE})"
             [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "Refusing to publish: version mismatch."; exit 1; }
             [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "Refusing to publish: version code mismatch."; exit 1; }
@@ -99,7 +104,9 @@ jobs:
 
       - name: Publish GitHub Release for F-Droid
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_API_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           APP_VERSION: ${{ steps.version.outputs.app_version }}
           GIT_TAG_NAME: ${{ github.ref_name }}
