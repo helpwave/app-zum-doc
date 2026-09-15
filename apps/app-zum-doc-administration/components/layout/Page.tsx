@@ -2,7 +2,6 @@ import type { PropsWithChildren, ReactNode } from 'react'
 import { useMemo } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import {
   AppPage,
   AppZumDocBadge,
@@ -29,6 +28,7 @@ import {
   requestKindPath
 } from '@/lib/navigation'
 import titleWrapper from '@/utils/titleWrapper'
+import { usePathname } from 'next/navigation'
 
 type PageProps = PropsWithChildren<{
   pageTitle?: string,
@@ -41,7 +41,6 @@ export const Page = ({
   noScrolling,
 }: PageProps) => {
   const translation = useAdministrationTranslation()
-  const router = useRouter()
   const { locale: localizationLocale } = useLocale()
   const locale = toAppLocale(localizationLocale)
   const overviewQuery = usePracticeOverview({
@@ -113,7 +112,7 @@ export const Page = ({
   ], [counts, translation])
 
   const practiceName = counts?.office.name ?? translation('appName')
-  const path = router.asPath.split('?')[0] ?? '/'
+  const path = usePathname() ?? '/'
 
   return (
     <AppPage

@@ -364,6 +364,7 @@ export const messagesByConversation: Record<string, Message[]> = {
       subtitle: "Besprechung Blutwerte · 30 Min",
       primary: "Mi. 8. Juli 2026",
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
+      requestId: "req-checkup",
       mainActionId: "accept",
       time: chatTime(2026, 7, 8, 9, 15),
       actions: [
@@ -1444,6 +1445,19 @@ export const practiceMessagesByConversation: Record<string, Message[]> = {
       body: "Ich habe seit drei Tagen starken Husten und wollte fragen, ob ich vorbeikommen kann.",
       time: chatTime(2026, 9, 9, 12, 37),
     },
+    {
+      id: "practice-msg-giovanni-card",
+      type: "card",
+      direction: "incoming",
+      status: "received",
+      kind: "referral",
+      title: "Überweisung Pneumologie",
+      subtitle: "Anhaltender Husten",
+      primary: "Pneumologie",
+      detail: "Anhaltender Husten über drei Wochen.",
+      requestId: "req-pulm-giovanni",
+      time: chatTime(2026, 9, 9, 12, 40),
+    },
   ],
   "conv-practice-lena": [
     {
@@ -1492,6 +1506,7 @@ export const practiceMessagesByConversation: Record<string, Message[]> = {
       subtitle: "Besprechung Blutwerte · 30 Min",
       primary: "Mi. 8. Juli 2026",
       detail: "15:00 – 15:30 Uhr · Sprechzimmer 2",
+      requestId: "req-checkup",
       time: chatTime(2026, 7, 8, 9, 15),
     },
     {

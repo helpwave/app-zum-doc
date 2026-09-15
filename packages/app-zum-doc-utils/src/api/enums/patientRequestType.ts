@@ -1,10 +1,10 @@
-const patientRequestTypeValues = ["appointment", "prescription", "referral"] as const
+const patientRequestTypeValues = ['appointment', 'prescription', 'referral'] as const
 export type PatientRequestType = (typeof patientRequestTypeValues)[number]
 const allowedPatientRequestTypeValues: ReadonlySet<string> = new Set(
-  patientRequestTypeValues,
+  patientRequestTypeValues
 )
 function isPatientRequestTypeValue(value: unknown): value is PatientRequestType {
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     return false
   }
   return allowedPatientRequestTypeValues.has(value)

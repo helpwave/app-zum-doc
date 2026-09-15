@@ -165,6 +165,8 @@
   "specialization": "Specialization",
   "reason": "Reason",
   "requestDetail": "Request",
+  "showMore": "Show more",
+  "openChat": "Open chat",
   "yes": "Yes",
   "no": "No",
   "back": "Back",

@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
 import { Button, Dialog } from '@helpwave/hightide'
+import { MessageSquare } from 'lucide-react'
 import {
   isPracticeAppointment,
   isPracticePrescription,
   isPracticeReferral,
   nextPatientRequestStatuses,
+  patientProfileFullName,
   toAppLocale,
   type PatientRequestStatus
 } from '@app-zum-doc/utils/api'
@@ -14,6 +16,7 @@ import {
   useUpdatePatientRequestStatus
 } from '@app-zum-doc/utils/hooks'
 import { QueryState } from '@/components/layout/Page'
+import { NavigationListTile } from '@/components/layout/navigation-list-tile'
 import { PatientDetailPanel } from '@/components/patients/patient-detail-panel'
 import { RequestStatusChip, RequestTypeChip } from '@/components/request-chips'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
@@ -142,20 +145,30 @@ export function RequestDetailDialog({
                   </dl>
                 </div>
 
-                {nextStatuses.length > 0 && (
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {nextStatuses.map((status) => (
-                      <Button
-                        key={status}
-                        color={status === 'cancelled' ? 'negative' : 'primary'}
-                        isProcessing={updateStatus.isPending}
-                        onClick={() => onStatus(status)}
-                      >
-                        {statusActionLabel(status, t)}
-                      </Button>
-                    ))}
-                  </div>
-                )}
+                <div className="flex-col-4">
+                  <NavigationListTile
+                    href={`/chat/${request.patient.id}?requestId=${request.id}`}
+                    title={t('openChat')}
+                    description={patientProfileFullName(request.patient)}
+                    leading={<MessageSquare className="size-5 shrink-0" />}
+                    onClick={onClose}
+                  />
+
+                  {nextStatuses.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-end">
+                      {nextStatuses.map((status) => (
+                        <Button
+                          key={status}
+                          color={status === 'cancelled' ? 'negative' : 'primary'}
+                          isProcessing={updateStatus.isPending}
+                          onClick={() => onStatus(status)}
+                        >
+                          {statusActionLabel(status, t)}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {patient && (
