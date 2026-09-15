@@ -6,11 +6,9 @@ import { useRouter } from 'next/router'
 import {
   AppPage,
   AppZumDocBadge,
-  AppZumDocLogo,
   type AppPageNavigationItem
 } from '@helpwave/hightide'
 import {
-  Building2,
   CalendarDays,
   Forward,
   Inbox,
@@ -18,11 +16,11 @@ import {
   LoaderCircle,
   MessageSquare,
   Pill,
-  Settings,
   Users
 } from 'lucide-react'
 import { toAppLocale } from '@app-zum-doc/utils/api'
 import { usePracticeOverview } from '@app-zum-doc/utils/hooks'
+import { AppHeaderActions } from '@/components/layout/app-header-actions'
 import { NavLabel } from '@/components/layout/nav-label'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import {
@@ -112,28 +110,6 @@ export const Page = ({
       url: requestKindPath('referral'),
       icon: <Forward className="size-5" />,
     },
-    {
-      id: 'my-doctors-office',
-      label: (
-        <NavLabel
-          label={translation('navMyDoctorsOffice')}
-          hasDividerBefore
-        />
-      ),
-      url: '/my-doctors-office',
-      icon: <Building2 className="size-5" />,
-    },
-    {
-      id: 'settings',
-      label: (
-        <NavLabel
-          label={translation('navSettings')}
-          hasDividerBefore
-        />
-      ),
-      url: '/settings',
-      icon: <Settings className="size-5" />,
-    },
   ], [counts, translation])
 
   const practiceName = counts?.office.name ?? translation('appName')
@@ -158,18 +134,11 @@ export const Page = ({
       }}
       headerActions={[
         (
-          <div key="practice" className="flex-row-2 items-center min-w-0">
-            <AppZumDocLogo size="sm" />
-            <span className="typography-title-sm truncate">{practiceName}</span>
-          </div>
-        ),
-        (
-          <span
-            key="user"
-            className="inline-flex shrink-0 items-center rounded-full px-3 py-1 whitespace-nowrap surface coloring-solid coloring-primary typography-label-md"
-          >
-            {translation('staffName')}
-          </span>
+          <AppHeaderActions
+            key="header-actions"
+            practiceName={practiceName}
+            practiceImageUri={counts?.office.imageUri}
+          />
         ),
       ]}
       noScrolling={noScrolling}

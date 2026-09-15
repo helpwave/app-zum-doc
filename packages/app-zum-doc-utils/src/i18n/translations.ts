@@ -295,7 +295,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
         'requested': `Angefragt`,
         'inProgress': `In Bearbeitung`,
         'confirmed': `Bestätigt`,
-        'readyForPickup': `Abholbereit`,
+        'ready': `Abholbereit`,
         'completed': `Abgeschlossen`,
         'cancelled': `Storniert`,
       })
@@ -494,7 +494,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
         'requested': `Requested`,
         'inProgress': `In progress`,
         'confirmed': `Confirmed`,
-        'readyForPickup': `Ready for pickup`,
+        'ready': `Ready for pickup`,
         'completed': `Completed`,
         'cancelled': `Cancelled`,
       })

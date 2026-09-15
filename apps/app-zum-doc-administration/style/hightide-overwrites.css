@@ -12,7 +12,7 @@
   }
 
   [data-name="app-page-header"] {
-    @apply justify-between w-full;
+    @apply justify-end w-full;
   }
 
   [data-name="app-page-main-content"] {

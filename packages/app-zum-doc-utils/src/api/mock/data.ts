@@ -492,6 +492,49 @@ function practicePatient(
   }
 }
 
+function extraPracticePatients(count: number): PatientProfile[] {
+  const firstNames = [
+    'Emma', 'Noah', 'Mia', 'Leon', 'Hannah', 'Ben', 'Sofia', 'Elias',
+    'Lina', 'Luis', 'Emilia', 'Finn', 'Lena', 'Paul', 'Marie', 'Jonas',
+  ]
+  const lastNames = [
+    'Schmidt', 'Müller', 'Fischer', 'Weber', 'Wagner', 'Becker', 'Hoffmann',
+    'Schäfer', 'Koch', 'Bauer', 'Richter', 'Klein', 'Wolf', 'Schröder',
+  ]
+  const insurers = [
+    'barmer',
+    'hkk-krankenkasse',
+    'techniker-krankenkasse',
+    'aok-nordwest',
+    'debeka-krankenversicherung',
+    'dak-gesundheit',
+    'ikk-classic',
+    'axa-krankenversicherung',
+  ]
+
+  return Array.from({ length: count }, (_, index) => {
+    const firstName = firstNames[index % firstNames.length] ?? 'Max'
+    const lastName = (lastNames[Math.floor(index / firstNames.length) % lastNames.length] ?? 'Mustermann').trim()
+    const insurer = insurers[index % insurers.length] ?? 'barmer'
+    const year = 1950 + (index % 55)
+    const month = index % 12
+    const day = 1 + (index % 27)
+
+    return practicePatient({
+      id: `patient-extra-${String(index + 1).padStart(2, '0')}`,
+      firstName,
+      lastName: `${lastName} ${index + 1}`,
+      dateOfBirth: new Date(year, month, day),
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index + 1}@mail.de`,
+      phone: `+49 170 ${String(1000000 + index).slice(1)}`,
+      insurance: {
+        insuranceProviderId: insurer,
+        insuranceNumber: String(20000000 + index),
+      },
+    })
+  })
+}
+
 export const practicePatientsSeed: PatientProfile[] = [
   patientProfileSeed,
   practicePatient({
@@ -626,6 +669,7 @@ export const practicePatientsSeed: PatientProfile[] = [
       insuranceNumber: "IKK662104",
     },
   }),
+  ...extraPracticePatients(70),
 ]
 
 export type PracticeTodayAppointmentSeed = {
@@ -1206,7 +1250,7 @@ export const prescriptionsSeed: PrescriptionRecord[] = [
     medications: [
       { id: "rx-med-floxal", name: "Ibuprofen", size: "n3" },
     ],
-    status: "readyForPickup",
+    status: "ready",
   },
 ]
 

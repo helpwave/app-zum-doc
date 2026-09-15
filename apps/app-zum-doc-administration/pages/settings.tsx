@@ -31,7 +31,6 @@ const SettingsPage: NextPage = () => {
   const [emailNotifications, setEmailNotifications] = useState<DoctorsOfficeEmailNotifications>(
     defaultDoctorsOfficeEmailNotifications
   )
-  const [savedSection, setSavedSection] = useState<string | null>(null)
 
   useEffect(() => {
     const office = officeQuery.data
@@ -41,20 +40,17 @@ const SettingsPage: NextPage = () => {
     setEmailNotifications(office.emailNotifications)
   }, [officeQuery.data])
 
-  const saveNotifications = () => {
+  const persistNotifications = (next: DoctorsOfficeEmailNotifications) => {
+    setEmailNotifications(next)
     updateOffice.mutate({
       officeId: practiceOfficeId,
       locale,
       input: {
         emailNotifications: {
-          ...emailNotifications,
-          requestEmail: emailNotifications.requestEmail.trim(),
-          chatEmail: emailNotifications.chatEmail.trim(),
+          ...next,
+          requestEmail: next.requestEmail.trim(),
+          chatEmail: next.chatEmail.trim(),
         },
-      },
-    }, {
-      onSuccess: () => {
-        setSavedSection('notifications')
       },
     })
   }
@@ -71,11 +67,7 @@ const SettingsPage: NextPage = () => {
         <div className="flex-col-6 w-full max-w-160">
           <h1 className="typography-title-lg text-primary">{t('navSettings')}</h1>
 
-          <PracticeExpandableSection
-            title={t('localizationSection')}
-            onSave={() => setSavedSection('localization')}
-            saved={savedSection === 'localization'}
-          >
+          <PracticeExpandableSection title={t('localizationSection')}>
             <div className="flex-col-3 w-full">
               <SettingsField label={t('language')}>
                 <LanguageSelect />
@@ -86,11 +78,7 @@ const SettingsPage: NextPage = () => {
             </div>
           </PracticeExpandableSection>
 
-          <PracticeExpandableSection
-            title={t('displaySection')}
-            onSave={() => setSavedSection('display')}
-            saved={savedSection === 'display'}
-          >
+          <PracticeExpandableSection title={t('displaySection')}>
             <div className="flex-col-3 w-full">
               <SettingsField label={t('themeMode')}>
                 <ThemeSelect />
@@ -98,12 +86,7 @@ const SettingsPage: NextPage = () => {
             </div>
           </PracticeExpandableSection>
 
-          <PracticeExpandableSection
-            title={t('notificationsSection')}
-            onSave={saveNotifications}
-            isSaving={updateOffice.isPending}
-            saved={savedSection === 'notifications'}
-          >
+          <PracticeExpandableSection title={t('notificationsSection')}>
             <div className="flex-col-6 w-full">
               <EmailNotificationFields
                 label={t('requestNotificationsTitle')}
@@ -111,11 +94,10 @@ const SettingsPage: NextPage = () => {
                 checkboxLabel={t('emailNotificationConsent')}
                 enabled={emailNotifications.requestEnabled}
                 onEnabledChange={(requestEnabled) => {
-                  setSavedSection(null)
-                  setEmailNotifications((current) => ({
-                    ...current,
+                  persistNotifications({
+                    ...emailNotifications,
                     requestEnabled,
-                  }))
+                  })
                 }}
               />
               <EmailNotificationFields
@@ -124,11 +106,10 @@ const SettingsPage: NextPage = () => {
                 checkboxLabel={t('emailNotificationConsent')}
                 enabled={emailNotifications.chatEnabled}
                 onEnabledChange={(chatEnabled) => {
-                  setSavedSection(null)
-                  setEmailNotifications((current) => ({
-                    ...current,
+                  persistNotifications({
+                    ...emailNotifications,
                     chatEnabled,
-                  }))
+                  })
                 }}
               />
             </div>

@@ -48,7 +48,7 @@ function createAzdThemeTokens(themeMode: 'light' | 'dark'): AzdThemeTokens {
       cancelled: themeTokens.color.negative,
       requested: themeTokens.color.warning,
       inProgress: themeTokens.color.warning,
-      readyForPickup: themeTokens.color.positive,
+      ready: themeTokens.color.positive,
       completed: themeTokens.color.positive,
       confirmed: themeTokens.color.positive,
     },
