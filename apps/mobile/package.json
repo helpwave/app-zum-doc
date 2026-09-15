@@ -1,7 +1,7 @@
 {
   "name": "@app-zum-doc/mobile",
   "main": "expo-router/entry",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "App zum Doc mobile client",
   "license": "AGPL-3.0-only",
   "private": true,

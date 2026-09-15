@@ -12,7 +12,7 @@ The license is [LICENSE](LICENSE) (AGPL-3.0).
 scripts/mobile-sync.sh version 1.2.3
 ```
 
-That updates `build-metadata.json` and writes the derived values into `app.json` (`expo.version` is `x.y.z`, plus `ios.buildNumber` and `android.versionCode`), `package.json` (`x.y.z`), and every `# @sync` literal in `.github/workflows`. Do not edit those derived fields directly. The binary version name is `x.y.z`. Tags use `@` (`ios@x.y.z`, `android@x.y.z`).
+That updates `build-metadata.json` and writes the derived values into `app.json` (`expo.version` is `x.y.z`, plus `ios.buildNumber` and `android.versionCode`), `package.json` (`x.y.z`), every `# @sync` literal in `.github/workflows`, and `metadata/de.helpwave.appzumdoc.yml`. Do not edit those derived fields directly. The binary version name is `x.y.z`. Tags use `@` (`ios@x.y.z`, `android@x.y.z`).
 
 After a manual metadata edit (for example a Java or Xcode bump), apply and verify:
 

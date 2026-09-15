@@ -9,6 +9,10 @@ permissions:
   actions: read
   contents: write
 
+env:
+  FDROID_APPID: de.helpwave.appzumdoc
+  FDROIDSERVER_VERSION: "2.4.5"
+
 jobs:
   verify:
     runs-on: "ubuntu-24.04" # @sync android.runner
@@ -20,8 +24,9 @@ jobs:
       - id: version
         run: |
           set -euo pipefail
-          chmod +x scripts/mobile-sync.sh
+          chmod +x scripts/mobile-sync.sh scripts/fdroid-metadata.sh
           scripts/mobile-sync.sh check
+          scripts/fdroid-metadata.sh check
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             scripts/mobile-sync.sh check-tag "${GITHUB_REF_NAME}"
           else
@@ -30,8 +35,123 @@ jobs:
           echo "app_version=$(scripts/mobile-sync.sh store-version)" >> "${GITHUB_OUTPUT}"
           echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
 
-  publish:
+  fdroid:
     needs: verify
+    name: Build with fdroidserver from metadata
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      apk_name: ${{ steps.build.outputs.apk_name }}
+      reproducible: ${{ steps.compare.outcome }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17" # @sync android.java
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0" # @sync android.sdkPackages
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24.9.0" # @sync fdroid.node
+
+      - name: Enable corepack (the recipe activates pnpm itself)
+        run: corepack enable
+
+      - name: Install fdroidserver
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libmagic1 apksigner
+          pipx install "fdroidserver==${FDROIDSERVER_VERSION}"
+          pipx inject fdroidserver "setuptools>=70,<81"
+          pipx install apksigcopier
+          sudo curl -fsSL \
+            "https://gitlab.com/fdroid/fdroidserver/-/raw/${FDROIDSERVER_VERSION}/gradlew-fdroid" \
+            -o /usr/local/bin/gradle
+          sudo chmod +x /usr/local/bin/gradle
+          fdroid --version
+
+      - name: Render recipe from build-metadata.json
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/fdroid-out"
+          scripts/fdroid-metadata.sh render "${GITHUB_REF_NAME}" "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml"
+          cat "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml"
+
+      - name: Wait for the Build Android run
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-wait-build.sh
+          echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
+
+      - name: Download signed CI APK
+        uses: actions/download-artifact@v7
+        with:
+          name: android-apk
+          path: ${{ runner.temp }}/ci-apk
+          run-id: ${{ steps.find.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: fdroid lint + build
+        id: build
+        env:
+          VERSION_CODE: ${{ needs.verify.outputs.code }}
+        run: |
+          set -euo pipefail
+          FDROID_DIR="$(cd "${GITHUB_WORKSPACE}/.." && pwd)/fdroid"
+          mkdir -p "${FDROID_DIR}"
+          cd "${FDROID_DIR}"
+          fdroid init --android-home "${ANDROID_HOME}" --no-prompt
+          chmod 600 config.yml
+          mkdir -p config metadata build
+          yq '.Categories[] as $c | {$c: {"name": $c}}' "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml" \
+            | yq ea '. as $item ireduce ({}; . * $item)' - > config/categories.yml
+          cat config/categories.yml
+          cp "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml" metadata/
+          git clone --no-hardlinks "${GITHUB_WORKSPACE}" "build/${FDROID_APPID}"
+          git -C "build/${FDROID_APPID}" checkout --detach "${GITHUB_SHA}"
+          fdroid lint "${FDROID_APPID}"
+          fdroid build --verbose --latest "${FDROID_APPID}"
+          APK="unsigned/${FDROID_APPID}_${VERSION_CODE}.apk"
+          [[ -f "${APK}" ]] || { echo "fdroid build produced no ${APK}"; ls -R unsigned || true; exit 1; }
+          cp "${APK}" "${RUNNER_TEMP}/fdroid-out/"
+          echo "apk_name=$(basename "${APK}")" >> "${GITHUB_OUTPUT}"
+          echo "FDROID_APK=${RUNNER_TEMP}/fdroid-out/$(basename "${APK}")" >> "${GITHUB_ENV}"
+
+      - name: Reproducibility check (signed CI APK vs fdroid build)
+        id: compare
+        continue-on-error: true # remove once the build is reproducible
+        run: |
+          set -euo pipefail
+          SIGNED="$(find "${RUNNER_TEMP}/ci-apk" -name 'app-release.apk' | head -n 1)"
+          [[ -n "${SIGNED}" ]] || { echo "no app-release.apk in the CI artifact"; exit 1; }
+          apksigcopier compare "${SIGNED}" --unsigned "${FDROID_APK}"
+          echo "APKs match: F-Droid can ship the developer-signed build (AllowedAPKSigningKeys)."
+
+      - name: Upload F-Droid outputs
+        uses: actions/upload-artifact@v6
+        with:
+          name: fdroid
+          path: ${{ runner.temp }}/fdroid-out
+
+  publish:
+    needs: [verify, fdroid]
     name: Publish existing APK as F-Droid GitHub Release
     runs-on: "ubuntu-24.04" # @sync android.runner
     permissions:
@@ -112,3 +232,23 @@ jobs:
           GIT_TAG_NAME: ${{ github.ref_name }}
         working-directory: apps/mobile
         run: bundle exec fastlane android fdroid
+
+      - name: Download F-Droid outputs
+        uses: actions/download-artifact@v7
+        with:
+          name: fdroid
+          path: ${{ runner.temp }}/fdroid-out
+
+      - name: Attach F-Droid recipe and unsigned APK to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_NAME: ${{ needs.fdroid.outputs.apk_name }}
+          REPRODUCIBLE: ${{ needs.fdroid.outputs.reproducible }}
+        run: |
+          set -euo pipefail
+          gh release upload "${GITHUB_REF_NAME}" \
+            "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml" \
+            "${RUNNER_TEMP}/fdroid-out/${APK_NAME}" \
+            --clobber
+          echo "F-Droid recipe: ${FDROID_APPID}.yml — copy this into fdroiddata/metadata/ for the MR."
+          echo "Reproducibility check outcome: ${REPRODUCIBLE}"

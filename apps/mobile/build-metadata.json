@@ -1,5 +1,5 @@
 {
-  "version": "0.0.8",
+  "version": "0.0.9",
   "node": "24",
   "pnpm": "11.13.0",
   "android": {
@@ -13,5 +13,8 @@
     "runner": "macos-15",
     "xcode": "26.3",
     "deploymentTarget": "15.1"
+  },
+  "fdroid": {
+    "node": "24.9.0"
   }
 }

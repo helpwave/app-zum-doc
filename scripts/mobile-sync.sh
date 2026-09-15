@@ -14,12 +14,13 @@ die() { echo "error: $*" >&2; exit 1; }
 
 usage() {
   cat <<'EOF'
-scripts/mobile-sync.sh apply            write derived values into app.json, package.json, workflows
+scripts/mobile-sync.sh apply            write derived values into app.json, package.json, workflows, metadata/de.helpwave.appzumdoc.yml
 scripts/mobile-sync.sh check            exit 1 if any derived file differs from apply
 scripts/mobile-sync.sh version x.y.z    set version in build-metadata.json, then apply
 scripts/mobile-sync.sh check-tag <tag>  exit 1 unless <tag> (ios@x.y.z / android@x.y.z) matches metadata version
-scripts/mobile-sync.sh tag [ios|android|all] [--push]
+scripts/mobile-sync.sh tag [ios|android|all] [--push] [--force]
                                         create ios@<ver> / android@<ver> tags from metadata version
+                                        --force retags if the tag exists; with --push, force-pushes it
 scripts/mobile-sync.sh store-version [raw]  print x.y.z (strips ios@ / android@ / leading @; default: metadata version)
 scripts/mobile-sync.sh get <key>        print one value, e.g. get version, get ios.xcode, get android.sdkPackages
 EOF
@@ -264,8 +265,23 @@ tag_version() {
   echo "${v}"
 }
 
-cmd_apply()  { ( cd "${ROOT}" && sync_files apply ); }
-cmd_check()  { ( cd "${ROOT}" && sync_files check ); }
+FDROID_META="${ROOT}/scripts/fdroid-metadata.sh"
+
+sync_fdroid_recipe() {
+  local mode="$1"
+  [[ -f "${FDROID_META}" ]] || die "not found: ${FDROID_META}"
+  [[ -x "${FDROID_META}" ]] || chmod +x "${FDROID_META}"
+  "${FDROID_META}" "${mode}"
+}
+
+cmd_apply() {
+  ( cd "${ROOT}" && sync_files apply )
+  sync_fdroid_recipe apply
+}
+
+cmd_check() {
+  ( cd "${ROOT}" && sync_files check )
+}
 
 cmd_get() {
   [[ -n "${1:-}" ]] || usage 1
@@ -302,16 +318,17 @@ cmd_check_tag() {
 }
 
 cmd_tag() {
-  local which="all" push=0 v p t
+  local which="all" push=0 force=0 v p t existed
   for arg in "$@"; do
     case "${arg}" in
       ios|android|all) which="${arg}" ;;
       --push) push=1 ;;
+      --force) force=1 ;;
       *) usage 1 ;;
     esac
   done
-  git -C "${ROOT}" diff --quiet HEAD -- apps/mobile .github/workflows \
-    || die "uncommitted changes under apps/mobile or .github/workflows; run 'apply', commit, then tag"
+  git -C "${ROOT}" diff --quiet HEAD -- apps/mobile .github/workflows metadata \
+    || die "uncommitted changes under apps/mobile, .github/workflows or metadata; run 'apply', commit, then tag"
   cmd_check >/dev/null || die "derived files are out of sync; run 'apply' and commit first"
 
   v="$(get_key version)"
@@ -319,10 +336,25 @@ cmd_tag() {
   if [[ "${which}" == "all" ]]; then targets=("${PLATFORMS[@]}"); else targets=("${which}"); fi
   for p in "${targets[@]}"; do
     t="${p}@${v}"
-    git -C "${ROOT}" rev-parse -q --verify "refs/tags/${t}" >/dev/null && die "tag ${t} already exists"
-    git -C "${ROOT}" tag -a "${t}" -m "${p} ${v}"
-    echo "created tag ${t}"
-    if (( push )); then git -C "${ROOT}" push origin "refs/tags/${t}"; echo "pushed tag ${t}"; fi
+    existed=0
+    if git -C "${ROOT}" rev-parse -q --verify "refs/tags/${t}" >/dev/null; then
+      (( force )) || die "tag ${t} already exists"
+      existed=1
+    fi
+    if (( force )); then
+      git -C "${ROOT}" tag -a -f "${t}" -m "${p} ${v}"
+    else
+      git -C "${ROOT}" tag -a "${t}" -m "${p} ${v}"
+    fi
+    if (( existed )); then echo "moved tag ${t}"; else echo "created tag ${t}"; fi
+    if (( push )); then
+      if (( force )); then
+        git -C "${ROOT}" push --force origin "refs/tags/${t}"
+      else
+        git -C "${ROOT}" push origin "refs/tags/${t}"
+      fi
+      echo "pushed tag ${t}"
+    fi
   done
   (( push )) || echo "push with: git push origin --tags   (or re-run with --push)"
 }

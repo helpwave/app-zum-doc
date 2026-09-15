@@ -1,6 +1,8 @@
 .vscode/
 .idea/
 .pnpm-store/
+.direnv/
+result
 node_modules/
 /ios/
 /android/

@@ -10,10 +10,10 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v54.0.0/ before 
 scripts/mobile-sync.sh version x.y.z
 scripts/mobile-sync.sh apply
 scripts/mobile-sync.sh check
-scripts/mobile-sync.sh tag [ios|android|all] [--push]
+scripts/mobile-sync.sh tag [ios|android|all] [--push] [--force]
 ```
 
-`version` writes `build-metadata.json` and applies derived values. `apply` writes `app.json` (`expo.version` is `x.y.z`), `package.json` (`x.y.z`), and `# @sync` workflow literals. `check` fails if any derived file drifted. Tags are `ios@x.y.z` / `android@x.y.z`. The native build version is `x.y.z`.
+`version` writes `build-metadata.json` and applies derived values. `apply` writes `app.json` (`expo.version` is `x.y.z`), `package.json` (`x.y.z`), `# @sync` workflow literals, and `metadata/de.helpwave.appzumdoc.yml`. `check` fails if any derived file drifted. Tags are `ios@x.y.z` / `android@x.y.z`. The native build version is `x.y.z`.
 
 CI runs `scripts/mobile-sync.sh check` on every mobile build and publish. When a tag is pushed, it also runs `scripts/mobile-sync.sh check-tag` so the tag name matches `build-metadata.json`.
 
