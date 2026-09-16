@@ -1,0 +1,17 @@
+App zum Doc ist Ende-zu-Ende-verschlüsselte Buchung und ein vollwertiges Patientenportal von helpwave. Termine, Rezepte, Überweisungen, Bildbefunde und stationäre Voraufnahme-Fragebögen laufen über einen strukturierten, verschlüsselten Kanal zwischen Praxis und PatientIn. Keine Zusatz-Hardware, PVS-unabhängig, gehostet in Deutschland.
+
+<b>Für PatientInnen</b>
+Ein persönliches Schlüsselpaar entsteht auf dem Gerät. Der private Schlüssel verlässt das Telefon nie. Termine buchen und verschieben, Rezepte, Überweisungen und Bildbefunde anfragen, Voraufnahme-Bögen zu Hause ausfüllen, Apotheken-Notdienste und ärztliche Notrufe immer griffbereit. Die App sieht nicht in Nachrichteninhalte und erstellt kein Profiling.
+
+<b>Für Praxen</b>
+Die Praxis besitzt das Schlüsselpaar der Praxis. Jede Anfrage landet als ein strukturierter Eintrag statt Telefon-Pingpong über fünf Postfächer. Anfrageformulare erstellen, Hinweise anhängen, Praxisinfos pflegen.
+
+<b>Datenschutz, den man beweisen kann</b>
+Jede Praxis hat ihren eigenen öffentlichen Schlüssel. PatientInnen verschlüsseln jede Nachricht mit ihrem privaten Schlüssel und dem öffentlichen Schlüssel der Praxis. Wir hosten Geheimtext im zertifizierten deutschen Rechenzentrum. Kein Generalschlüssel, keine Hintertür.
+
+<b>Plattformen</b>
+iOS, Android und moderne Browser. Überall dasselbe Protokoll.
+
+Website: https://app-zum-doc.de/
+Quellcode: https://github.com/helpwave/app-zum-doc
+Lizenz: GNU Affero General Public License v3.0 (apps/mobile/LICENSE)

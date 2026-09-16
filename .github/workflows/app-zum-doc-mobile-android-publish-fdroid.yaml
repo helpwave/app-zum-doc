@@ -3,54 +3,286 @@ name: Publish F-Droid
 on:
   push:
     tags:
-      - "android*"
+      - "android@*"
 
-# permissions:
-#   contents: write
+permissions:
+  actions: read
+  contents: write
+
+env:
+  FDROID_APPID: de.helpwave.appzumdoc
+  FDROIDSERVER_VERSION: "2.4.5"
+  GRADLEW_FDROID_REF: "c7227d147483979bb5c408048cee3533a8814fb0"
 
 jobs:
-  build:
-    uses: ./.github/workflows/app-zum-doc-mobile-android-build.yaml
-    secrets: inherit
+  verify:
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
+      code: ${{ steps.version.outputs.code }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: version
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-sync.sh scripts/fdroid-metadata.sh
+          scripts/mobile-sync.sh check
+          scripts/fdroid-metadata.sh check
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            scripts/mobile-sync.sh check-tag "${GITHUB_REF_NAME}"
+          else
+            echo "not a tag (${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}); skipping tag check"
+          fi
+          echo "app_version=$(scripts/mobile-sync.sh store-version)" >> "${GITHUB_OUTPUT}"
+          echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
 
-  # publish-fdroid:
-  #   name: Publish to F-Droid
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: apps/mobile
-  #
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Download APK
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: android-apk
-  #         path: dist/apk
-  #
-  #     - name: Set up Ruby
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: "3.3"
-  #         bundler-cache: false
-  #         working-directory: apps/mobile
-  #
-  #     - name: Install Fastlane
-  #       run: bundle install
-  #
-  #     - name: Publish GitHub Release for F-Droid
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         APP_VERSION: ${{ needs.build.outputs.app_version }}
-  #         GIT_TAG_NAME: ${{ github.ref_name }}
-  #       run: |
-  #         APK_PATH="$(find "${GITHUB_WORKSPACE}/dist/apk" -name '*.apk' | head -n 1)"
-  #         if [[ -z "${APK_PATH}" ]]; then
-  #           echo "No APK artifact found."
-  #           exit 1
-  #         fi
-  #         export APK_PATH
-  #         bundle exec fastlane android fdroid
+  fdroid:
+    needs: verify
+    name: Build with fdroidserver from metadata
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      apk_name: ${{ steps.build.outputs.apk_name }}
+      reproducible: ${{ steps.compare.outcome }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17" # @sync android.java
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0" # @sync android.sdkPackages
+
+      - name: Install NDK and CMake
+        run: sdkmanager --install "ndk;27.1.12297006" "cmake;3.22.1"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24.9.0" # @sync fdroid.node
+
+      - name: Enable corepack (the recipe activates pnpm itself)
+        run: corepack enable
+
+      - name: Install fdroidserver
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libmagic1 apksigner
+          pipx install "fdroidserver==${FDROIDSERVER_VERSION}"
+          pipx inject fdroidserver "setuptools>=70,<81"
+          pipx install apksigcopier
+          sudo curl -fsSL \
+            "https://gitlab.com/fdroid/gradlew-fdroid/-/raw/${GRADLEW_FDROID_REF}/gradlew.py" \
+            -o /usr/local/bin/gradle
+          sudo chmod +x /usr/local/bin/gradle
+          fdroid --version
+
+      - name: Render recipe from build-metadata.json
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/fdroid-out"
+          scripts/fdroid-metadata.sh render "${GITHUB_REF_NAME}" "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml"
+          cat "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml"
+
+      - name: Wait for the Build Android run
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-wait-build.sh
+          run_id="$(scripts/mobile-wait-build.sh "Build Android")"
+          [[ -n "${run_id}" ]] || { echo "Wait script returned an empty run id."; exit 1; }
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download signed CI APK
+        uses: actions/download-artifact@v7
+        with:
+          name: android-apk
+          path: ${{ runner.temp }}/ci-apk
+          run-id: ${{ steps.find.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: fdroid lint + build
+        id: build
+        env:
+          VERSION_CODE: ${{ needs.verify.outputs.code }}
+        run: |
+          set -euo pipefail
+          FDROID_DIR="$(cd "${GITHUB_WORKSPACE}/.." && pwd)/fdroid"
+          mkdir -p "${FDROID_DIR}"
+          cd "${FDROID_DIR}"
+          fdroid init --android-home "${ANDROID_HOME}" --no-prompt
+          chmod 600 config.yml
+          mkdir -p config metadata build
+          yq '.Categories[] as $c | {$c: {"name": $c}}' "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml" \
+            | yq ea '. as $item ireduce ({}; . * $item)' - > config/categories.yml
+          cat config/categories.yml
+          cp "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml" metadata/
+          git clone --no-hardlinks "${GITHUB_WORKSPACE}" "build/${FDROID_APPID}"
+          git -C "build/${FDROID_APPID}" checkout --detach "${GITHUB_SHA}"
+          fdroid lint "${FDROID_APPID}"
+          if ! fdroid build --verbose --latest "${FDROID_APPID}"; then
+            echo "===== fdroid build failed; last 250 lines of tmp logs ====="
+            find tmp -type f -print 2>/dev/null | sort || true
+            while IFS= read -r log; do
+              echo "----- ${log} -----"
+              tail -n 250 "${log}" || true
+            done < <(find tmp -type f \( -name '*.log' -o -name '*build*' \) 2>/dev/null | sort)
+            exit 1
+          fi
+          APK="unsigned/${FDROID_APPID}_${VERSION_CODE}.apk"
+          [[ -f "${APK}" ]] || { echo "fdroid build produced no ${APK}"; ls -R unsigned || true; exit 1; }
+          cp "${APK}" "${RUNNER_TEMP}/fdroid-out/"
+          echo "apk_name=$(basename "${APK}")" >> "${GITHUB_OUTPUT}"
+          echo "FDROID_APK=${RUNNER_TEMP}/fdroid-out/$(basename "${APK}")" >> "${GITHUB_ENV}"
+
+      - name: Upload F-Droid build logs
+        if: failure()
+        run: |
+          set -euo pipefail
+          FDROID_DIR="$(cd "${GITHUB_WORKSPACE}/.." && pwd)/fdroid"
+          mkdir -p "${RUNNER_TEMP}/fdroid-logs"
+          if [[ -d "${FDROID_DIR}/tmp" ]]; then
+            cp -a "${FDROID_DIR}/tmp/." "${RUNNER_TEMP}/fdroid-logs/" || true
+          fi
+
+      - name: Upload F-Droid build log artifact
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: fdroid-logs
+          path: ${{ runner.temp }}/fdroid-logs
+          if-no-files-found: ignore
+
+      - name: Reproducibility check (signed CI APK vs fdroid build)
+        id: compare
+        continue-on-error: true # remove once the build is reproducible
+        run: |
+          set -euo pipefail
+          SIGNED="$(find "${RUNNER_TEMP}/ci-apk" \( -name 'app-arm64-v8a-release.apk' -o -name '*arm64-v8a*.apk' \) | head -n 1)"
+          [[ -n "${SIGNED}" ]] || { echo "no arm64-v8a APK in the CI artifact"; ls -la "${RUNNER_TEMP}/ci-apk" || true; exit 1; }
+          apksigcopier compare "${SIGNED}" --unsigned "${FDROID_APK}"
+          echo "APKs match: F-Droid can ship the developer-signed build (AllowedAPKSigningKeys)."
+
+      - name: Upload F-Droid outputs
+        uses: actions/upload-artifact@v6
+        with:
+          name: fdroid
+          path: ${{ runner.temp }}/fdroid-out
+
+  publish:
+    needs: [verify, fdroid]
+    name: Publish existing APK as F-Droid GitHub Release
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+      - name: Resolve version
+        id: version
+        env:
+          APP_VERSION: ${{ needs.verify.outputs.app_version }}
+          VERSION_CODE: ${{ needs.verify.outputs.code }}
+        run: |
+          echo "app_version=${APP_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "version_code=${VERSION_CODE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Wait for the Build Android run
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-wait-build.sh
+          run_id="$(scripts/mobile-wait-build.sh "Build Android")"
+          [[ -n "${run_id}" ]] || { echo "Wait script returned an empty run id."; exit 1; }
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download APK from that run
+        uses: actions/download-artifact@v7
+        with:
+          name: android-apk
+          path: ${{ runner.temp }}/apk
+          run-id: ${{ steps.find.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify APK version matches tag
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.app_version }}
+          EXPECTED_CODE: ${{ steps.version.outputs.version_code }}
+        run: |
+          set -euo pipefail
+          APK_PATH="$(find "${RUNNER_TEMP}/apk" -name '*.apk' | head -n 1)"
+          [[ -n "${APK_PATH}" ]] || { echo "No APK in the downloaded artifact."; exit 1; }
+          APK_DIR="$(dirname "${APK_PATH}")"
+          echo "APK_DIR=${APK_DIR}" >> "${GITHUB_ENV}"
+          sudo apt-get update
+          sudo apt-get install -y aapt
+          while IFS= read -r apk; do
+            BADGING="$(aapt dump badging "${apk}")"
+            PACKAGE_LINE="$(grep -m 1 '^package:' <<< "${BADGING}")"
+            echo "${PACKAGE_LINE}"
+            GOT_VERSION="$(sed -n "s/.*versionName='\([^']*\)'.*/\1/p" <<< "${PACKAGE_LINE}")"
+            GOT_CODE="$(sed -n "s/.*versionCode='\([^']*\)'.*/\1/p" <<< "${PACKAGE_LINE}")"
+            echo "APK $(basename "${apk}"): ${GOT_VERSION} (${GOT_CODE}) — tag ${GITHUB_REF_NAME} expects ${EXPECTED_VERSION} (${EXPECTED_CODE})"
+            [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "Refusing to publish: version mismatch."; exit 1; }
+            [[ "${GOT_CODE}" == "${EXPECTED_CODE}" ]] || { echo "Refusing to publish: version code mismatch."; exit 1; }
+          done < <(find "${APK_DIR}" -maxdepth 1 -name '*.apk' | sort)
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+          working-directory: apps/mobile
+
+      - name: Install Fastlane
+        run: bundle install
+        working-directory: apps/mobile
+
+      - name: Publish GitHub Release for F-Droid
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_API_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
+          GIT_TAG_NAME: ${{ github.ref_name }}
+        working-directory: apps/mobile
+        run: bundle exec fastlane android fdroid
+
+      - name: Download F-Droid outputs
+        uses: actions/download-artifact@v7
+        with:
+          name: fdroid
+          path: ${{ runner.temp }}/fdroid-out
+
+      - name: Attach F-Droid recipe and unsigned APK to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_NAME: ${{ needs.fdroid.outputs.apk_name }}
+          REPRODUCIBLE: ${{ needs.fdroid.outputs.reproducible }}
+        run: |
+          set -euo pipefail
+          gh release upload "${GITHUB_REF_NAME}" \
+            "${RUNNER_TEMP}/fdroid-out/${FDROID_APPID}.yml" \
+            "${RUNNER_TEMP}/fdroid-out/${APK_NAME}" \
+            --clobber
+          echo "F-Droid recipe: ${FDROID_APPID}.yml — copy this into fdroiddata/metadata/ for the MR."
+          echo "Reproducibility check outcome: ${REPRODUCIBLE}"

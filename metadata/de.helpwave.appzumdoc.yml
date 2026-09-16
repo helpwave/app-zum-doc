@@ -1,0 +1,81 @@
+# fdroiddata recipe for App zum Doc.
+# Versions, commit, Node release/sha256 and pnpm version are written by
+# scripts/mobile-sync.sh apply from apps/mobile/build-metadata.json. Do not edit those by hand.
+Categories:
+  - Sports & Health
+License: AGPL-3.0-only
+AuthorName: helpwave GmbH
+AuthorEmail: contact@helpwave.de
+AuthorWebSite: https://helpwave.de
+WebSite: https://app-zum-doc.de/
+SourceCode: https://github.com/helpwave/app-zum-doc
+IssueTracker: https://github.com/helpwave/app-zum-doc/issues
+Changelog: https://github.com/helpwave/app-zum-doc/releases
+AutoName: App zum Doc
+Summary: End-to-end encrypted patient portal
+Description: |-
+  Book appointments and send prescriptions, referrals and imaging requests
+  over an end-to-end encrypted channel between patient and practice.
+RepoType: git
+Repo: https://github.com/helpwave/app-zum-doc.git
+Binaries: https://github.com/helpwave/app-zum-doc/releases/download/android@%v/app-arm64-v8a-release.apk
+Builds:
+  - versionName: 0.0.10
+    versionCode: 10
+    commit: android@0.0.10
+    subdir: apps/mobile
+    sudo:
+      - apt-get update
+      - apt-get install -y curl xz-utils
+      - curl -Lo /tmp/node.tar.xz https://nodejs.org/dist/v24.9.0/node-v24.9.0-linux-x64.tar.xz
+      - echo "f52ec50e959d72d5c680d9731420b2661cd2a8070e94c7369b6ddfcd8b7278be  /tmp/node.tar.xz" | sha256sum -c
+      - tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1
+      - corepack enable
+    init:
+      - cd ../..
+      - corepack prepare pnpm@11.13.0 --activate
+      - pnpm install --frozen-lockfile
+      - pnpm --filter @app-zum-doc/utils run init
+    output: android/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk
+    prebuild:
+      - export CI=1 EXPO_NO_GIT_STATUS=1
+      - node -e "const fs=require('fs'); for (const f of ['package.json','../../package.json']) { const j=JSON.parse(fs.readFileSync(f,'utf8')); j.expo=Object.assign({},j.expo,{autolinking:{android:{buildFromSource:['.*']}}}); fs.writeFileSync(f, JSON.stringify(j,null,2)+'\n'); console.log(f, JSON.stringify(j.expo.autolinking)); }"
+      - npx expo prebuild --platform android --clean
+      - sed -i -e '/signingConfig /d' android/app/build.gradle
+      - node -e "const fs=require('fs'); const p='android/settings.gradle'; let s=fs.readFileSync(p,'utf8'); const pin='expoAutolinking.projectRoot = rootDir.parentFile'+String.fromCharCode(10)+'expoAutolinking.useExpoModules()'; if (!s.includes('expoAutolinking.projectRoot')) { s=s.replace('expoAutolinking.useExpoModules()',pin); fs.writeFileSync(p,s); } if (!s.includes('expoAutolinking.projectRoot')) { throw new Error('could not pin expoAutolinking.projectRoot in '+p); }"
+      - printf '%s\n' 'org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g' >> android/gradle.properties
+      - sdkmanager 'ndk;27.1.12297006' 'cmake;3.22.1'
+    scanignore:
+      - node_modules/react-native/sdks/hermesc
+      - node_modules/react-native/React/I18n
+      - node_modules/react-native/ReactAndroid/publish.gradle
+      - node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
+      - node_modules/expo-modules-autolinking/scripts/android/autolinking_implementation.gradle
+      - node_modules/react-native-svg/android/build.gradle
+      - node_modules/react-native-screens/android/build.gradle
+      - node_modules/react-native-safe-area-context/android/build.gradle
+      - node_modules/@react-native-async-storage/async-storage/android/build.gradle
+      - node_modules/expo-asset/local-maven-repo
+      - node_modules/expo-file-system/local-maven-repo
+      - node_modules/expo-font/local-maven-repo
+      - node_modules/expo-haptics/local-maven-repo
+      - node_modules/expo-image/local-maven-repo
+      - node_modules/expo-keep-awake/local-maven-repo
+      - node_modules/expo-linear-gradient/local-maven-repo
+      - node_modules/expo-linking/local-maven-repo
+      - node_modules/expo-splash-screen/local-maven-repo
+      - node_modules/expo-system-ui/local-maven-repo
+      - node_modules/expo-web-browser/local-maven-repo
+    scandelete:
+      - node_modules
+    ndk: 27.1.12297006
+    build:
+      - cd android
+      - gradle assembleRelease
+      - ls -la app/build/outputs/apk/release
+AllowedAPKSigningKeys: b0974e053c12fc9b20aa6f9f5c278c288b585494958b6b872787c5dee6f5973e
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^android@
+UpdateCheckData: apps/mobile/app.json|"versionCode":\s(\d+)|.|"version":\s"([\d.]+)"
+CurrentVersion: 0.0.10
+CurrentVersionCode: 10

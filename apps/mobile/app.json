@@ -2,7 +2,7 @@
   "expo": {
     "name": "App zum Doc",
     "slug": "app-zum-doc",
-    "version": "0.0.1",
+    "version": "0.0.10",
     "orientation": "portrait",
     "icon": "./assets/images/azd-logo.png",
     "scheme": "appzumdoc",
@@ -11,10 +11,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "de.helpwave.appzumdoc",
-      "buildNumber": "1"
+      "buildNumber": "10",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "versionCode": 1,
+      "versionCode": 10,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/azd-logo-foreground.png",
@@ -37,10 +40,23 @@
     "plugins": [
       "expo-router",
       [
-        "expo-notifications",
+        "expo-build-properties",
         {
-          "icon": "./assets/images/azd-monochrom-logo-foreground.png",
-          "color": "#057986"
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "buildArchs": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ],
+            "enableProguardInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true,
+            "extraProguardRules": ""
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
         }
       ],
       [

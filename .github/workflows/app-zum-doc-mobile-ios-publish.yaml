@@ -3,57 +3,112 @@ name: Publish App Store
 on:
   push:
     tags:
-      - "ios*"
+      - "ios@*"
+
+permissions:
+  actions: read
+  contents: read
 
 jobs:
-  build:
-    uses: ./.github/workflows/app-zum-doc-mobile-ios-build.yaml
-    secrets: inherit
+  verify:
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
+      code: ${{ steps.version.outputs.code }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: version
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-sync.sh
+          scripts/mobile-sync.sh check
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            scripts/mobile-sync.sh check-tag "${GITHUB_REF_NAME}"
+          else
+            echo "not a tag (${GITHUB_REF_TYPE} ${GITHUB_REF_NAME}); skipping tag check"
+          fi
+          echo "app_version=$(scripts/mobile-sync.sh store-version)" >> "${GITHUB_OUTPUT}"
+          echo "code=$(scripts/mobile-sync.sh get code)" >> "${GITHUB_OUTPUT}"
 
-  # publish-app-store:
-  #   name: Publish to App Store Connect
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: apps/mobile
-  #
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Download IPA
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: ios-ipa
-  #         path: dist/ipa
-  #
-  #     - name: Set up Ruby
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: "3.3"
-  #         bundler-cache: false
-  #         working-directory: apps/mobile
-  #
-  #     - name: Install Fastlane
-  #       run: bundle install
-  #
-  #     - name: Write App Store Connect API key
-  #       env:
-  #         APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-  #       run: |
-  #         printf '%s' "${APP_STORE_CONNECT_API_KEY}" > "${RUNNER_TEMP}/AuthKey.p8"
-  #
-  #     - name: Upload to App Store Connect
-  #       env:
-  #         APP_STORE_CONNECT_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
-  #         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-  #         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-  #       run: |
-  #         IPA_PATH="$(find "${GITHUB_WORKSPACE}/dist/ipa" -name '*.ipa' | head -n 1)"
-  #         if [[ -z "${IPA_PATH}" ]]; then
-  #           echo "No IPA artifact found."
-  #           exit 1
-  #         fi
-  #         export IPA_PATH
-  #         bundle exec fastlane ios appstore
+  publish:
+    needs: verify
+    name: Upload existing IPA to App Store Connect
+    runs-on: "macos-15" # @sync ios.runner
+
+    steps:
+      - name: Resolve version
+        id: version
+        env:
+          APP_VERSION: ${{ needs.verify.outputs.app_version }}
+          BUILD_NUMBER: ${{ needs.verify.outputs.code }}
+        run: |
+          echo "app_version=${APP_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "build_number=${BUILD_NUMBER}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Wait for the Build iOS run
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/mobile-wait-build.sh
+          run_id="$(scripts/mobile-wait-build.sh "Build iOS")"
+          [[ -n "${run_id}" ]] || { echo "Wait script returned an empty run id."; exit 1; }
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
+
+      - name: Download IPA from that run
+        uses: actions/download-artifact@v7
+        with:
+          name: ios-ipa
+          path: ${{ runner.temp }}/ipa
+          run-id: ${{ steps.find.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify IPA version matches tag
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.app_version }}
+          EXPECTED_BUILD: ${{ steps.version.outputs.build_number }}
+        run: |
+          set -euo pipefail
+          IPA_PATH="$(find "${RUNNER_TEMP}/ipa" -name '*.ipa' | head -n 1)"
+          [[ -n "${IPA_PATH}" ]] || { echo "No IPA in the downloaded artifact."; exit 1; }
+          echo "ipa_path=${IPA_PATH}" >> "${GITHUB_ENV}"
+          unzip -p "${IPA_PATH}" 'Payload/*.app/Info.plist' > "${RUNNER_TEMP}/Info.plist"
+          GOT_VERSION="$(plutil -extract CFBundleShortVersionString raw "${RUNNER_TEMP}/Info.plist")"
+          GOT_BUILD="$(plutil -extract CFBundleVersion raw "${RUNNER_TEMP}/Info.plist")"
+          echo "IPA: ${GOT_VERSION} (${GOT_BUILD}) — tag ${GITHUB_REF_NAME} expects ${EXPECTED_VERSION} (${EXPECTED_BUILD})"
+          [[ "${GOT_VERSION}" == "${EXPECTED_VERSION}" ]] || { echo "Refusing to upload: version mismatch."; exit 1; }
+          [[ "${GOT_BUILD}" == "${EXPECTED_BUILD}" ]] || { echo "Refusing to upload: build number mismatch."; exit 1; }
+
+      - name: Write App Store Connect API key
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${APP_STORE_CONNECT_API_KEY}" || -z "${APP_STORE_CONNECT_KEY_ID}" ]]; then
+            echo "APP_STORE_CONNECT_API_KEY and APP_STORE_CONNECT_KEY_ID are required."
+            exit 1
+          fi
+          mkdir -p "${HOME}/.appstoreconnect/private_keys"
+          printf '%s\n' "${APP_STORE_CONNECT_API_KEY}" \
+            > "${HOME}/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+          chmod 600 "${HOME}/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+
+      - name: Validate and upload
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          xcrun altool --validate-app -f "${ipa_path}" -t ios \
+            --apiKey "${APP_STORE_CONNECT_KEY_ID}" --apiIssuer "${APP_STORE_CONNECT_ISSUER_ID}"
+          xcrun altool --upload-app -f "${ipa_path}" -t ios \
+            --apiKey "${APP_STORE_CONNECT_KEY_ID}" --apiIssuer "${APP_STORE_CONNECT_ISSUER_ID}"
+
+      - name: Remove API key
+        if: ${{ always() }}
+        run: rm -rf "${HOME}/.appstoreconnect"
