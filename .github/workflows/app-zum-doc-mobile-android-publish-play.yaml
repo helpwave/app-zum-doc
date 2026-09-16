@@ -55,7 +55,9 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x scripts/mobile-wait-build.sh
-          echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
+          run_id="$(scripts/mobile-wait-build.sh "Build Android")"
+          [[ -n "${run_id}" ]] || { echo "Wait script returned an empty run id."; exit 1; }
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
 
       - name: Download AAB from that run
         uses: actions/download-artifact@v7

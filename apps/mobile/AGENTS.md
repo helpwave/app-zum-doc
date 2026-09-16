@@ -17,4 +17,4 @@ scripts/mobile-sync.sh tag [ios|android|all] [--push] [--force]
 
 CI runs `scripts/mobile-sync.sh check` on every mobile build and publish. When a tag is pushed, it also runs `scripts/mobile-sync.sh check-tag` so the tag name matches `build-metadata.json`.
 
-`android@x.y.z` / `ios@x.y.z` publish from the existing platform build. If that build is still queued or running, tag publish waits (up to two hours) via `scripts/mobile-wait-build.sh`. Write `fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt` before an `android@` tag. Do not edit store copy by hand in GitHub Releases.
+`android@x.y.z` / `ios@x.y.z` publish from the existing platform build. If that build is still queued or running for the tagged commit, tag publish waits (up to two hours) via `scripts/mobile-wait-build.sh`. If nothing is running for that commit, it uses the last successful build whose `apps/mobile/build-metadata.json` version matches. Write `fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt` before an `android@` tag. Do not edit store copy by hand in GitHub Releases.

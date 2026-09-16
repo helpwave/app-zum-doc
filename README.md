@@ -15,7 +15,7 @@
 
 ## F-Droid
 
-The repository is public. Android CI builds a signed APK. Pushing `android@x.y.z` publishes that APK as a GitHub release for F-Droid. If **Build Android** is still running for the tagged commit, publish waits for it.
+The repository is public. Android CI builds a signed APK. Pushing `android@x.y.z` publishes that APK as a GitHub release for F-Droid. If **Build Android** is still running for the tagged commit, publish waits for it. If nothing is running for that commit, it uses the last successful Android build of the version in `apps/mobile/build-metadata.json`.
 
 1. Tag with `scripts/mobile-sync.sh tag android --push` (creates `android@x.y.z`).
 2. [Publish F-Droid](https://github.com/helpwave/app-zum-doc/actions/workflows/app-zum-doc-mobile-android-publish-fdroid.yaml) waits for a successful [Build Android](https://github.com/helpwave/app-zum-doc/actions/workflows/app-zum-doc-mobile-android-build.yaml) on that commit, checks the tag against `apps/mobile/build-metadata.json`, downloads the APK, checks `versionName` is `x.y.z`, and opens the release.

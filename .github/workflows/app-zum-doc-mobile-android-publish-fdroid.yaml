@@ -12,6 +12,7 @@ permissions:
 env:
   FDROID_APPID: de.helpwave.appzumdoc
   FDROIDSERVER_VERSION: "2.4.5"
+  GRADLEW_FDROID_REF: "c7227d147483979bb5c408048cee3533a8814fb0"
 
 jobs:
   verify:
@@ -63,6 +64,9 @@ jobs:
         with:
           packages: "platform-tools platforms;android-36 build-tools;36.0.0" # @sync android.sdkPackages
 
+      - name: Install NDK and CMake
+        run: sdkmanager --install "ndk;27.1.12297006" "cmake;3.22.1"
+
       - uses: actions/setup-node@v5
         with:
           node-version: "24.9.0" # @sync fdroid.node
@@ -79,7 +83,7 @@ jobs:
           pipx inject fdroidserver "setuptools>=70,<81"
           pipx install apksigcopier
           sudo curl -fsSL \
-            "https://gitlab.com/fdroid/fdroidserver/-/raw/${FDROIDSERVER_VERSION}/gradlew-fdroid" \
+            "https://gitlab.com/fdroid/gradlew-fdroid/-/raw/${GRADLEW_FDROID_REF}/gradlew.py" \
             -o /usr/local/bin/gradle
           sudo chmod +x /usr/local/bin/gradle
           fdroid --version
@@ -98,7 +102,9 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x scripts/mobile-wait-build.sh
-          echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
+          run_id="$(scripts/mobile-wait-build.sh "Build Android")"
+          [[ -n "${run_id}" ]] || { echo "Wait script returned an empty run id."; exit 1; }
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
 
       - name: Download signed CI APK
         uses: actions/download-artifact@v7
@@ -127,20 +133,46 @@ jobs:
           git clone --no-hardlinks "${GITHUB_WORKSPACE}" "build/${FDROID_APPID}"
           git -C "build/${FDROID_APPID}" checkout --detach "${GITHUB_SHA}"
           fdroid lint "${FDROID_APPID}"
-          fdroid build --verbose --latest "${FDROID_APPID}"
+          if ! fdroid build --verbose --latest "${FDROID_APPID}"; then
+            echo "===== fdroid build failed; last 250 lines of tmp logs ====="
+            find tmp -type f -print 2>/dev/null | sort || true
+            while IFS= read -r log; do
+              echo "----- ${log} -----"
+              tail -n 250 "${log}" || true
+            done < <(find tmp -type f \( -name '*.log' -o -name '*build*' \) 2>/dev/null | sort)
+            exit 1
+          fi
           APK="unsigned/${FDROID_APPID}_${VERSION_CODE}.apk"
           [[ -f "${APK}" ]] || { echo "fdroid build produced no ${APK}"; ls -R unsigned || true; exit 1; }
           cp "${APK}" "${RUNNER_TEMP}/fdroid-out/"
           echo "apk_name=$(basename "${APK}")" >> "${GITHUB_OUTPUT}"
           echo "FDROID_APK=${RUNNER_TEMP}/fdroid-out/$(basename "${APK}")" >> "${GITHUB_ENV}"
 
+      - name: Upload F-Droid build logs
+        if: failure()
+        run: |
+          set -euo pipefail
+          FDROID_DIR="$(cd "${GITHUB_WORKSPACE}/.." && pwd)/fdroid"
+          mkdir -p "${RUNNER_TEMP}/fdroid-logs"
+          if [[ -d "${FDROID_DIR}/tmp" ]]; then
+            cp -a "${FDROID_DIR}/tmp/." "${RUNNER_TEMP}/fdroid-logs/" || true
+          fi
+
+      - name: Upload F-Droid build log artifact
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: fdroid-logs
+          path: ${{ runner.temp }}/fdroid-logs
+          if-no-files-found: ignore
+
       - name: Reproducibility check (signed CI APK vs fdroid build)
         id: compare
         continue-on-error: true # remove once the build is reproducible
         run: |
           set -euo pipefail
-          SIGNED="$(find "${RUNNER_TEMP}/ci-apk" -name 'app-release.apk' | head -n 1)"
-          [[ -n "${SIGNED}" ]] || { echo "no app-release.apk in the CI artifact"; exit 1; }
+          SIGNED="$(find "${RUNNER_TEMP}/ci-apk" \( -name 'app-arm64-v8a-release.apk' -o -name '*arm64-v8a*.apk' \) | head -n 1)"
+          [[ -n "${SIGNED}" ]] || { echo "no arm64-v8a APK in the CI artifact"; ls -la "${RUNNER_TEMP}/ci-apk" || true; exit 1; }
           apksigcopier compare "${SIGNED}" --unsigned "${FDROID_APK}"
           echo "APKs match: F-Droid can ship the developer-signed build (AllowedAPKSigningKeys)."
 
@@ -179,7 +211,9 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x scripts/mobile-wait-build.sh
-          echo "run_id=$(scripts/mobile-wait-build.sh "Build Android")" >> "${GITHUB_OUTPUT}"
+          run_id="$(scripts/mobile-wait-build.sh "Build Android")"
+          [[ -n "${run_id}" ]] || { echo "Wait script returned an empty run id."; exit 1; }
+          echo "run_id=${run_id}" >> "${GITHUB_OUTPUT}"
 
       - name: Download APK from that run
         uses: actions/download-artifact@v7
