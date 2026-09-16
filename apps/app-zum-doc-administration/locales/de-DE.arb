@@ -263,5 +263,8 @@
   "onboardingPracticeTitle": "Praxisdaten",
   "onboardingPracticeDescription": "Ergänzen Sie die Angaben zu Ihrer Praxis.",
   "onboardingContinue": "Weiter",
-  "onboardingFinish": "Zur Übersicht"
+  "onboardingFinish": "Zur Übersicht",
+  "logout": "Abmelden",
+  "logoutConfirmTitle": "Abmelden?",
+  "logoutConfirmDescription": "Beim Abmelden wird der Verschlüsselungsschlüssel von diesem Gerät gelöscht. Beim nächsten Anmelden müssen Sie den Schlüssel erneut hochladen."
 }

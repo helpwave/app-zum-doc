@@ -263,5 +263,8 @@
   "onboardingPracticeTitle": "Practice details",
   "onboardingPracticeDescription": "Fill in the basic information for your practice.",
   "onboardingContinue": "Continue",
-  "onboardingFinish": "Go to overview"
+  "onboardingFinish": "Go to overview",
+  "logout": "Log out",
+  "logoutConfirmTitle": "Log out?",
+  "logoutConfirmDescription": "Logging out deletes the encryption key from this device. You will need to upload the key again the next time you sign in."
 }

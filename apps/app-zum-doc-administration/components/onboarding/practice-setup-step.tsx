@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Input } from '@helpwave/hightide'
+import { Button, FormFieldLayout, Input } from '@helpwave/hightide'
 import { toAppLocale, type Address } from '@app-zum-doc/utils/api'
 import {
   useCompletePracticeOnboarding,
@@ -8,7 +8,6 @@ import {
 } from '@app-zum-doc/utils/hooks'
 import { QueryState } from '@/components/layout/Page'
 import { SpecializationEditor } from '@/components/practice/specialization-editor'
-import { SettingsField } from '@/components/practice/settings-field'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 
 export function PracticeSetupStep({
@@ -32,7 +31,7 @@ export function PracticeSetupStep({
   const [streetNumber, setStreetNumber] = useState('')
   const [postalCode, setPostalCode] = useState('')
   const [city, setCity] = useState('')
-  const [specializationIds, setSpecializationIds] = useState<string[]>([''])
+  const [specializationIds, setSpecializationIds] = useState<string[]>([])
 
   useEffect(() => {
     const myData = myDataQuery.data
@@ -98,28 +97,40 @@ export function PracticeSetupStep({
         loadingLabel={t('loadingOnboarding')}
       >
         <div className="flex-col-4 w-full">
-          <SettingsField label={t('clinicName')}>
-            <Input value={name} onValueChange={setName} />
-          </SettingsField>
-          <SettingsField label={t('street')}>
-            <Input value={street} onValueChange={setStreet} />
-          </SettingsField>
-          <SettingsField label={t('streetNumber')}>
-            <Input value={streetNumber} onValueChange={setStreetNumber} />
-          </SettingsField>
-          <SettingsField label={t('postalCode')}>
-            <Input value={postalCode} onValueChange={setPostalCode} />
-          </SettingsField>
-          <SettingsField label={t('city')}>
-            <Input value={city} onValueChange={setCity} />
-          </SettingsField>
-          <SettingsField label={t('specialization')}>
-            <SpecializationEditor
-              value={specializationIds}
-              options={specializationsQuery.data ?? []}
-              onChange={setSpecializationIds}
-            />
-          </SettingsField>
+          <FormFieldLayout label={t('clinicName')}>
+            {({ id }) => (
+              <Input id={id} value={name} onValueChange={setName} />
+            )}
+          </FormFieldLayout>
+          <FormFieldLayout label={t('street')}>
+            {({ id }) => (
+              <Input id={id} value={street} onValueChange={setStreet} />
+            )}
+          </FormFieldLayout>
+          <FormFieldLayout label={t('streetNumber')}>
+            {({ id }) => (
+              <Input id={id} value={streetNumber} onValueChange={setStreetNumber} />
+            )}
+          </FormFieldLayout>
+          <FormFieldLayout label={t('postalCode')}>
+            {({ id }) => (
+              <Input id={id} value={postalCode} onValueChange={setPostalCode} />
+            )}
+          </FormFieldLayout>
+          <FormFieldLayout label={t('city')}>
+            {({ id }) => (
+              <Input id={id} value={city} onValueChange={setCity} />
+            )}
+          </FormFieldLayout>
+          <FormFieldLayout label={t('specialization')}>
+            {() => (
+              <SpecializationEditor
+                value={specializationIds}
+                options={specializationsQuery.data ?? []}
+                onChange={setSpecializationIds}
+              />
+            )}
+          </FormFieldLayout>
         </div>
         <Button
           type="button"

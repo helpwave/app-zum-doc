@@ -411,11 +411,11 @@ importers:
   packages/app-zum-doc-utils:
     dependencies:
       '@helpwave/hightide-design':
-        specifier: 0.7.4
-        version: 0.7.4
+        specifier: 0.7.5
+        version: 0.7.5
       '@helpwave/hightide-utils':
-        specifier: 0.1.5
-        version: 0.1.5(react@19.1.0)
+        specifier: 0.1.6
+        version: 0.1.6(react@19.1.0)
       '@helpwave/internationalization':
         specifier: 0.4.0
         version: 0.4.0
@@ -1146,8 +1146,8 @@ packages:
   '@helpwave/hightide-design@0.7.3':
     resolution: {integrity: sha512-29EBld4xeRdmzuA6a76Zx+B4PBzAICElaEUhqANVwnjDBmo2dPwNgD5iqj7v7LwiLlcUA7PwPsAiZCRz3qS2BA==}
 
-  '@helpwave/hightide-design@0.7.4':
-    resolution: {integrity: sha512-aHwfRcyY4liadPxRf4ykmjRuiI7+8ECxYIhnJKNnYzletP/SVGGumv9ez2BZy1SVOFA0Daph3iK8gJZ/bNYLnw==}
+  '@helpwave/hightide-design@0.7.5':
+    resolution: {integrity: sha512-sacKq6kdQph0n16PIJYo1Kx6G7UsWVHJ686I6W+lz6kAlAt68cQsqq65VZJz5ZFDjlP+k3cXlmqVC3sEHgbO9A==}
 
   '@helpwave/hightide-native@0.9.3':
     resolution: {integrity: sha512-C1ReDAjxgHTHGh+ZVUu/hbDQdI0w36AUJFyRsu/NRbmLxOO0G1l+VnvTSQEGFlCDCuy9fIQ5Qe3ECgLrpuOZCw==}
@@ -1171,6 +1171,12 @@ packages:
 
   '@helpwave/hightide-utils@0.1.5':
     resolution: {integrity: sha512-wJqjHocXkoSnojm2NrTsiZs91a8utNfjk6Xfayz2twe+fb+KFkGa9EXK5clOWVVBb9VYlXQpWEdxtJyovaQs/A==}
+    hasBin: true
+    peerDependencies:
+      react: ^19.0.0
+
+  '@helpwave/hightide-utils@0.1.6':
+    resolution: {integrity: sha512-WSFqdLuvnJXIo3u/OJAcB2CnghdnHpeRvriydQ6oXxJszSI3CVJV3hRAOokD0Ozi9USJDcxGDo2GTPEOvLZrWg==}
     hasBin: true
     peerDependencies:
       react: ^19.0.0
@@ -6789,7 +6795,7 @@ snapshots:
 
   '@helpwave/hightide-design@0.7.3': {}
 
-  '@helpwave/hightide-design@0.7.4': {}
+  '@helpwave/hightide-design@0.7.5': {}
 
   '@helpwave/hightide-native@0.9.3(@react-native-async-storage/async-storage@2.2.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
     dependencies:
@@ -6812,6 +6818,11 @@ snapshots:
       react: 19.1.0
 
   '@helpwave/hightide-utils@0.1.5(react@19.1.0)':
+    dependencies:
+      '@helpwave/internationalization': 0.4.0
+      react: 19.1.0
+
+  '@helpwave/hightide-utils@0.1.6(react@19.1.0)':
     dependencies:
       '@helpwave/internationalization': 0.4.0
       react: 19.1.0

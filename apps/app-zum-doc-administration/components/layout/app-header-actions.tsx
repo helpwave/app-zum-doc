@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Avatar, IconButton } from '@helpwave/hightide'
+import { Avatar, Button, IconButton } from '@helpwave/hightide'
 import { Pencil, Settings } from 'lucide-react'
 import { profilePictureSrc } from '@/components/practice/profile-picture-field'
 import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslation'
@@ -23,8 +23,12 @@ export function AppHeaderActions({
     <div className="flex-row-3 items-center justify-end w-full min-w-0">
       <Link
         href="/my-doctors-office"
-        className="flex-row-2 items-center min-w-0 rounded-lg px-2 py-1"
+        className="p-2"
         aria-label={t('navMyDoctorsOffice')}
+        data-name="button"
+        data-size="md"
+        data-color="neutral"
+        data-coloringstyle="text"
       >
         <Avatar
           size="sm"
@@ -39,22 +43,23 @@ export function AppHeaderActions({
       <IconButton
         type="button"
         tooltip={t('navSettings')}
-        size="sm"
-        color="primary"
+        size="md"
+        color="neutral"
         coloringStyle="text"
         aria-label={t('navSettings')}
         onClick={() => void router.push('/settings')}
       >
         <Settings className="size-5" />
       </IconButton>
-      <button
-        type="button"
-        className="flex-row-2 items-center shrink-0 rounded-lg px-2 py-1"
+      <Button
+        coloringStyle="text"
+        color="neutral"
+        className="p-2"
         aria-label={t('userMenu')}
       >
         <Avatar size="sm" name={staffName} />
         <span className="typography-label-md whitespace-nowrap">{staffName}</span>
-      </button>
+      </Button>
     </div>
   )
 }

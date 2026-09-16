@@ -66,10 +66,6 @@ async function importPrivateKey(privateKey: string): Promise<CryptoKey> {
   )
 }
 
-export function encodeEncryptionKeyFile(pair: EncryptionKeyPair): string {
-  return `${pair.publicKey.trim()}\n${pair.privateKey.trim()}\n`
-}
-
 export function parseEncryptionKeyFile(text: string): {
   publicKey?: string,
   privateKey?: string,

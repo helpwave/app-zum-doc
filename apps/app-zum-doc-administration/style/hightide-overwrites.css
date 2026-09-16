@@ -19,10 +19,6 @@
     @apply desktop:pr-6;
   }
 
-  [data-name="vertical-navigation-menu"] {
-    @apply gap-1;
-  }
-
   .vertical-navigation-item:has([data-nav-divider-before]) {
     @apply mt-2 pt-2 border-t border-divider;
   }

@@ -12,6 +12,7 @@ import { SettingsField } from '@/components/practice/settings-field'
 import { EmailNotificationFields } from '@/components/settings/email-notification-fields'
 import { EncryptionSection } from '@/components/settings/encryption-section'
 import { HourFormatSelect } from '@/components/settings/hour-format-select'
+import { LogoutSection } from '@/components/settings/logout-section'
 import { Page, QueryState } from '@/components/layout/Page'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import { practiceOfficeId } from '@/lib/navigation'
@@ -116,6 +117,8 @@ const SettingsPage: NextPage = () => {
           </PracticeExpandableSection>
 
           <EncryptionSection />
+
+          <LogoutSection />
         </div>
       </QueryState>
     </Page>

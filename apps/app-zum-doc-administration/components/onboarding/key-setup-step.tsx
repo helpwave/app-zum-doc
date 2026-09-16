@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Chip } from '@helpwave/hightide'
 import {
-  encodeEncryptionKeyFile,
   encryptionKeysMatch,
   generateEncryptionKeyPair,
   parseEncryptionKeyFile,
@@ -50,7 +49,7 @@ export function KeySetupStep({
         if (cancelled) {
           return
         }
-        writeEncryptionKey(encodeEncryptionKeyFile(next))
+        writeEncryptionKey(next.privateKey)
         setPair(next)
       })
       .catch(() => {
@@ -108,10 +107,7 @@ export function KeySetupStep({
         return
       }
       await uploadPublicKey.mutateAsync(uploadedPublicKey)
-      writeEncryptionKey(encodeEncryptionKeyFile({
-        publicKey: uploadedPublicKey,
-        privateKey: uploadedPrivateKey,
-      }))
+      writeEncryptionKey(uploadedPrivateKey)
       onCompleted()
     } catch {
       setError(t('onboardingKeyInvalid'))
@@ -163,7 +159,7 @@ export function KeySetupStep({
               if (!pair) {
                 return
               }
-              downloadEncryptionKeyFile(encodeEncryptionKeyFile(pair))
+              downloadEncryptionKeyFile(pair.privateKey)
               setHasDownloaded(true)
             }}
           >

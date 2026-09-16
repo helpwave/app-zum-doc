@@ -1,5 +1,5 @@
 export const encryptionKeyStorageKey = 'app-zum-doc-encryption-key'
-export const encryptionKeyFileName = 'app-zum-doc-encryption-key.pem'
+export const encryptionKeyFileName = 'app-zum-doc-private-key.txt'
 
 export function readEncryptionKey(): string | null {
   if (typeof window === 'undefined') {
@@ -14,6 +14,22 @@ export function readEncryptionKey(): string | null {
 
 export function writeEncryptionKey(value: string): void {
   window.localStorage.setItem(encryptionKeyStorageKey, value)
+}
+
+export function clearEncryptionKey(): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  window.localStorage.removeItem(encryptionKeyStorageKey)
+  window.localStorage.removeItem('app-zum-doc.encryption-key')
+}
+
+export function clearLocalUserData(): void {
+  clearEncryptionKey()
+  if (typeof window === 'undefined') {
+    return
+  }
+  window.localStorage.removeItem('app-zum-doc-practice-account')
 }
 
 export function downloadEncryptionKeyFile(contents: string): void {

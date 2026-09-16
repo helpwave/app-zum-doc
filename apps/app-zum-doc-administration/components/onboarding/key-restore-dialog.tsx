@@ -38,7 +38,7 @@ export function KeyRestoreDialog({
         setError(t('onboardingKeyInvalid'))
         return
       }
-      writeEncryptionKey(fileText)
+      writeEncryptionKey(privateKey)
       onUnlocked()
     } catch {
       setError(t('onboardingKeyInvalid'))

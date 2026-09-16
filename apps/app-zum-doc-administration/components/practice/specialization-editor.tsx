@@ -2,6 +2,7 @@ import { Button, IconButton, Select } from '@helpwave/hightide'
 import { Plus, Trash2 } from 'lucide-react'
 import type { SearchSpecialization } from '@app-zum-doc/utils/api'
 import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslation'
+import { useMemo } from 'react'
 
 export function SpecializationEditor({
   value,
@@ -17,22 +18,25 @@ export function SpecializationEditor({
   const unused = options.filter((option) => !selected.has(option.id))
   const canAdd = unused.length > 0
 
+  const values = useMemo(() => value.length < 1 ? [null] : value, [value])
+
   return (
     <div className="flex-col-3 w-full">
-      {value.map((specializationId, index) => (
-        <div key={`${specializationId}-${index}`} className="flex-row-3 items-center w-full min-w-0">
+      {values.map((specializationId, index) => (
+        <div key={index} className="flex-row-3 items-center w-full min-w-0">
           <div className="min-w-0 flex-1">
             <Select
-              value={specializationId.length > 0 ? specializationId : null}
+              value={specializationId ? specializationId : null}
               placeholder={t('specialization')}
               showSearch
               onValueChange={(next) => {
+                console.log(next)
                 if (next == null) {
                   return
                 }
-                onChange(value.map((item, itemIndex) => (
+                onChange(values.map((item, itemIndex) => (
                   itemIndex === index ? next : item
-                )))
+                )).filter(Boolean) as string[])
               }}
             >
               {options.map((option) => (
