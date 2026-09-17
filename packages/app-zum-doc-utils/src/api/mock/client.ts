@@ -62,10 +62,15 @@ import {
   type UpdateDoctorsOfficeInput,
   type CompletePracticeOnboardingInput,
   type EncryptionKeyTest,
+  type PracticeEncryptionData,
   type PracticeMyData,
   type PracticeOnboardingStatus
 } from '../types'
-import { encryptWithPublicKey, encryptionTestPlaintext } from '../encryption'
+import {
+  base64ToArrayBuffer,
+  encryptWithPublicKey,
+  encryptionTestPlaintext
+} from '../encryption'
 import {
   formatAppointmentRequestTitle,
   formatPrescriptionRequestTitle,
@@ -197,6 +202,24 @@ function defaultPracticeAccount(): PracticeAccountState {
   }
 }
 
+function toSpkiBase64(value: string): string | null {
+  const trimmed = value.trim()
+  if (trimmed.length === 0) {
+    return null
+  }
+  const pemMatch = trimmed.match(/-----BEGIN PUBLIC KEY-----([\s\S]*?)-----END PUBLIC KEY-----/)
+  if (pemMatch?.[1]) {
+    const body = pemMatch[1].replace(/\s+/g, '')
+    return body.length > 0 ? body : null
+  }
+  try {
+    base64ToArrayBuffer(trimmed)
+    return trimmed
+  } catch {
+    return null
+  }
+}
+
 function readPracticeAccount(): PracticeAccountState {
   if (typeof window === 'undefined') {
     return defaultPracticeAccount()
@@ -209,8 +232,8 @@ function readPracticeAccount(): PracticeAccountState {
     const parsed = JSON.parse(raw) as PracticeAccountState
     return {
       hasDoctorsOffice: parsed.hasDoctorsOffice === true,
-      publicKey: typeof parsed.publicKey === 'string' && parsed.publicKey.length > 0
-        ? parsed.publicKey
+      publicKey: typeof parsed.publicKey === 'string'
+        ? toSpkiBase64(parsed.publicKey)
         : null,
     }
   } catch {
@@ -1433,6 +1456,12 @@ export async function fetchPracticeOnboardingStatus(): Promise<PracticeOnboardin
   }))
 }
 
+export async function fetchPracticeEncryptionData(): Promise<PracticeEncryptionData> {
+  return withMockLatency(() => ({
+    publicKey: practiceAccountState.publicKey,
+  }))
+}
+
 export async function fetchPracticeMyData(): Promise<PracticeMyData> {
   return withMockLatency(() => {
     const office = doctorsOfficesState[defaultPracticeOfficeId]
@@ -1448,13 +1477,13 @@ export async function fetchPracticeMyData(): Promise<PracticeMyData> {
 
 export async function uploadPracticePublicKey(publicKey: string): Promise<PracticeOnboardingStatus> {
   return withMockLatency(() => {
-    const trimmed = publicKey.trim()
-    if (!trimmed.includes('BEGIN PUBLIC KEY')) {
+    const normalized = toSpkiBase64(publicKey)
+    if (!normalized) {
       throw new Error('Ungültiger öffentlicher Schlüssel.')
     }
     writePracticeAccount({
       ...practiceAccountState,
-      publicKey: trimmed,
+      publicKey: normalized,
     })
     return {
       hasDoctorsOffice: practiceAccountState.hasDoctorsOffice,
@@ -1469,7 +1498,10 @@ export async function fetchEncryptionKeyTest(): Promise<EncryptionKeyTest> {
     throw new Error('Kein öffentlicher Schlüssel vorhanden.')
   }
   await sleep(delayMs)
-  const ciphertext = await encryptWithPublicKey(publicKey, encryptionTestPlaintext)
+  const ciphertext = await encryptWithPublicKey(
+    base64ToArrayBuffer(publicKey),
+    encryptionTestPlaintext
+  )
   if (mockApiConfig.forceFail) {
     throw new Error('Die Daten konnten nicht geladen werden. Bitte erneut versuchen.')
   }

@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { HightideProvider } from '@helpwave/hightide'
 import titleWrapper from '@/utils/titleWrapper'
 import { queryClient } from '@/lib/query-client'
+import { EncryptionProvider } from '@/components/encryption/encryption-context'
 import { OnboardingGate } from '@/components/onboarding/onboarding-gate'
 import { administrationTranslation } from '@/i18n/translations'
 import '../globals.css'
@@ -17,16 +18,18 @@ function AdministrationApp({
       translation={{ translation: administrationTranslation }}
     >
       <QueryClientProvider client={queryClient}>
-        <Head>
-          <title>{titleWrapper()}</title>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
-          />
-        </Head>
-        <OnboardingGate>
-          <Component {...pageProps} />
-        </OnboardingGate>
+        <EncryptionProvider>
+          <Head>
+            <title>{titleWrapper()}</title>
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover"
+            />
+          </Head>
+          <OnboardingGate>
+            <Component {...pageProps} />
+          </OnboardingGate>
+        </EncryptionProvider>
       </QueryClientProvider>
     </HightideProvider>
   )

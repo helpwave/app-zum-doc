@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   completePracticeOnboarding,
   fetchEncryptionKeyTest,
+  fetchPracticeEncryptionData,
   fetchPracticeMyData,
   fetchPracticeOnboardingStatus,
   uploadPracticePublicKey
@@ -11,6 +12,7 @@ import type {
   CompletePracticeOnboardingInput,
   DoctorsOffice,
   EncryptionKeyTest,
+  PracticeEncryptionData,
   PracticeMyData,
   PracticeOnboardingStatus
 } from '../api/types'
@@ -37,6 +39,16 @@ export function usePracticeMyData(
   })
 }
 
+export function usePracticeEncryptionData(
+  options: QueryHookOptions<undefined, PracticeEncryptionData> = {}
+) {
+  return useQuery({
+    ...options,
+    queryKey: onboardingKeys.encryption,
+    queryFn: fetchPracticeEncryptionData,
+  })
+}
+
 export function useUploadPracticePublicKey(
   options: MutationHookOptions<PracticeOnboardingStatus, string> = {}
 ) {
@@ -47,7 +59,11 @@ export function useUploadPracticePublicKey(
     ...rest,
     mutationFn: uploadPracticePublicKey,
     onSuccess: async (...args) => {
-      queryClient.setQueryData(onboardingKeys.status, args[0])
+      const [status, publicKey] = args
+      queryClient.setQueryData(onboardingKeys.status, status)
+      queryClient.setQueryData(onboardingKeys.encryption, {
+        publicKey,
+      } satisfies PracticeEncryptionData)
       await onSuccess?.(...args)
     },
   })

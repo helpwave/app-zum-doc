@@ -16,6 +16,7 @@ export {
   fetchPracticeConversation,
   fetchPracticeConversations,
   fetchPracticeMessages,
+  fetchPracticeEncryptionData,
   fetchPracticeMyData,
   fetchPracticeOnboardingStatus,
   fetchPracticeOverview,

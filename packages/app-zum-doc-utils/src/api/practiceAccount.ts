@@ -5,6 +5,10 @@ export type PracticeOnboardingStatus = {
   hasPublicKey: boolean,
 }
 
+export type PracticeEncryptionData = {
+  publicKey: string | null,
+}
+
 export type PracticeMyData = {
   name: string,
   address: Address,

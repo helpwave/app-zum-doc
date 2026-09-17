@@ -123,4 +123,5 @@ export const onboardingKeys = {
   all: ['onboarding'] as const,
   status: ['onboarding', 'status'] as const,
   myData: ['onboarding', 'myData'] as const,
+  encryption: ['onboarding', 'encryption'] as const,
 }

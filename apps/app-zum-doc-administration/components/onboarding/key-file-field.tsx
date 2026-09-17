@@ -5,10 +5,14 @@ import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslatio
 export function KeyFileField({
   label,
   fileName,
+  accept,
+  error,
   onFileText,
 }: {
   label: string,
   fileName?: string,
+  accept?: string,
+  error?: string,
   onFileText: (text: string, name: string) => void,
 }) {
   const t = useAdministrationTranslation()
@@ -31,9 +35,13 @@ export function KeyFileField({
           {fileName ?? t('noFileSelected')}
         </span>
       </div>
+      {error && (
+        <p className="text-warning">{error}</p>
+      )}
       <input
         ref={inputRef}
         type="file"
+        accept={accept}
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0]

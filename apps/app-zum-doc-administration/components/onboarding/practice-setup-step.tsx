@@ -7,6 +7,7 @@ import {
   useSpecializations
 } from '@app-zum-doc/utils/hooks'
 import { QueryState } from '@/components/layout/Page'
+import { OnboardingScreen } from '@/components/onboarding/onboarding-screen'
 import { SpecializationEditor } from '@/components/practice/specialization-editor'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 
@@ -80,12 +81,21 @@ export function PracticeSetupStep({
   }
 
   return (
-    <div className="flex-col-6 w-full">
-      <div className="flex-col-1">
-        <h1 className="typography-title-lg text-primary">{t('onboardingPracticeTitle')}</h1>
-        <p className="text-description">{t('onboardingPracticeDescription')}</p>
-      </div>
-
+    <OnboardingScreen
+      title={t('onboardingPracticeTitle')}
+      description={t('onboardingPracticeDescription')}
+      footer={(
+        <Button
+          type="button"
+          color="primary"
+          disabled={!canSubmit}
+          isProcessing={completeOnboarding.isPending}
+          onClick={onSubmit}
+        >
+          {t('onboardingFinish')}
+        </Button>
+      )}
+    >
       <QueryState
         isPending={myDataQuery.isPending || specializationsQuery.isPending}
         isError={myDataQuery.isError || specializationsQuery.isError}
@@ -132,17 +142,7 @@ export function PracticeSetupStep({
             )}
           </FormFieldLayout>
         </div>
-        <Button
-          type="button"
-          color="primary"
-          className="self-end"
-          disabled={!canSubmit}
-          isProcessing={completeOnboarding.isPending}
-          onClick={onSubmit}
-        >
-          {t('onboardingFinish')}
-        </Button>
       </QueryState>
-    </div>
+    </OnboardingScreen>
   )
 }

@@ -1,20 +1,34 @@
-import { useEffect, useState } from 'react'
-import { Button, Chip } from '@helpwave/hightide'
+import { useRef, useState } from 'react'
+import { ActionCard, Button, FormFieldLayout, Input } from '@helpwave/hightide'
 import {
-  encryptionKeysMatch,
-  generateEncryptionKeyPair,
-  parseEncryptionKeyFile,
-  type EncryptionKeyPair
+  arrayBufferToBase64,
+  arrayBuffersEqual,
+  createEncryptedKeyPairFile,
+  parseEncryptedKeyPairFile,
+  publicKeyFromEncryptedKeyPair,
+  stringifyEncryptedKeyPairFile,
+  unlockEncryptedPrivateKey,
+  verifyPasswordForKeyPair,
+  type EncryptedKeyPairFile
 } from '@app-zum-doc/utils/api'
 import { useUploadPracticePublicKey } from '@app-zum-doc/utils/hooks'
+import { useEncryption } from '@/components/encryption/encryption-context'
 import { KeyFileField } from '@/components/onboarding/key-file-field'
+import { OnboardingScreen } from '@/components/onboarding/onboarding-screen'
 import {
   downloadEncryptionKeyFile,
-  writeEncryptionKey
+  writeEncryptedKeyPair
 } from '@/lib/encryption-storage'
 import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslation'
 
-type SetupMode = 'create' | 'upload'
+type KeySetupMode = 'upload' | 'create'
+type CreateProgressStep = 1 | 2 | 3
+
+function waitForUi(): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, 50)
+  })
+}
 
 export function KeySetupStep({
   onCompleted,
@@ -22,182 +36,256 @@ export function KeySetupStep({
   onCompleted: () => void,
 }) {
   const t = useAdministrationTranslation()
+  const { publicKey, setPublicKey } = useEncryption()
   const uploadPublicKey = useUploadPracticePublicKey()
-  const [mode, setMode] = useState<SetupMode>('create')
-  const [pair, setPair] = useState<EncryptionKeyPair>()
-  const [hasDownloaded, setHasDownloaded] = useState(false)
-  const [publicFileName, setPublicFileName] = useState<string>()
-  const [privateFileName, setPrivateFileName] = useState<string>()
-  const [uploadedPublicKey, setUploadedPublicKey] = useState<string>()
-  const [uploadedPrivateKey, setUploadedPrivateKey] = useState<string>()
-  const [error, setError] = useState<string>()
-  const [isGenerating, setIsGenerating] = useState(false)
-  const uploadPublicKeyMutate = uploadPublicKey.mutateAsync
+  const [mode, setMode] = useState<KeySetupMode>()
+  const [file, setFile] = useState<EncryptedKeyPairFile>()
+  const [fileName, setFileName] = useState<string>()
+  const [fileError, setFileError] = useState<string>()
+  const [passwordError, setPasswordError] = useState<string>()
+  const [uploadPassword, setUploadPassword] = useState('')
+  const [isTestingPassword, setIsTestingPassword] = useState(false)
+  const [isValidated, setIsValidated] = useState(false)
+  const [createPassword, setCreatePassword] = useState('')
+  const [createPasswordConfirm, setCreatePasswordConfirm] = useState('')
+  const [createProgress, setCreateProgress] = useState<CreateProgressStep>()
+  const [createError, setCreateError] = useState<string>()
+  const [isCreating, setIsCreating] = useState(false)
+  const hadServerPublicKey = useRef(publicKey != null)
+  const canCreate = createPassword.length >= 4 && createPassword === createPasswordConfirm
+  const publicKeysMatch = file != null && (
+    publicKey == null
+    || arrayBuffersEqual(publicKey, publicKeyFromEncryptedKeyPair(file))
+  )
+  const canTestPassword = file != null
+    && uploadPassword.length > 0
+    && publicKeysMatch
+    && !isTestingPassword
+    && !isValidated
 
-  useEffect(() => {
-    if (mode !== 'create' || pair != null) {
-      return
-    }
-    let cancelled = false
-    setIsGenerating(true)
-    void generateEncryptionKeyPair()
-      .then(async (next) => {
-        if (cancelled) {
-          return
-        }
-        await uploadPublicKeyMutate(next.publicKey)
-        if (cancelled) {
-          return
-        }
-        writeEncryptionKey(next.privateKey)
-        setPair(next)
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError(t('onboardingKeyCreateFailed'))
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsGenerating(false)
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [mode, pair, t, uploadPublicKeyMutate])
-
-  const uploadedPairReady = uploadedPublicKey != null && uploadedPrivateKey != null
-  const canContinue = mode === 'create'
-    ? pair != null && hasDownloaded && !uploadPublicKey.isPending
-    : uploadedPairReady && !uploadPublicKey.isPending
-
-  const applyUploadedFile = (
-    kind: 'public' | 'private',
-    text: string,
-    name: string
-  ) => {
-    const parsed = parseEncryptionKeyFile(text)
-    if (kind === 'public') {
-      setPublicFileName(name)
-      setUploadedPublicKey(parsed.publicKey ?? text)
-    } else {
-      setPrivateFileName(name)
-      setUploadedPrivateKey(parsed.privateKey ?? text)
-    }
-    setError(undefined)
+  const selectMode = (next: KeySetupMode) => {
+    setMode(next)
+    setFileError(undefined)
+    setPasswordError(undefined)
+    setCreateError(undefined)
+    setIsValidated(false)
   }
 
-  const onContinue = async () => {
-    setError(undefined)
+  const onFileText = (text: string, name: string) => {
+    const parsed = parseEncryptedKeyPairFile(text)
+    setFileName(name)
+    setIsValidated(false)
+    setUploadPassword('')
+    setPasswordError(undefined)
+    if (!parsed) {
+      setFile(undefined)
+      setFileError(t('onboardingKeyFileInvalid'))
+      return
+    }
+    if (publicKey != null && !arrayBuffersEqual(publicKey, publicKeyFromEncryptedKeyPair(parsed))) {
+      setFile(parsed)
+      setFileError(t('onboardingPublicKeyMismatch'))
+      return
+    }
+    setFile(parsed)
+    setFileError(undefined)
+  }
+
+  const onTestPassword = async () => {
+    if (!canTestPassword || file == null) {
+      return
+    }
+    setIsTestingPassword(true)
     try {
-      if (mode === 'create') {
-        if (!pair || !hasDownloaded) {
-          return
-        }
-        onCompleted()
-        return
-      }
-      if (!uploadedPublicKey || !uploadedPrivateKey) {
-        return
-      }
-      const matches = await encryptionKeysMatch(uploadedPublicKey, uploadedPrivateKey)
+      const privateKey = await unlockEncryptedPrivateKey(file, uploadPassword)
+      const matches = await verifyPasswordForKeyPair(
+        publicKeyFromEncryptedKeyPair(file),
+        privateKey
+      )
       if (!matches) {
-        setError(t('onboardingKeyInvalid'))
+        setPasswordError(t('onboardingPasswordInvalid'))
+        setIsValidated(false)
         return
       }
-      await uploadPublicKey.mutateAsync(uploadedPublicKey)
-      writeEncryptionKey(uploadedPrivateKey)
+      writeEncryptedKeyPair(file)
+      setPublicKey(publicKeyFromEncryptedKeyPair(file))
+      if (!hadServerPublicKey.current) {
+        await uploadPublicKey.mutateAsync(arrayBufferToBase64(publicKeyFromEncryptedKeyPair(file)))
+      }
+      setPasswordError(undefined)
+      setIsValidated(true)
+    } catch {
+      setPasswordError(t('onboardingPasswordInvalid'))
+      setIsValidated(false)
+    } finally {
+      setIsTestingPassword(false)
+    }
+  }
+
+  const onCreateKey = async () => {
+    if (!canCreate || isCreating) {
+      return
+    }
+    setCreateError(undefined)
+    setIsCreating(true)
+    try {
+      setCreateProgress(1)
+      await waitForUi()
+      const created = await createEncryptedKeyPairFile(createPassword)
+      setCreateProgress(2)
+      await waitForUi()
+      writeEncryptedKeyPair(created.file)
+      await uploadPublicKey.mutateAsync(arrayBufferToBase64(created.publicKey))
+      setPublicKey(created.publicKey)
+      setCreateProgress(3)
+      await waitForUi()
+      downloadEncryptionKeyFile(stringifyEncryptedKeyPairFile(created.file))
       onCompleted()
     } catch {
-      setError(t('onboardingKeyInvalid'))
+      setCreateError(t('onboardingKeyCreateFailed'))
+      setCreateProgress(undefined)
+    } finally {
+      setIsCreating(false)
     }
   }
 
   return (
-    <div className="flex-col-6 w-full">
-      <div className="flex-col-1">
-        <h1 className="typography-title-lg text-primary">{t('onboardingKeySetupTitle')}</h1>
-        <p className="text-description">{t('onboardingKeySetupDescription')}</p>
-      </div>
-
-      <div className="grid grid-cols-1 tablet:grid-cols-2 gap-4 w-full">
-        <button
+    <OnboardingScreen
+      title={t('onboardingKeySetupTitle')}
+      footer={mode === 'upload' ? (
+        <Button
           type="button"
-          className={`flex-col-3 items-start p-4 rounded-2xl bg-surface-secondary text-left ${mode === 'create' ? 'ring-2 ring-primary' : ''}`}
-          onClick={() => {
-            setMode('create')
-            setError(undefined)
-          }}
+          color="primary"
+          disabled={!isValidated}
+          onClick={onCompleted}
         >
-          <Chip color="primary" size="sm">{t('recommended')}</Chip>
-          <span className="typography-title-sm">{t('onboardingCreateKey')}</span>
-          <span className="text-description">{t('onboardingCreateKeyDescription')}</span>
-        </button>
-        <button
-          type="button"
-          className={`flex-col-3 items-start p-4 rounded-2xl bg-surface-secondary text-left ${mode === 'upload' ? 'ring-2 ring-primary' : ''}`}
-          onClick={() => {
-            setMode('upload')
-            setError(undefined)
-          }}
-        >
-          <span className="typography-title-sm">{t('onboardingUploadKeys')}</span>
-          <span className="text-description">{t('onboardingUploadKeysDescription')}</span>
-        </button>
+          {t('onboardingContinue')}
+        </Button>
+      ) : undefined}
+    >
+      <div className="flex-col-4 w-full">
+        <ActionCard
+          title={t('onboardingUploadKeypair')}
+          description={t('onboardingUploadKeypairDescription')}
+          className={mode === 'upload' ? 'ring-2 ring-primary' : undefined}
+          onClick={() => selectMode('upload')}
+        />
+        {mode === 'upload' && (
+          <div className="flex-col-4 w-full">
+            <KeyFileField
+              label={t('onboardingKeyFile')}
+              fileName={fileName}
+              accept=".json,application/json"
+              error={fileError}
+              onFileText={onFileText}
+            />
+            <FormFieldLayout
+              label={t('onboardingPasswordLabel')}
+              invalidDescription={passwordError}
+            >
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="password"
+                  autoComplete="current-password"
+                  value={uploadPassword}
+                  invalid={passwordError != null}
+                  disabled={file == null || !publicKeysMatch}
+                  onValueChange={(value) => {
+                    setUploadPassword(value)
+                    setIsValidated(false)
+                    setPasswordError(undefined)
+                  }}
+                />
+              )}
+            </FormFieldLayout>
+            <div className="flex-row-3 items-center">
+              <Button
+                type="button"
+                color="primary"
+                disabled={!canTestPassword}
+                isProcessing={isTestingPassword || uploadPublicKey.isPending}
+                onClick={() => void onTestPassword()}
+              >
+                {t('onboardingTestPassword')}
+              </Button>
+              {isValidated && (
+                <span className="text-positive">{t('onboardingValidationSuccessful')}</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <ActionCard
+          title={(
+            <span className={publicKey == null ? undefined : 'text-negative'}>
+              {publicKey == null ? t('onboardingCreateKeypair') : t('onboardingResetKeypair')}
+            </span>
+          )}
+          description={(
+            <span className={publicKey == null ? undefined : 'text-negative'}>
+              {publicKey == null
+                ? t('onboardingCreateKeypairDescription')
+                : t('onboardingResetKeypairDescription')}
+            </span>
+          )}
+          className={mode === 'create' ? 'ring-2 ring-primary' : undefined}
+          onClick={() => selectMode('create')}
+        />
+        {mode === 'create' && (
+          <div className="flex-col-4 w-full">
+            <FormFieldLayout label={t('onboardingPasswordLabel')}>
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="password"
+                  autoComplete="new-password"
+                  value={createPassword}
+                  disabled={isCreating}
+                  onValueChange={setCreatePassword}
+                />
+              )}
+            </FormFieldLayout>
+            <FormFieldLayout label={t('onboardingPasswordConfirmLabel')}>
+              {({ id }) => (
+                <Input
+                  id={id}
+                  type="password"
+                  autoComplete="new-password"
+                  value={createPasswordConfirm}
+                  disabled={isCreating}
+                  onValueChange={setCreatePasswordConfirm}
+                />
+              )}
+            </FormFieldLayout>
+            <Button
+              type="button"
+              color={publicKey == null ? 'primary' : 'negative'}
+              disabled={!canCreate}
+              isProcessing={isCreating}
+              onClick={() => void onCreateKey()}
+            >
+              {t('onboardingCreateEncryptionKey')}
+            </Button>
+            {createProgress != null && (
+              <div className="flex-col-2">
+                <span className={createProgress === 1 ? 'text-primary' : 'text-description'}>
+                  {t('onboardingCreatingKey')}
+                </span>
+                <span className={createProgress === 2 ? 'text-primary' : 'text-description'}>
+                  {t('onboardingUploadingKey')}
+                </span>
+                <span className={createProgress === 3 ? 'text-primary' : 'text-description'}>
+                  {t('onboardingDownloadingKey')}
+                </span>
+              </div>
+            )}
+            {createError && (
+              <p className="text-warning">{createError}</p>
+            )}
+          </div>
+        )}
       </div>
-
-      {mode === 'create' && (
-        <div className="flex-col-3">
-          <Button
-            type="button"
-            color="primary"
-            disabled={pair == null || isGenerating}
-            isProcessing={isGenerating}
-            className="self-start"
-            onClick={() => {
-              if (!pair) {
-                return
-              }
-              downloadEncryptionKeyFile(pair.privateKey)
-              setHasDownloaded(true)
-            }}
-          >
-            {t('downloadPrivateKey')}
-          </Button>
-          <p className="text-description">{t('downloadKeyRequired')}</p>
-        </div>
-      )}
-
-      {mode === 'upload' && (
-        <div className="flex-col-4">
-          <KeyFileField
-            label={t('uploadPublicKey')}
-            fileName={publicFileName}
-            onFileText={(text, name) => applyUploadedFile('public', text, name)}
-          />
-          <KeyFileField
-            label={t('uploadPrivateKey')}
-            fileName={privateFileName}
-            onFileText={(text, name) => applyUploadedFile('private', text, name)}
-          />
-        </div>
-      )}
-
-      {error && (
-        <p className="text-warning">{error}</p>
-      )}
-
-      <Button
-        type="button"
-        color="primary"
-        className="self-end"
-        disabled={!canContinue}
-        isProcessing={uploadPublicKey.isPending || isGenerating}
-        onClick={() => void onContinue()}
-      >
-        {t('onboardingContinue')}
-      </Button>
-    </div>
+    </OnboardingScreen>
   )
 }

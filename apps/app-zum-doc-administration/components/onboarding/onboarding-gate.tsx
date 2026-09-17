@@ -1,20 +1,41 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/router'
-import { parseEncryptionKeyFile } from '@app-zum-doc/utils/api'
-import { usePracticeOnboardingStatus } from '@app-zum-doc/utils/hooks'
-import { KeyRestoreDialog } from '@/components/onboarding/key-restore-dialog'
+import { base64ToArrayBuffer } from '@app-zum-doc/utils/api'
+import {
+  usePracticeEncryptionData,
+  usePracticeOnboardingStatus
+} from '@app-zum-doc/utils/hooks'
+import { useEncryption } from '@/components/encryption/encryption-context'
 import { OnboardingLoadingScreen } from '@/components/onboarding/onboarding-loading-screen'
-import { OnboardingStepper } from '@/components/onboarding/onboarding-stepper'
+import {
+  OnboardingStepper,
+  type OnboardingStepId
+} from '@/components/onboarding/onboarding-stepper'
 import { QueryState } from '@/components/layout/Page'
-import { readEncryptionKey } from '@/lib/encryption-storage'
+import {
+  clearEncryptionKey,
+  hasEncryptedKeyPair,
+  readEncryptionKey
+} from '@/lib/encryption-storage'
 import { useAdministrationTranslation } from '@/i18n/useAdministrationTranslation'
 
-function hasPrivateKeyInStorage(): boolean {
-  const stored = readEncryptionKey()
-  if (!stored) {
-    return false
+function resolveOnboardingSteps(options: {
+  hasServerPublicKey: boolean,
+  hasLocalEncryptedKey: boolean,
+  hasDoctorsOffice: boolean,
+}): OnboardingStepId[] {
+  const steps: OnboardingStepId[] = []
+  if (!options.hasServerPublicKey) {
+    steps.push('welcome')
   }
-  return parseEncryptionKeyFile(stored).privateKey != null || stored.includes('BEGIN PRIVATE KEY')
+  if (!options.hasLocalEncryptedKey) {
+    steps.push('keys')
+  }
+  steps.push('password')
+  if (!options.hasDoctorsOffice) {
+    steps.push('office')
+  }
+  return steps
 }
 
 export function OnboardingGate({
@@ -24,70 +45,76 @@ export function OnboardingGate({
 }) {
   const t = useAdministrationTranslation()
   const router = useRouter()
-  const [hasLocalKey, setHasLocalKey] = useState<boolean | null>(null)
-  const statusQuery = usePracticeOnboardingStatus({
-    enabled: hasLocalKey != null,
-  })
-  const status = statusQuery.data
+  const { setPublicKey, privateKey } = useEncryption()
+  const encryptionQuery = usePracticeEncryptionData()
+  const statusQuery = usePracticeOnboardingStatus()
+  const [steps, setSteps] = useState<OnboardingStepId[]>()
+  const [isComplete, setIsComplete] = useState(false)
 
   useEffect(() => {
-    setHasLocalKey(hasPrivateKeyInStorage())
-  }, [])
+    if (!encryptionQuery.isSuccess || !statusQuery.isSuccess || steps != null) {
+      return
+    }
+    const serverPublicKey = encryptionQuery.data.publicKey
+    if (serverPublicKey) {
+      setPublicKey(base64ToArrayBuffer(serverPublicKey))
+    }
+    let hasLocalEncryptedKey = hasEncryptedKeyPair()
+    if (serverPublicKey == null && readEncryptionKey() != null) {
+      clearEncryptionKey()
+      hasLocalEncryptedKey = false
+    }
+    setSteps(resolveOnboardingSteps({
+      hasServerPublicKey: serverPublicKey != null,
+      hasLocalEncryptedKey,
+      hasDoctorsOffice: statusQuery.data.hasDoctorsOffice,
+    }))
+  }, [
+    encryptionQuery.data,
+    encryptionQuery.isSuccess,
+    setPublicKey,
+    statusQuery.data,
+    statusQuery.isSuccess,
+    steps,
+  ])
 
-  const onUnlocked = () => {
-    setHasLocalKey(true)
+  const onCompleted = () => {
+    setIsComplete(true)
     void statusQuery.refetch()
+    void encryptionQuery.refetch()
+    void router.replace('/')
   }
 
-  const onOnboardingCompleted = () => {
-    setHasLocalKey(hasPrivateKeyInStorage())
-    void statusQuery.refetch().then(() => {
-      void router.replace('/')
-    })
-  }
-
-  if (hasLocalKey == null || statusQuery.isPending) {
-    return <OnboardingLoadingScreen />
-  }
-
-  if (statusQuery.isError || !status) {
-    return (
-      <div className="flex items-center justify-center w-full h-dvh p-6">
-        <QueryState
-          isPending={false}
-          isError
-          error={statusQuery.error}
-          onRetry={() => void statusQuery.refetch()}
-          loadingLabel={t('onboardingLoading')}
-        >
-          <span />
-        </QueryState>
-      </div>
-    )
-  }
-
-  const needsKeySetup = !status.hasPublicKey
-  const needsKeyRestore = status.hasPublicKey && !hasLocalKey
-  const needsPracticeSetup = !status.hasDoctorsOffice
-
-  if (!needsKeySetup && !needsKeyRestore && !needsPracticeSetup) {
+  if (privateKey != null && isComplete) {
     return <>{children}</>
   }
 
-  if (needsKeyRestore) {
-    return (
-      <>
-        <OnboardingLoadingScreen />
-        <KeyRestoreDialog isOpen onUnlocked={onUnlocked} />
-      </>
-    )
+  if (encryptionQuery.isPending || statusQuery.isPending || steps == null) {
+    if (encryptionQuery.isError || statusQuery.isError) {
+      return (
+        <div className="flex items-center justify-center w-full h-dvh p-6">
+          <QueryState
+            isPending={false}
+            isError
+            error={encryptionQuery.error ?? statusQuery.error}
+            onRetry={() => {
+              void encryptionQuery.refetch()
+              void statusQuery.refetch()
+            }}
+            loadingLabel={t('onboardingLoading')}
+          >
+            <span />
+          </QueryState>
+        </div>
+      )
+    }
+    return <OnboardingLoadingScreen />
   }
 
   return (
     <OnboardingStepper
-      needsKeySetup={needsKeySetup}
-      needsPracticeSetup={needsPracticeSetup}
-      onCompleted={onOnboardingCompleted}
+      steps={steps}
+      onCompleted={onCompleted}
     />
   )
 }
