@@ -121,16 +121,16 @@ export function DatePickerSheet({
 
   return (
     <>
-    <BottomSheetOverlay visible={visible} onClose={onClose}>
-      <View
-        style={{
-          backgroundColor: theme.colors.surface.color,
-          borderTopLeftRadius: theme.borderRadius.xxl,
-          borderTopRightRadius: theme.borderRadius.xxl,
-          paddingBottom: insets.bottom + theme.spacing.lg,
-          paddingHorizontal: theme.spacing.lg,
-        }}
-      >
+      <BottomSheetOverlay visible={visible} onClose={onClose}>
+        <View
+          style={{
+            backgroundColor: theme.colors.surface.color,
+            borderTopLeftRadius: theme.borderRadius.xxl,
+            borderTopRightRadius: theme.borderRadius.xxl,
+            paddingBottom: insets.bottom + theme.spacing.lg,
+            paddingHorizontal: theme.spacing.lg,
+          }}
+        >
           <View
             style={{
               flexDirection: "row",
@@ -299,28 +299,28 @@ export function DatePickerSheet({
               )
             })}
           </View>
-      </View>
-    </BottomSheetOverlay>
-    {hasYearSelect && isYearSelectOpen ? (
-      <YearSelectSheet
-        visible={visible}
-        years={years}
-        selectedYear={visibleMonth.getFullYear()}
-        onSelect={(year) => {
-          setVisibleMonth(
-            clampMonthToRange(
-              new Date(year, visibleMonth.getMonth(), 1),
-              rangeStart,
-              rangeEnd,
-            ),
-          )
-          setIsYearSelectOpen(false)
-        }}
-        onClose={() => {
-          setIsYearSelectOpen(false)
-        }}
-      />
-    ) : null}
+        </View>
+      </BottomSheetOverlay>
+      {hasYearSelect && isYearSelectOpen ? (
+        <YearSelectSheet
+          visible={visible}
+          years={years}
+          selectedYear={visibleMonth.getFullYear()}
+          onSelect={(year) => {
+            setVisibleMonth(
+              clampMonthToRange(
+                new Date(year, visibleMonth.getMonth(), 1),
+                rangeStart,
+                rangeEnd,
+              ),
+            )
+            setIsYearSelectOpen(false)
+          }}
+          onClose={() => {
+            setIsYearSelectOpen(false)
+          }}
+        />
+      ) : null}
     </>
   )
 }

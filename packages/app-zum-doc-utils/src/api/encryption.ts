@@ -45,7 +45,7 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+  return new Uint8Array(bytes).buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
 }
 
 export function base64ToArrayBuffer(value: string): ArrayBuffer {

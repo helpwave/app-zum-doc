@@ -41,65 +41,65 @@ export function TimeSlotSheet({
           paddingHorizontal: theme.spacing.lg,
         }}
       >
-          <View
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingTop: theme.spacing.lg,
+            marginBottom: theme.spacing.lg,
+          }}
+        >
+          <View style={{ width: theme.semantics.control.sm.size }} />
+          <ThemedText
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingTop: theme.spacing.lg,
-              marginBottom: theme.spacing.lg,
+              ...theme.typography.heading.md,
+              fontWeight: theme.fontWeights.bold,
+              textAlign: "center",
+              flex: 1,
             }}
           >
-            <View style={{ width: theme.semantics.control.sm.size }} />
-            <ThemedText
-              style={{
-                ...theme.typography.heading.md,
-                fontWeight: theme.fontWeights.bold,
-                textAlign: "center",
-                flex: 1,
-              }}
-            >
-              {title}
-            </ThemedText>
-            <IconButton
-              icon={X}
-              size="sm"
-              color={theme.colors.surfaceInverse}
-              variant="foreground"
-              accessibilityLabel={t("cancel")}
-              onPress={onClose}
-            />
+            {title}
+          </ThemedText>
+          <IconButton
+            icon={X}
+            size="sm"
+            color={theme.colors.surfaceInverse}
+            variant="foreground"
+            accessibilityLabel={t("cancel")}
+            onPress={onClose}
+          />
+        </View>
+        {slots.length === 0 ? (
+          <ThemedText
+            appearance="description"
+            style={{
+              ...theme.typography.body.md,
+              textAlign: "center",
+              paddingVertical: theme.spacing.xl,
+            }}
+          >
+            {t("noTimeSlots")}
+          </ThemedText>
+        ) : (
+          <View style={{ gap: theme.spacing.xl }}>
+            {morning.length > 0 ? (
+              <TimeSlotGroup
+                title={t("morning")}
+                slots={morning}
+                value={value}
+                onSelect={onSelect}
+              />
+            ) : null}
+            {afternoon.length > 0 ? (
+              <TimeSlotGroup
+                title={t("afternoon")}
+                slots={afternoon}
+                value={value}
+                onSelect={onSelect}
+              />
+            ) : null}
           </View>
-          {slots.length === 0 ? (
-            <ThemedText
-              appearance="description"
-              style={{
-                ...theme.typography.body.md,
-                textAlign: "center",
-                paddingVertical: theme.spacing.xl,
-              }}
-            >
-              {t("noTimeSlots")}
-            </ThemedText>
-          ) : (
-            <View style={{ gap: theme.spacing.xl }}>
-              {morning.length > 0 ? (
-                <TimeSlotGroup
-                  title={t("morning")}
-                  slots={morning}
-                  value={value}
-                  onSelect={onSelect}
-                />
-              ) : null}
-              {afternoon.length > 0 ? (
-                <TimeSlotGroup
-                  title={t("afternoon")}
-                  slots={afternoon}
-                  value={value}
-                  onSelect={onSelect}
-                />
-              ) : null}
-            </View>
-          )}
+        )}
       </View>
     </BottomSheetOverlay>
   )
