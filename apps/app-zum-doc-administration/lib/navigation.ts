@@ -34,7 +34,7 @@ export function requestStatusFiltersForKind(
     return ['requested', 'confirmed', 'completed', 'cancelled']
   }
   if (kind === 'prescription') {
-    return ['inProgress', 'readyForPickup', 'completed', 'cancelled']
+    return ['inProgress', 'ready', 'completed', 'cancelled']
   }
   if (kind === 'referral') {
     return ['inProgress', 'completed', 'cancelled']

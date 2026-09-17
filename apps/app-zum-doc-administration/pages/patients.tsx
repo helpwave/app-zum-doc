@@ -1,22 +1,8 @@
 import type { NextPage } from 'next'
-import { useMemo, useState } from 'react'
-import {
-  Button,
-  FilterFunctions,
-  FilterList,
-  IconButton,
-  TableCell,
-  TableColumn,
-  TableWithSelection,
-  type IdentifierFilterValue
-} from '@helpwave/hightide'
-import { Info, Pencil, Plus } from 'lucide-react'
-import {
-  formatPatientDateLong,
-  patientProfileFullName,
-  toAppLocale,
-  type PracticePatient
-} from '@app-zum-doc/utils/api'
+import { useState } from 'react'
+import { Button } from '@helpwave/hightide'
+import { Plus } from 'lucide-react'
+import { toAppLocale } from '@app-zum-doc/utils/api'
 import {
   useCreatePracticePatient,
   useDeletePracticePatient,
@@ -29,45 +15,9 @@ import {
   DeletePatientDialog,
   PatientDetailPanel
 } from '@/components/patients/patient-detail-panel'
+import { PatientTable } from '@/components/patients/patient-table'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import titleWrapper from '@/utils/titleWrapper'
-
-function applyPatientFilters(
-  patients: PracticePatient[],
-  filters: IdentifierFilterValue[]
-): PracticePatient[] {
-  if (filters.length === 0) {
-    return patients
-  }
-  return patients.filter((patient) => filters.every((filter) => {
-    const fn = FilterFunctions[filter.value.dataType]
-    if (!fn) {
-      return true
-    }
-    if (filter.id === 'name') {
-      return fn(
-        patientProfileFullName(patient),
-        filter.value.operator,
-        filter.value.parameter
-      )
-    }
-    if (filter.id === 'dateOfBirth') {
-      return fn(
-        patient.dateOfBirth,
-        filter.value.operator,
-        filter.value.parameter
-      )
-    }
-    if (filter.id === 'lastVisit') {
-      return fn(
-        patient.lastVisit,
-        filter.value.operator,
-        filter.value.parameter
-      )
-    }
-    return true
-  }))
-}
 
 const PatientsPage: NextPage = () => {
   const t = useAdministrationTranslation()
@@ -77,25 +27,14 @@ const PatientsPage: NextPage = () => {
   const createPatient = useCreatePracticePatient()
   const deletePatient = useDeletePracticePatient()
   const setBlocked = useSetPracticePatientBlocked()
-  const [filters, setFilters] = useState<IdentifierFilterValue[]>([])
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
-  const patients = useMemo(
-    () => applyPatientFilters(patientsQuery.data ?? [], filters),
-    [patientsQuery.data, filters]
-  )
-  const selectedPatient = patientsQuery.data?.find((item) => item.id === selectedId)
-    ?? patientsQuery.data?.[0]
+  const patients = patientsQuery.data ?? []
+  const selectedPatient = patients.find((item) => item.id === selectedId)
+    ?? patients[0]
   const activePatientId = selectedPatient?.id
-
-  const filterItems = useMemo(() => [
-    { id: 'name', label: t('patientColumnName'), dataType: 'text' as const, tags: [] },
-    { id: 'dateOfBirth', label: t('patientColumnDateOfBirth'), dataType: 'date' as const, tags: [] },
-    { id: 'lastVisit', label: t('patientColumnLastVisit'), dataType: 'date' as const, tags: [] },
-  ], [t])
 
   return (
     <Page pageTitle={titleWrapper(t('patientsTitle'))}>
@@ -110,13 +49,12 @@ const PatientsPage: NextPage = () => {
           loadingLabel={t('loadingPatients')}
         >
           <div className="flex flex-col gap-6 w-full min-w-0 tablet:flex-row tablet:items-start">
-            <div className="flex-col-3 min-w-0 flex-1">
-              <div className="flex-row-3 items-start justify-between gap-y-2 flex-wrap">
-                <FilterList
-                  value={filters}
-                  onValueChange={setFilters}
-                  availableItems={filterItems}
-                />
+            <PatientTable
+              patients={patients}
+              locale={locale}
+              selectedId={activePatientId}
+              onSelect={setSelectedId}
+              actions={(
                 <Button
                   color="primary"
                   size="sm"
@@ -126,115 +64,8 @@ const PatientsPage: NextPage = () => {
                   <Plus className="size-4" />
                   {t('addPatient')}
                 </Button>
-              </div>
-
-              {patients.length === 0 ? (
-                <p className="text-description">{t('noPatients')}</p>
-              ) : (
-                <TableWithSelection
-                  className="patients-table"
-                  table={{
-                    data: patients,
-                    getRowId: (row) => row.id,
-                    rowSelection,
-                    onRowSelectionChange: setRowSelection,
-                    disableClickRowClickSelection: true,
-                    isUsingFillerRows: false,
-                    enableSorting: false,
-                    enableColumnFilters: false,
-                    initialState: {
-                      pagination: { pageSize: 100 },
-                    },
-                    state: {
-                      pagination: { pageIndex: 0, pageSize: 100 },
-                    },
-                    onRowClick: (row) => setSelectedId(row.original.id),
-                    meta: {
-                      bodyRowClassName: (patient) => (
-                        patient.id === activePatientId ? 'patient-row-active' : ''
-                      ),
-                    },
-                  }}
-                  paginationOptions={{ showPagination: false }}
-                >
-                  <TableColumn<PracticePatient>
-                    id="name"
-                    header={t('patientColumnName')}
-                    accessorFn={(row) => patientProfileFullName(row)}
-                    minSize={220}
-                    size={280}
-                    cell={({ row }) => (
-                      <div className="flex-col-0 min-w-0">
-                        <span className="font-semibold truncate">
-                          {patientProfileFullName(row.original)}
-                        </span>
-                        <span className="text-description text-sm truncate">
-                          {row.original.insurance.insuranceNumber}
-                        </span>
-                      </div>
-                    )}
-                  />
-                  <TableColumn<PracticePatient>
-                    id="dateOfBirth"
-                    header={t('patientColumnDateOfBirth')}
-                    accessorKey="dateOfBirth"
-                    minSize={200}
-                    size={220}
-                    cell={({ row }) => (
-                      <TableCell className="whitespace-nowrap">
-                        {formatPatientDateLong(row.original.dateOfBirth, locale)}
-                      </TableCell>
-                    )}
-                  />
-                  <TableColumn<PracticePatient>
-                    id="lastVisit"
-                    header={() => (
-                      <span className="flex-row-1 items-center">
-                        {t('patientColumnLastVisit')}
-                        <IconButton
-                          tooltip={t('lastVisitHint')}
-                          size="xs"
-                          coloringStyle="text"
-                          color="neutral"
-                        >
-                          <Info className="size-3.5" />
-                        </IconButton>
-                      </span>
-                    )}
-                    accessorKey="lastVisit"
-                    minSize={210}
-                    size={230}
-                    cell={({ row }) => (
-                      <TableCell className="whitespace-nowrap">
-                        {formatPatientDateLong(row.original.lastVisit, locale)}
-                      </TableCell>
-                    )}
-                  />
-                  <TableColumn<PracticePatient>
-                    id="actions"
-                    header={t('patientColumnActions')}
-                    enableSorting={false}
-                    minSize={80}
-                    size={90}
-                    maxSize={90}
-                    cell={({ row }) => (
-                      <IconButton
-                        tooltip={t('editPatient')}
-                        size="sm"
-                        coloringStyle="text"
-                        color="neutral"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          setSelectedId(row.original.id)
-                        }}
-                      >
-                        <Pencil className="size-4" />
-                      </IconButton>
-                    )}
-                  />
-                </TableWithSelection>
               )}
-            </div>
+            />
 
             {selectedPatient && (
               <PatientDetailPanel

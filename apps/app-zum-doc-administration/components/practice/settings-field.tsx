@@ -8,11 +8,11 @@ export function SettingsField({
   children: ReactNode,
 }) {
   return (
-    <label className="flex-col-1 w-full min-w-0">
-      <span className="w-40 shrink-0 typography-label-md">{label}</span>
+    <span className="flex-col-1 w-full min-w-0">
+      <label className="w-40 shrink-0 typography-label-md">{label}</label>
       <div className="min-w-0 flex-1">
         {children}
       </div>
-    </label>
+    </span>
   )
 }

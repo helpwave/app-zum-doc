@@ -33,7 +33,7 @@ export function requestStatusLabel(
   if (status === 'confirmed') {
     return t('statusConfirmed')
   }
-  if (status === 'readyForPickup') {
+  if (status === 'ready') {
     return t('statusReadyForPickup')
   }
   if (status === 'completed') {
@@ -49,7 +49,7 @@ export function statusActionLabel(
   if (status === 'confirmed') {
     return t('actionConfirm')
   }
-  if (status === 'readyForPickup') {
+  if (status === 'ready') {
     return t('actionReadyForPickup')
   }
   if (status === 'completed') {

@@ -168,7 +168,7 @@
   "loadingAppointment": "Loading appointment…",
   "openChat": "Open chat",
   "noTimeSlots": "No appointments on this day.",
-  "patientRequestStatus": "{status, select, requested{Requested} inProgress{In progress} confirmed{Confirmed} readyForPickup{Ready for pickup} completed{Completed} cancelled{Cancelled} other{}}",
+  "patientRequestStatus": "{status, select, requested{Requested} inProgress{In progress} confirmed{Confirmed} ready{Ready for pickup} completed{Completed} cancelled{Cancelled} other{}}",
   "@patientRequestStatus": {
     "placeholders": {
       "status": {

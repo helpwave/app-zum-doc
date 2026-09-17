@@ -1,6 +1,6 @@
 @layer components {
   .patients-table [data-name="table-container"] {
-    @apply border border-divider bg-surface rounded-xl shadow-around-md;
+    @apply border border-divider bg-surface rounded-xl shadow-around-md overflow-auto;
   }
 
   [data-name="table-body-row"].patient-row-active {
@@ -24,7 +24,7 @@
     @apply flex-col-4 w-full p-5 rounded-2xl bg-surface shadow-around-md;
 
     @variant tablet {
-      @apply w-96 max-w-96 shrink-0;
+      @apply w-96 max-w-96 shrink-0 sticky top-4;
     }
   }
 

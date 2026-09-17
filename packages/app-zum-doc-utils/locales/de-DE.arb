@@ -168,7 +168,7 @@
   "loadingAppointment": "Termin wird geladen…",
   "openChat": "Chat öffnen",
   "noTimeSlots": "Keine Termine an diesem Tag.",
-  "patientRequestStatus": "{status, select, requested{Angefragt} inProgress{In Bearbeitung} confirmed{Bestätigt} readyForPickup{Abholbereit} completed{Abgeschlossen} cancelled{Storniert} other{}}",
+  "patientRequestStatus": "{status, select, requested{Angefragt} inProgress{In Bearbeitung} confirmed{Bestätigt} ready{Abholbereit} completed{Abgeschlossen} cancelled{Storniert} other{}}",
   "@patientRequestStatus": {
     "placeholders": {
       "status": {

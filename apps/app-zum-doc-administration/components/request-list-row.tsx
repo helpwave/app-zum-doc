@@ -1,13 +1,9 @@
-import clsx from 'clsx'
 import {
   patientProfileFullName,
   type PracticeRequest
 } from '@app-zum-doc/utils/api'
-import {
-  listRowClassName,
-  listRowMainClassName
-} from '@/components/dashboard/list-row'
 import { RequestStatusChip } from '@/components/request-chips'
+import { ActionCard } from '@helpwave/hightide'
 
 export function RequestListRow({
   request,
@@ -19,16 +15,11 @@ export function RequestListRow({
   const patient = patientProfileFullName(request.patient)
 
   return (
-    <button
-      type="button"
-      className={clsx(listRowClassName, 'text-left')}
+    <ActionCard
+      title={request.title}
+      description={patient}
       onClick={() => onSelect(request.id)}
-    >
-      <div className={listRowMainClassName}>
-        <span className="typography-title-sm truncate">{request.title}</span>
-        <span className="text-description truncate">{patient}</span>
-      </div>
-      <RequestStatusChip status={request.status} />
-    </button>
+      trailing={<RequestStatusChip status={request.status} />}
+    />
   )
 }

@@ -1,19 +1,19 @@
 const patientRequestStatusValues = [
-  "requested",
-  "inProgress",
-  "confirmed",
-  "readyForPickup",
-  "completed",
-  "cancelled",
+  'requested',
+  'inProgress',
+  'confirmed',
+  'ready',
+  'completed',
+  'cancelled',
 ] as const
 export type PatientRequestStatus = (typeof patientRequestStatusValues)[number]
 const allowedPatientRequestStatusValues: ReadonlySet<string> = new Set(
-  patientRequestStatusValues,
+  patientRequestStatusValues
 )
 function isPatientRequestStatusValue(
-  value: unknown,
+  value: unknown
 ): value is PatientRequestStatus {
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     return false
   }
   return allowedPatientRequestStatusValues.has(value)

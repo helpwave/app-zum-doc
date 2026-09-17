@@ -2,15 +2,13 @@ import type { PropsWithChildren, ReactNode } from 'react'
 import { useMemo } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import {
   AppPage,
   AppZumDocBadge,
-  AppZumDocLogo,
+  HelpwaveLogo,
   type AppPageNavigationItem
 } from '@helpwave/hightide'
 import {
-  Building2,
   CalendarDays,
   Forward,
   Inbox,
@@ -18,11 +16,11 @@ import {
   LoaderCircle,
   MessageSquare,
   Pill,
-  Settings,
   Users
 } from 'lucide-react'
 import { toAppLocale } from '@app-zum-doc/utils/api'
 import { usePracticeOverview } from '@app-zum-doc/utils/hooks'
+import { AppHeaderActions } from '@/components/layout/app-header-actions'
 import { NavLabel } from '@/components/layout/nav-label'
 import { useAdministrationTranslation, useLocale } from '@/i18n/useAdministrationTranslation'
 import {
@@ -31,6 +29,7 @@ import {
   requestKindPath
 } from '@/lib/navigation'
 import titleWrapper from '@/utils/titleWrapper'
+import { usePathname } from 'next/navigation'
 
 type PageProps = PropsWithChildren<{
   pageTitle?: string,
@@ -43,7 +42,6 @@ export const Page = ({
   noScrolling,
 }: PageProps) => {
   const translation = useAdministrationTranslation()
-  const router = useRouter()
   const { locale: localizationLocale } = useLocale()
   const locale = toAppLocale(localizationLocale)
   const overviewQuery = usePracticeOverview({
@@ -112,32 +110,10 @@ export const Page = ({
       url: requestKindPath('referral'),
       icon: <Forward className="size-5" />,
     },
-    {
-      id: 'my-doctors-office',
-      label: (
-        <NavLabel
-          label={translation('navMyDoctorsOffice')}
-          hasDividerBefore
-        />
-      ),
-      url: '/my-doctors-office',
-      icon: <Building2 className="size-5" />,
-    },
-    {
-      id: 'settings',
-      label: (
-        <NavLabel
-          label={translation('navSettings')}
-          hasDividerBefore
-        />
-      ),
-      url: '/settings',
-      icon: <Settings className="size-5" />,
-    },
   ], [counts, translation])
 
   const practiceName = counts?.office.name ?? translation('appName')
-  const path = router.asPath.split('?')[0] ?? '/'
+  const path = usePathname() ?? '/'
 
   return (
     <AppPage
@@ -151,25 +127,22 @@ export const Page = ({
         activeUrl: activeNavUrl(path),
         LinkComponent: Link,
         footer: (
-          <span className="text-description text-xs px-2 pb-3">
+          <span className="flex-row-2 items-center whitespace-nowrap text-description text-xs px-2 pb-3">
             {translation('sidebarFooter')}
+            <span className="flex-row-1 items-center font-bold">
+              <HelpwaveLogo className="size-6 shrink-0" width={24} height={24} />
+              helpwave
+            </span>
           </span>
         ),
       }}
       headerActions={[
         (
-          <div key="practice" className="flex-row-2 items-center min-w-0">
-            <AppZumDocLogo size="sm" />
-            <span className="typography-title-sm truncate">{practiceName}</span>
-          </div>
-        ),
-        (
-          <span
-            key="user"
-            className="inline-flex shrink-0 items-center rounded-full px-3 py-1 whitespace-nowrap surface coloring-solid coloring-primary typography-label-md"
-          >
-            {translation('staffName')}
-          </span>
+          <AppHeaderActions
+            key="header-actions"
+            practiceName={practiceName}
+            practiceImageUri={counts?.office.imageUri}
+          />
         ),
       ]}
       noScrolling={noScrolling}

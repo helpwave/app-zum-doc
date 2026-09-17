@@ -71,8 +71,8 @@ const nextStatusesByKind: Record<
     confirmed: ['completed', 'cancelled'],
   },
   prescription: {
-    inProgress: ['readyForPickup', 'cancelled'],
-    readyForPickup: ['completed', 'cancelled'],
+    inProgress: ['ready', 'cancelled'],
+    ready: ['completed', 'cancelled'],
   },
   referral: {
     inProgress: ['completed', 'cancelled'],
