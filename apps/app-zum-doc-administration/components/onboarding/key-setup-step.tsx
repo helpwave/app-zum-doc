@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { ActionCard, Button, FormFieldLayout, Input } from '@helpwave/hightide'
+import type { FileInputItem } from '@helpwave/hightide'
+import { ActionCard, Button, FileInput, FormFieldLayout, Input } from '@helpwave/hightide'
 import {
   arrayBufferToBase64,
   arrayBuffersEqual,
@@ -13,7 +14,6 @@ import {
 } from '@app-zum-doc/utils/api'
 import { useUploadPracticePublicKey } from '@app-zum-doc/utils/hooks'
 import { useEncryption } from '@/components/encryption/encryption-context'
-import { KeyFileField } from '@/components/onboarding/key-file-field'
 import { OnboardingScreen } from '@/components/onboarding/onboarding-screen'
 import {
   downloadEncryptionKeyFile,
@@ -40,7 +40,7 @@ export function KeySetupStep({
   const uploadPublicKey = useUploadPracticePublicKey()
   const [mode, setMode] = useState<KeySetupMode>()
   const [file, setFile] = useState<EncryptedKeyPairFile>()
-  const [fileName, setFileName] = useState<string>()
+  const [fileInput, setFileInput] = useState<FileInputItem>()
   const [fileError, setFileError] = useState<string>()
   const [passwordError, setPasswordError] = useState<string>()
   const [uploadPassword, setUploadPassword] = useState('')
@@ -71,12 +71,13 @@ export function KeySetupStep({
     setIsValidated(false)
   }
 
-  const onFileText = (text: string, name: string) => {
-    const parsed = parseEncryptedKeyPairFile(text)
-    setFileName(name)
+  const onFileText = async (fileInput: FileInputItem) => {
+    setFileInput(fileInput)
     setIsValidated(false)
     setUploadPassword('')
     setPasswordError(undefined)
+    const text = await fileInput?.file?.text()
+    const parsed = parseEncryptedKeyPairFile(text ?? '')
     if (!parsed) {
       setFile(undefined)
       setFileError(t('onboardingKeyFileInvalid'))
@@ -172,13 +173,20 @@ export function KeySetupStep({
         />
         {mode === 'upload' && (
           <div className="flex-col-4 w-full">
-            <KeyFileField
-              label={t('onboardingKeyFile')}
-              fileName={fileName}
-              accept=".json,application/json"
-              error={fileError}
-              onFileText={onFileText}
-            />
+            <FormFieldLayout label={t('onboardingKeyFile')} invalidDescription={fileError}>
+              {() => (
+                <FileInput
+                  value={fileInput ? [fileInput] : []}
+                  onEditComplete={files => {
+                    if(files.length > 0) {
+                      onFileText(files[0])
+                    }
+                  }}
+                  accept={['.json','application/json']}
+                  maxFiles={1}
+                />
+              )}
+            </FormFieldLayout>
             <FormFieldLayout
               label={t('onboardingPasswordLabel')}
               invalidDescription={passwordError}

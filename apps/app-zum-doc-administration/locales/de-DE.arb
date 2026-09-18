@@ -290,5 +290,10 @@
   "onboardingDownloadingKey": "Schlüssel herunterladen",
   "logout": "Abmelden",
   "logoutConfirmTitle": "Abmelden?",
-  "logoutConfirmDescription": "Beim Abmelden wird der Verschlüsselungsschlüssel von diesem Gerät gelöscht. Beim nächsten Anmelden müssen Sie den Schlüssel erneut hochladen."
+  "logoutConfirmDescription": "Beim Abmelden wird der Verschlüsselungsschlüssel von diesem Gerät gelöscht. Beim nächsten Anmelden müssen Sie den Schlüssel erneut hochladen.",
+  "officeInformationIncompleteTitle": "Ihre Praxisangaben sind unvollständig",
+  "officeInformationIncompleteDescription": "Bitte ergänzen Sie den Praxisnamen, die Adresse, mindestens eine Fachrichtung und Öffnungszeiten.",
+  "completeOfficeInformation": "Praxisprofil vervollständigen",
+  "dismissOfficeInformationBanner": "Ausblenden",
+  "chooseNewProfile": "Neues Profil wählen"
 }

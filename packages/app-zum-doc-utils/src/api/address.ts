@@ -31,3 +31,14 @@ export function hasAddressContent(address: Address): boolean {
     || address.city.trim().length > 0
   )
 }
+
+export function isAddressComplete(address: Address): boolean {
+  return (
+    address.country.trim().length > 0
+    && address.city.trim().length > 0
+    && address.postalCode.trim().length > 0
+    && address.street.trim().length > 0
+    && Number.isFinite(address.streetNumber)
+    && address.streetNumber > 0
+  )
+}

@@ -1,5 +1,5 @@
-import type { Address } from './address'
-import type { Weekday } from './enums'
+import { isAddressComplete, type Address } from './address'
+import { WeekdayUtils, type Weekday } from './enums'
 
 export type DoctorsOfficeOpeningHours = Record<Weekday, string[]>
 
@@ -151,4 +151,19 @@ export function isMyDoctorsOffice(
   doctorsOfficeId: string
 ): boolean {
   return myDoctors.doctorIds.includes(doctorsOfficeId)
+}
+
+function hasOpeningHoursEntry(openingHours: DoctorsOfficeOpeningHours): boolean {
+  return WeekdayUtils.array.some((weekday) =>
+    (openingHours[weekday] ?? []).some((range) => range.trim().length > 0)
+  )
+}
+
+export function isDoctorsOfficeInformationComplete(office: DoctorsOffice): boolean {
+  return (
+    office.name.trim().length > 0
+    && isAddressComplete(office.address)
+    && office.specializationIds.some((id) => id.trim().length > 0)
+    && hasOpeningHoursEntry(office.openingHours)
+  )
 }
