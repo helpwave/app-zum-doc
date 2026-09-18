@@ -290,5 +290,10 @@
   "onboardingDownloadingKey": "Download key",
   "logout": "Log out",
   "logoutConfirmTitle": "Log out?",
-  "logoutConfirmDescription": "Logging out deletes the encryption key from this device. You will need to upload the key again the next time you sign in."
+  "logoutConfirmDescription": "Logging out deletes the encryption key from this device. You will need to upload the key again the next time you sign in.",
+  "officeInformationIncompleteTitle": "Your practice profile is incomplete",
+  "officeInformationIncompleteDescription": "Please add a practice name, address, at least one specialization, and opening hours.",
+  "completeOfficeInformation": "Complete practice profile",
+  "dismissOfficeInformationBanner": "Dismiss",
+  "chooseNewProfile": "Choose new profile"
 }

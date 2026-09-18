@@ -13,7 +13,7 @@ type UseDoctorsOfficeParameters = {
   id: string,
   locale: AppLocale,
 }
-type UseDoctorsOfficeProps = QueryHookOptions<UseDoctorsOfficeParameters, DoctorsOffice>
+export type UseDoctorsOfficeProps = QueryHookOptions<UseDoctorsOfficeParameters, DoctorsOffice>
 
 export function useDoctorsOffice({
   parameters,

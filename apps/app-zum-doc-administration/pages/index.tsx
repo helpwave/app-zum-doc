@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { Shield, TriangleAlert } from 'lucide-react'
 import type { PracticeOverview } from '@app-zum-doc/utils/api'
 import { toAppLocale } from '@app-zum-doc/utils/api'
-import { usePracticeOverview } from '@app-zum-doc/utils/hooks'
+import { useDoctorsOfficeInformationComplete, usePracticeOverview } from '@app-zum-doc/utils/hooks'
 import { DashboardAppointmentRow } from '@/components/dashboard/appointment-row'
+import { DashboardOfficeIncompleteBanner } from '@/components/dashboard/office-incomplete-banner'
 import { DashboardHeroCard, DashboardHeroMetric } from '@/components/dashboard/hero-card'
 import { DashboardLegendItem } from '@/components/dashboard/legend-item'
 import { DashboardMessageRow } from '@/components/dashboard/message-row'
@@ -112,6 +113,12 @@ const OverviewPage: NextPage = () => {
       locale,
     },
   })
+  const officeInformationQuery = useDoctorsOfficeInformationComplete({
+    parameters: {
+      id: practiceOfficeId,
+      locale,
+    },
+  })
   const overview = overviewQuery.data
   const todayLabel = formatDashboardDateHeading(new Date(), locale)
   const [isOpen, setIsOpen] = useState(false)
@@ -119,13 +126,17 @@ const OverviewPage: NextPage = () => {
 
   return (
     <Page pageTitle={titleWrapper(t('navOverview'))}>
-      <QueryState
-        isPending={overviewQuery.isPending}
-        isError={overviewQuery.isError}
-        error={overviewQuery.error}
-        onRetry={() => void overviewQuery.refetch()}
-        loadingLabel={t('loadingOverview')}
-      >
+      <div className="flex-col-8 w-full">
+        {officeInformationQuery.isIncomplete && (
+          <DashboardOfficeIncompleteBanner />
+        )}
+        <QueryState
+          isPending={overviewQuery.isPending}
+          isError={overviewQuery.isError}
+          error={overviewQuery.error}
+          onRetry={() => void overviewQuery.refetch()}
+          loadingLabel={t('loadingOverview')}
+        >
         {overview && (
           <div className="flex-col-8 w-full">
             <h1 className="typography-title-lg text-primary">{t('navOverview')}</h1>
@@ -183,7 +194,8 @@ const OverviewPage: NextPage = () => {
             </div>
           </div>
         )}
-      </QueryState>
+        </QueryState>
+      </div>
       <RequestDetailDialog
         isOpen={isOpen}
         requestId={selectedRequestId}
