@@ -1,14 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  cancelPrescription,
-  createPrescription,
-  fetchPrescription
-} from '../api/client'
 import type {
   AppLocale,
   CreatePrescriptionInput,
   Prescription
 } from '../api/types'
+import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
   type MutationHookOptions,
@@ -28,10 +24,11 @@ export function usePrescription({
   enabled,
   ...options
 }: UsePrescriptionProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: prescriptionKeys.detail(parameters),
-    queryFn: () => fetchPrescription(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchPrescription(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       enabled
@@ -47,13 +44,14 @@ type CreatePrescriptionVariables = {
 export function useCreatePrescription(
   options: MutationHookOptions<Prescription, CreatePrescriptionVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ input, locale }: CreatePrescriptionVariables) =>
-      createPrescription(input, locale),
+      client.createPrescription(input, locale),
     onSuccess: async (...args) => {
       const [prescription, { locale }] = args
       queryClient.setQueryData(
@@ -74,13 +72,14 @@ type CancelPrescriptionVariables = {
 export function useCancelPrescription(
   options: MutationHookOptions<Prescription, CancelPrescriptionVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ prescriptionId, locale }: CancelPrescriptionVariables) =>
-      cancelPrescription(prescriptionId, locale),
+      client.cancelPrescription(prescriptionId, locale),
     onSuccess: async (...args) => {
       const [prescription, { locale }] = args
       queryClient.setQueryData(

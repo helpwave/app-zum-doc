@@ -1,11 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  addPatientMedication,
-  fetchPatientMedications,
-  removePatientMedication,
-  searchMedications
-} from '../api/client'
 import type { Medication, MedicationCatalogItem, MedicationSize } from '../api/types'
+import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
   withEnabled,
@@ -17,10 +12,11 @@ import { medicationKeys } from './queryKeys'
 export function usePatientMedications(
   options: QueryHookOptions<undefined, Medication[]> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: medicationKeys.patient,
-    queryFn: () => fetchPatientMedications(),
+    queryFn: client.fetchPatientMedications,
   })
 }
 
@@ -33,10 +29,11 @@ export function useMedicationSearch({
   parameters,
   ...options
 }: UseMedicationSearchProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: medicationKeys.search(parameters),
-    queryFn: () => searchMedications(assertNotUndefined(parameters)),
+    queryFn: () => client.searchMedications(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       options.enabled
@@ -52,13 +49,14 @@ type AddPatientMedicationInput = {
 export function useAddPatientMedication(
   options: MutationHookOptions<Medication[], AddPatientMedicationInput> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ catalogId, size }: AddPatientMedicationInput) =>
-      addPatientMedication({ catalogId, size }),
+      client.addPatientMedication({ catalogId, size }),
     onSuccess: async (...args) => {
       const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)
@@ -71,12 +69,13 @@ export function useAddPatientMedication(
 export function useRemovePatientMedication(
   options: MutationHookOptions<Medication[], string> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: (medicationId: string) => removePatientMedication(medicationId),
+    mutationFn: (medicationId: string) => client.removePatientMedication(medicationId),
     onSuccess: async (...args) => {
       const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)

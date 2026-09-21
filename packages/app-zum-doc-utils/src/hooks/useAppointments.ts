@@ -1,16 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  cancelAppointment,
-  createAppointment,
-  fetchAppointment,
-  fetchPatientProfiles
-} from '../api/client'
 import type {
   Appointment,
   AppLocale,
   CreateAppointmentInput,
   PatientProfileSummary
 } from '../api/types'
+import { getApiClient } from './apiClient'
 import {
   type MutationHookOptions,
   type QueryHookOptions,
@@ -21,10 +16,11 @@ import { appointmentKeys, homeKeys, profileListKeys } from './queryKeys'
 export function usePatientProfiles(
   options: QueryHookOptions<undefined, PatientProfileSummary[]> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: profileListKeys.list,
-    queryFn: () => fetchPatientProfiles(),
+    queryFn: client.fetchPatientProfiles,
   })
 }
 
@@ -39,6 +35,7 @@ export function useAppointment({
   enabled,
   ...options
 }: UseAppointmentProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: appointmentKeys.detail({
@@ -48,7 +45,7 @@ export function useAppointment({
     queryFn: () => {
       if(parameters === undefined)
         throw Error('parameters cannot be undefined')
-      return fetchAppointment(parameters.appointmentId, parameters.locale)
+      return client.fetchAppointment(parameters.appointmentId, parameters.locale)
     },
     enabled: withEnabled(
       parameters !== undefined,
@@ -65,13 +62,14 @@ type CreateAppointmentVariables = {
 export function useCreateAppointment(
   options: MutationHookOptions<Appointment, CreateAppointmentVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ input, locale }: CreateAppointmentVariables) =>
-      createAppointment(input, locale),
+      client.createAppointment(input, locale),
     onSuccess: async (...args) => {
       const [appointment, { locale }] = args
       queryClient.setQueryData(
@@ -92,13 +90,14 @@ type CancelAppointmentVariables = {
 export function useCancelAppointment(
   options: MutationHookOptions<Appointment, CancelAppointmentVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ appointmentId, locale }: CancelAppointmentVariables) =>
-      cancelAppointment(appointmentId, locale),
+      client.cancelAppointment(appointmentId, locale),
     onSuccess: async (...args) => {
       const [appointment, { locale }] = args
       queryClient.setQueryData(

@@ -1,13 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  fetchConversation,
-  fetchConversations,
-  fetchMessages,
-  markConversationRead,
-  resolveCardAction,
-  sendMessage
-} from '../api/client'
 import type { ConversationPreview, Message } from '../api/types'
+import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
   type MutationHookOptions,
@@ -19,10 +12,11 @@ import { conversationKeys, homeKeys } from './queryKeys'
 export function useConversations(
   options: QueryHookOptions<undefined, ConversationPreview[]> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: conversationKeys.list,
-    queryFn: fetchConversations,
+    queryFn: client.fetchConversations,
   })
 }
 
@@ -36,10 +30,11 @@ export function useConversation({
   enabled,
   ...options
 }: UseConversationProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: conversationKeys.detail(parameters),
-    queryFn: () => fetchConversation(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchConversation(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       enabled
@@ -57,10 +52,11 @@ export function useMessages({
   enabled,
   ...options
 }: UseMessagesProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: conversationKeys.messages(parameters),
-    queryFn: () => fetchMessages(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchMessages(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       enabled
@@ -71,12 +67,13 @@ export function useMessages({
 export function useMarkConversationRead(
   options: MutationHookOptions<ConversationPreview[], string> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: (conversationId: string) => markConversationRead(conversationId),
+    mutationFn: (conversationId: string) => client.markConversationRead(conversationId),
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({ queryKey: conversationKeys.all })
       await queryClient.invalidateQueries({ queryKey: homeKeys.all })
@@ -93,12 +90,13 @@ export function useSendMessage({
   conversationId,
   ...options
 }: UseSendMessageProps) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: (body: string) => sendMessage(conversationId, body),
+    mutationFn: (body: string) => client.sendMessage(conversationId, body),
     onSuccess: async (...args) => {
       const [messages] = args
       queryClient.setQueryData(conversationKeys.messages({ conversationId }), messages)
@@ -122,13 +120,14 @@ export function useResolveCardAction({
   conversationId,
   ...options
 }: UseResolveCardActionProps) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ messageId, actionId }: ResolveCardActionVariables) =>
-      resolveCardAction(conversationId, messageId, actionId),
+      client.resolveCardAction(conversationId, messageId, actionId),
     onSuccess: (...args) => {
       const [messages] = args
       queryClient.setQueryData(conversationKeys.messages({ conversationId }), messages)

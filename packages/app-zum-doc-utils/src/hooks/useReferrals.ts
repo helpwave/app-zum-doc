@@ -1,10 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  cancelReferral,
-  createReferral,
-  fetchReferral
-} from '../api/client'
 import type { AppLocale, CreateReferralInput, Referral } from '../api/types'
+import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
   type MutationHookOptions,
@@ -24,10 +20,11 @@ export function useReferral({
   enabled,
   ...options
 }: UseReferralProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: referralKeys.detail(parameters),
-    queryFn: () => fetchReferral(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchReferral(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters != undefined,
       enabled
@@ -43,13 +40,14 @@ type CreateReferralVariables = {
 export function useCreateReferral(
   options: MutationHookOptions<Referral, CreateReferralVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ input, locale }: CreateReferralVariables) =>
-      createReferral(input, locale),
+      client.createReferral(input, locale),
     onSuccess: async (...args) => {
       const [referral, { locale }] = args
       queryClient.setQueryData(
@@ -70,13 +68,14 @@ type CancelReferralVariables = {
 export function useCancelReferral(
   options: MutationHookOptions<Referral, CancelReferralVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: ({ referralId, locale }: CancelReferralVariables) =>
-      cancelReferral(referralId, locale),
+      client.cancelReferral(referralId, locale),
     onSuccess: async (...args) => {
       const [referral, { locale }] = args
       queryClient.setQueryData(
