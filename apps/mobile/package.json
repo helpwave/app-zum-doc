@@ -17,10 +17,10 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "init": "npx expo prebuild",
-    "prebuild:android": "expo prebuild --platform android --non-interactive",
-    "prebuild:ios": "expo prebuild --platform ios --non-interactive",
+    "prebuild:android": "CI=1 expo prebuild --platform android",
+    "prebuild:ios": "CI=1 expo prebuild --platform ios",
     "android:release": "cd android && ./gradlew assembleRelease bundleRelease",
-    "build": "expo export --platform web --non-interactive",
+    "build": "CI=1 expo export --platform web",
     "test": "node -e \"process.exit(0)\""
   },
   "dependencies": {

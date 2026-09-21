@@ -16,6 +16,11 @@ export type RequestBase = {
   status: PatientRequestStatus,
 }
 
+export type HomeSummary = {
+  myDoctors: DoctorsOffice[],
+  recentRequests: RequestBase[],
+}
+
 export type PatientRequest = Appointment | Prescription | Referral
 
 export type PracticeRequest = PatientRequest & {

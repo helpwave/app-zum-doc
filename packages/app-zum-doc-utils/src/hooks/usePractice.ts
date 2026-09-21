@@ -1,20 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  fetchPracticeConversation,
-  fetchPracticeConversations,
-  fetchPracticeMessages,
-  fetchPracticeOverview,
-  fetchPracticePatients,
-  createPracticePatient,
-  deletePracticePatient,
-  setPracticePatientBlocked,
-  fetchPracticeRequest,
-  fetchPracticeRequests,
-  markPracticeConversationRead,
-  sendPracticeMessage,
-  updateDoctorsOffice,
-  updatePatientRequestStatus
-} from '../api/client'
 import type {
   AppLocale,
   ConversationPreview,
@@ -28,6 +12,7 @@ import type {
   CreatePracticePatientInput,
   UpdateDoctorsOfficeInput
 } from '../api/types'
+import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
   type MutationHookOptions,
@@ -57,10 +42,11 @@ export function usePracticeOverview({
   parameters,
   ...options
 }: UsePracticeOverviewProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceKeys.overview(parameters),
-    queryFn: () => fetchPracticeOverview(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchPracticeOverview(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       options.enabled
@@ -71,22 +57,24 @@ export function usePracticeOverview({
 export function usePracticePatients(
   options: QueryHookOptions<undefined, PracticePatient[]> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceKeys.patients,
-    queryFn: fetchPracticePatients,
+    queryFn: client.fetchPracticePatients,
   })
 }
 
 export function useCreatePracticePatient(
   options: MutationHookOptions<PracticePatient, CreatePracticePatientInput> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: createPracticePatient,
+    mutationFn: client.createPracticePatient,
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({ queryKey: practiceKeys.all })
       await onSuccess?.(...args)
@@ -97,12 +85,13 @@ export function useCreatePracticePatient(
 export function useDeletePracticePatient(
   options: MutationHookOptions<void, string> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: deletePracticePatient,
+    mutationFn: client.deletePracticePatient,
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({ queryKey: practiceKeys.all })
       await onSuccess?.(...args)
@@ -121,12 +110,13 @@ export function useSetPracticePatientBlocked(
     SetPracticePatientBlockedVariables
   > = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: setPracticePatientBlocked,
+    mutationFn: client.setPracticePatientBlocked,
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({ queryKey: practiceKeys.all })
       await onSuccess?.(...args)
@@ -149,10 +139,11 @@ export function usePracticeRequests({
   parameters,
   ...options
 }: UsePracticeRequestsProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceKeys.requests(parameters),
-    queryFn: () => fetchPracticeRequests(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchPracticeRequests(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       options.enabled
@@ -174,10 +165,11 @@ export function usePracticeRequest({
   enabled,
   ...options
 }: UsePracticeRequestProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceKeys.request(parameters),
-    queryFn: () => fetchPracticeRequest(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchPracticeRequest(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       enabled
@@ -198,13 +190,14 @@ export function useUpdatePatientRequestStatus(
     UpdatePatientRequestStatusVariables
   > = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: (variables: UpdatePatientRequestStatusVariables) =>
-      updatePatientRequestStatus(variables),
+      client.updatePatientRequestStatus(variables),
     onSuccess: async (...args) => {
       const [request, { locale }] = args
       queryClient.setQueryData(
@@ -245,13 +238,14 @@ type UpdateDoctorsOfficeVariables = {
 export function useUpdateDoctorsOffice(
   options: MutationHookOptions<DoctorsOffice, UpdateDoctorsOfficeVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: (variables: UpdateDoctorsOfficeVariables) =>
-      updateDoctorsOffice(variables),
+      client.updateDoctorsOffice(variables),
     onSuccess: async (...args) => {
       const [office, { officeId, locale }] = args
       queryClient.setQueryData(
@@ -267,10 +261,11 @@ export function useUpdateDoctorsOffice(
 export function usePracticeConversations(
   options: QueryHookOptions<undefined, ConversationPreview[]> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceConversationKeys.list,
-    queryFn: fetchPracticeConversations,
+    queryFn: client.fetchPracticeConversations,
   })
 }
 
@@ -287,10 +282,11 @@ export function usePracticeConversation({
   enabled,
   ...options
 }: UsePracticeConversationProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceConversationKeys.detail(parameters),
-    queryFn: () => fetchPracticeConversation(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchPracticeConversation(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       enabled
@@ -311,10 +307,11 @@ export function usePracticeMessages({
   enabled,
   ...options
 }: UsePracticeMessagesProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: practiceConversationKeys.messages(parameters),
-    queryFn: () => fetchPracticeMessages(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchPracticeMessages(assertNotUndefined(parameters)),
     enabled: withEnabled(
       parameters !== undefined,
       enabled
@@ -325,13 +322,14 @@ export function usePracticeMessages({
 export function useMarkPracticeConversationRead(
   options: MutationHookOptions<ConversationPreview[], string> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
     mutationFn: (conversationId: string) =>
-      markPracticeConversationRead(conversationId),
+      client.markPracticeConversationRead(conversationId),
     onSuccess: async (...args) => {
       await queryClient.invalidateQueries({
         queryKey: practiceConversationKeys.all,
@@ -349,12 +347,13 @@ export function useSendPracticeMessage({
   conversationId,
   ...options
 }: UseSendPracticeMessageProps) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: (body: string) => sendPracticeMessage(conversationId, body),
+    mutationFn: (body: string) => client.sendPracticeMessage(conversationId, body),
     onSuccess: async (...args) => {
       const [messages] = args
       queryClient.setQueryData(

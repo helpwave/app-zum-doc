@@ -1,15 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  fetchCities,
-  fetchDoctors,
-  fetchSpecializations
-} from '../api/client'
 import type {
   DoctorsOffice,
   DoctorSearchFilters,
   SearchCity,
   SearchSpecialization
 } from '../api/types'
+import { getApiClient } from './apiClient'
 import { assertNotUndefined, type QueryHookOptions } from './queryHook'
 import { cityKeys, doctorSearchKeys, specializationKeys } from './queryKeys'
 
@@ -18,10 +14,11 @@ export function useDoctorSearch({
   parameters,
   ...options
 }: UseDoctorSearchProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: doctorSearchKeys.list(parameters),
-    queryFn: () => fetchDoctors(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchDoctors(assertNotUndefined(parameters)),
   })
 }
 
@@ -36,10 +33,11 @@ export function useCities({
   parameters,
   ...options
 }: UseCitiesProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: cityKeys.list(parameters),
-    queryFn: () => fetchCities(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchCities(assertNotUndefined(parameters)),
   })
 }
 
@@ -53,9 +51,10 @@ export function useSpecializations({
   parameters,
   ...options
 }: UseSpecializationsProps) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: specializationKeys.list(parameters),
-    queryFn: () => fetchSpecializations(assertNotUndefined(parameters)),
+    queryFn: () => client.fetchSpecializations(assertNotUndefined(parameters)),
   })
 }

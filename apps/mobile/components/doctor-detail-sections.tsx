@@ -152,6 +152,9 @@ export function DoctorDetailHero({
               style={{
                 ...StyleAdapterUtils.borderRadius({type: "all",  value: 999 }),
               }}
+              stateLayerStyle={{
+                ...StyleAdapterUtils.borderRadius({type: "all",  value: 999 }),
+              }}
               leadingIcon={Plus}
             >
               {t("addAsMyDoctor")}

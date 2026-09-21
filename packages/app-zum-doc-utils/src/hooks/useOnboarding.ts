@@ -1,12 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  completePracticeOnboarding,
-  fetchEncryptionKeyTest,
-  fetchPracticeEncryptionData,
-  fetchPracticeMyData,
-  fetchPracticeOnboardingStatus,
-  uploadPracticePublicKey
-} from '../api/client'
 import type {
   AppLocale,
   CompletePracticeOnboardingInput,
@@ -16,48 +8,53 @@ import type {
   PracticeMyData,
   PracticeOnboardingStatus
 } from '../api/types'
+import { getApiClient } from './apiClient'
 import { type MutationHookOptions, type QueryHookOptions } from './queryHook'
 import { doctorsOfficeKeys, onboardingKeys, practiceKeys } from './queryKeys'
 
 export function usePracticeOnboardingStatus(
   options: QueryHookOptions<undefined, PracticeOnboardingStatus> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: onboardingKeys.status,
-    queryFn: fetchPracticeOnboardingStatus,
+    queryFn: client.fetchPracticeOnboardingStatus,
   })
 }
 
 export function usePracticeMyData(
   options: QueryHookOptions<undefined, PracticeMyData> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: onboardingKeys.myData,
-    queryFn: fetchPracticeMyData,
+    queryFn: client.fetchPracticeMyData,
   })
 }
 
 export function usePracticeEncryptionData(
   options: QueryHookOptions<undefined, PracticeEncryptionData> = {}
 ) {
+  const client = getApiClient()
   return useQuery({
     ...options,
     queryKey: onboardingKeys.encryption,
-    queryFn: fetchPracticeEncryptionData,
+    queryFn: client.fetchPracticeEncryptionData,
   })
 }
 
 export function useUploadPracticePublicKey(
   options: MutationHookOptions<PracticeOnboardingStatus, string> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: uploadPracticePublicKey,
+    mutationFn: client.uploadPracticePublicKey,
     onSuccess: async (...args) => {
       const [status, publicKey] = args
       queryClient.setQueryData(onboardingKeys.status, status)
@@ -72,11 +69,11 @@ export function useUploadPracticePublicKey(
 export function useEncryptionKeyTest(
   options: MutationHookOptions<EncryptionKeyTest, void> = {}
 ) {
-  const { ...rest } = options
+  const client = getApiClient()
 
   return useMutation({
-    ...rest,
-    mutationFn: fetchEncryptionKeyTest,
+    ...options,
+    mutationFn: client.fetchEncryptionKeyTest,
   })
 }
 
@@ -88,12 +85,13 @@ type CompletePracticeOnboardingVariables = {
 export function useCompletePracticeOnboarding(
   options: MutationHookOptions<DoctorsOffice, CompletePracticeOnboardingVariables> = {}
 ) {
+  const client = getApiClient()
   const queryClient = useQueryClient()
   const { onSuccess, ...rest } = options
 
   return useMutation({
     ...rest,
-    mutationFn: completePracticeOnboarding,
+    mutationFn: client.completePracticeOnboarding,
     onSuccess: async (...args) => {
       const [office, { locale }] = args
       queryClient.setQueryData(
