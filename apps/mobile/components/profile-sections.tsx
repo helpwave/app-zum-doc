@@ -2,55 +2,199 @@ import { SelectionSheet } from "@/components/selection-sheet"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
+  formatInsuranceCompanyWithMaskedNumber,
+  patientAgeYears,
   patientProfileFullName,
-  type PatientProfile,
+  type PatientProfileSummary,
 } from "@app-zum-doc/utils/api"
 import {
+  Button,
+  Card,
+  IconButton,
   ListActionItem,
   ThemedIcon,
   ThemedText
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
-import { Image } from "expo-image"
-import { GlobeIcon, SunMoonIcon } from "lucide-react-native"
-import { useMemo, useState } from "react"
-import { Text, View } from "react-native"
+import { GlobeIcon, Pencil, Pill, SunMoonIcon } from "lucide-react-native"
+import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  ScrollView,
+  Text,
+  View,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native"
 
-const azdLogo = require("../assets/images/azd-logo.png")
-
-type ProfileHeaderProps = {
-  profile: PatientProfile
+type ProfileUserCardProps = {
+  profile: PatientProfileSummary
+  onEdit: () => void
+  onMedications: () => void
 }
 
-export function ProfileHeader({ profile }: ProfileHeaderProps) {
+export function ProfileUserCard({ profile, onEdit, onMedications }: ProfileUserCardProps) {
+  const t = useAppTranslation()
   const { theme } = useAzdTheme()
+  const insuranceLabel = formatInsuranceCompanyWithMaskedNumber(profile.insurance)
 
   return (
-    <View
+    <Card
       style={{
-        alignItems: "center",
+        width: "100%",
         gap: theme.spacing.md,
-        paddingVertical: theme.spacing.lg + theme.spacing.sm,
+        padding: theme.spacing.lg,
       }}
     >
-      <Image
-        source={azdLogo}
+      <View
         style={{
-          width: theme.semantics.container.md.size * 2,
-          height: theme.semantics.container.md.size * 2,
-        }}
-        contentFit="contain"
-      />
-      <Text
-        style={{
-          ...theme.typography.heading.lg,
-          fontWeight: theme.fontWeights.bold,
-          color: theme.colors.background.onColor,
-          marginTop: theme.spacing.md,
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: theme.spacing.md,
         }}
       >
-        {patientProfileFullName(profile)}
-      </Text>
+        <View style={{ flex: 1, gap: theme.spacing.xs }}>
+          <ThemedText
+            style={{
+              ...theme.typography.heading.md,
+              fontWeight: theme.fontWeights.bold,
+            }}
+          >
+            {patientProfileFullName(profile)}
+          </ThemedText>
+          <ThemedText appearance="description" style={theme.typography.body.md}>
+            {t("profileAge", { age: patientAgeYears(profile.dateOfBirth) })}
+          </ThemedText>
+          {insuranceLabel ? (
+            <ThemedText appearance="description" style={theme.typography.body.md}>
+              {insuranceLabel}
+            </ThemedText>
+          ) : null}
+        </View>
+        <IconButton
+          icon={Pencil}
+          size="sm"
+          variant="foreground"
+          accessibilityLabel={t("editPersonalData")}
+          onPress={onEdit}
+        />
+      </View>
+      <Button
+        leadingIcon={Pill}
+        variant="tonal"
+        onPress={onMedications}
+        style={{ alignSelf: "flex-start" }}
+      >
+        {t("medicationCount", { count: profile.medicationCount })}
+      </Button>
+    </Card>
+  )
+}
+
+type ProfileUserCarouselProps = {
+  profiles: PatientProfileSummary[]
+  selectedProfileId: string
+  onSelectProfile: (profileId: string) => Promise<void> | void
+  onEdit: () => void
+  onMedications: () => void
+}
+
+export function ProfileUserCarousel({
+  profiles,
+  selectedProfileId,
+  onSelectProfile,
+  onEdit,
+  onMedications,
+}: ProfileUserCarouselProps) {
+  const { theme } = useAzdTheme()
+  const { width } = useWindowDimensions()
+  const scrollRef = useRef<ScrollView>(null)
+  const pageWidth = Math.max(width, 1)
+  const selectedIndex = Math.max(
+    0,
+    profiles.findIndex((profile) => profile.id === selectedProfileId),
+  )
+
+  useEffect(() => {
+    if (profiles.length === 0) {
+      return
+    }
+    scrollRef.current?.scrollTo({
+      x: selectedIndex * pageWidth,
+      animated: false,
+    })
+  }, [pageWidth, profiles.length, selectedIndex])
+
+  const onMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (profiles.length === 0) {
+      return
+    }
+    const index = Math.round(event.nativeEvent.contentOffset.x / pageWidth)
+    const next = profiles[Math.min(Math.max(index, 0), profiles.length - 1)]
+    if (next != null && next.id !== selectedProfileId) {
+      void Promise.resolve(onSelectProfile(next.id)).catch(() => {
+        scrollRef.current?.scrollTo({
+          x: selectedIndex * pageWidth,
+          animated: true,
+        })
+      })
+    }
+  }
+
+  return (
+    <View style={{ gap: theme.spacing.md }}>
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        nestedScrollEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        contentOffset={{ x: selectedIndex * pageWidth, y: 0 }}
+      >
+        {profiles.map((profile) => (
+          <View
+            key={profile.id}
+            style={{
+              width: pageWidth,
+              paddingHorizontal: theme.spacing.lg,
+            }}
+          >
+            <ProfileUserCard
+              profile={profile}
+              onEdit={onEdit}
+              onMedications={onMedications}
+            />
+          </View>
+        ))}
+      </ScrollView>
+      {profiles.length > 1 ? (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: theme.spacing.sm,
+          }}
+        >
+          {profiles.map((profile) => {
+            const isSelected = profile.id === selectedProfileId
+            return (
+              <View
+                key={profile.id}
+                style={{
+                  width: isSelected ? theme.spacing.lg : theme.spacing.sm,
+                  height: theme.spacing.sm,
+                  borderRadius: 9999,
+                  backgroundColor: isSelected
+                    ? theme.colors.primary.color
+                    : theme.colors.surface.color,
+                }}
+              />
+            )
+          })}
+        </View>
+      ) : null}
     </View>
   )
 }

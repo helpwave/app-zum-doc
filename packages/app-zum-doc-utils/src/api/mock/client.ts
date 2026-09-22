@@ -9,6 +9,7 @@ import {
   messagesByConversation,
   patientMedicationsSeed,
   patientProfileSeed,
+  householdPatientProfilesSeed,
   patientProfilesSeed,
   practiceConversationsSeed,
   practiceMessagesByConversation,
@@ -24,6 +25,7 @@ import {
   type LocalizedTemporaryNotificationTile,
   type LocalizedTemporaryNotifications
 } from './data'
+import { parsePatientBackupPayload } from '../backup'
 import {
   WeekdayUtils,
   type Appointment,
@@ -51,6 +53,7 @@ import {
   type PracticePatient,
   type PracticeRequest,
   type CreatePracticePatientInput,
+  type CreatePatientProfileInput,
   type Prescription,
   type PrescriptionRecord,
   type Referral,
@@ -186,6 +189,8 @@ export function createMockApiClient(
   )
   let myDoctorIds = new Set<string>(initialMyDoctorIds)
   let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
+  let patientProfileState: PatientProfile | null = structuredClone(patientProfileSeed)
+  let householdProfilesState: PatientProfile[] = structuredClone(householdPatientProfilesSeed)
   let appointmentsState: AppointmentRecord[] = createAppointmentsState()
   let prescriptionsState: PrescriptionRecord[] = structuredClone(prescriptionsSeed)
   let referralsState: ReferralRecord[] = structuredClone(referralsSeed)
@@ -390,21 +395,39 @@ export function createMockApiClient(
     }))
   }
 
-  async function fetchPatientProfile(): Promise<PatientProfile> {
-    return withMockLatency(() => ({ ...patientProfileSeed }))
+  async function fetchPatientProfile(): Promise<PatientProfile | null> {
+    return withMockLatency(() => (
+      patientProfileState == null ? null : clonePatientProfile(patientProfileState)
+    ))
+  }
+
+  async function importPatientBackup(payload: unknown): Promise<PatientProfile> {
+    return withMockLatency(() => {
+      const parsed = parsePatientBackupPayload(payload)
+      const profile = clonePatientProfile(parsed.profile)
+      profile.medicationList = parsed.medications.map((item) => ({ ...item }))
+      const exists = householdProfilesState.some((item) => item.id === profile.id)
+      householdProfilesState = exists
+        ? householdProfilesState.map((item) => item.id === profile.id ? profile : item)
+        : [...householdProfilesState, profile]
+      if (patientProfileState == null || patientProfileState.id === profile.id) {
+        applyHouseholdProfileAsCurrent(profile)
+      }
+      return clonePatientProfile(profile)
+    })
   }
 
   async function fetchPatientProfileById(params: {
     profileId: string,
   }): Promise<PatientProfile> {
     return withMockLatency(() => {
+      const household = householdProfilesState.find((item) => item.id === params.profileId)
+      if (household) {
+        return clonePatientProfile(household)
+      }
       const profile = resolvePracticePatient(params.profileId)
       if (profile) {
-        return {
-          ...profile,
-          insurance: { ...profile.insurance },
-          medicationList: profile.medicationList.map((item) => ({ ...item })),
-        }
+        return clonePatientProfile(profile)
       }
       throw new Error('Profil nicht gefunden.')
     })
@@ -423,6 +446,18 @@ export function createMockApiClient(
       insurance: { ...profile.insurance },
       medicationList: profile.medicationList.map((item) => ({ ...item })),
     }
+  }
+
+  function syncCurrentProfileToHousehold() {
+    if (patientProfileState == null) {
+      return
+    }
+    patientProfileState.medicationList = patientMedicationsState.map((item) => ({ ...item }))
+    const current = clonePatientProfile(patientProfileState)
+    const exists = householdProfilesState.some((item) => item.id === current.id)
+    householdProfilesState = exists
+      ? householdProfilesState.map((item) => item.id === current.id ? current : item)
+      : [current, ...householdProfilesState]
   }
 
   function lastVisitFor(profileId: string): Date | undefined {
@@ -516,8 +551,78 @@ export function createMockApiClient(
   }
 
   async function fetchPatientProfiles(): Promise<PatientProfileSummary[]> {
-    return withMockLatency(() =>
-      patientProfilesSeed.map((profile) => ({ ...profile })))
+    return withMockLatency(() => householdProfilesState.map((profile) => toPatientProfileSummary(profile)))
+  }
+
+  async function selectPatientProfile(params: {
+    profileId: string,
+  }): Promise<PatientProfile> {
+    return withMockLatency(() => {
+      const next = householdProfilesState.find((item) => item.id === params.profileId)
+      if (next == null) {
+        throw new Error('Profil nicht gefunden.')
+      }
+      syncCurrentProfileToHousehold()
+      applyHouseholdProfileAsCurrent(next)
+      return clonePatientProfile(next)
+    })
+  }
+
+  function applyHouseholdProfileAsCurrent(profile: PatientProfile | null) {
+    if (profile == null) {
+      patientProfileState = null
+      patientMedicationsState = []
+      return
+    }
+    patientProfileState = clonePatientProfile(profile)
+    patientMedicationsState = profile.medicationList.map((item) => ({ ...item }))
+  }
+
+  async function createPatientProfile(
+    input: CreatePatientProfileInput,
+  ): Promise<PatientProfile> {
+    return withMockLatency(() => {
+      const firstName = input.firstName.trim()
+      const lastName = input.lastName.trim()
+      if (!firstName || !lastName || !input.dateOfBirth) {
+        throw new Error('Bitte Vorname, Nachname und Geburtsdatum angeben.')
+      }
+      const profile: PatientProfile = {
+        id: `patient-${Date.now()}`,
+        firstName,
+        lastName,
+        dateOfBirth: parseIsoDate(input.dateOfBirth),
+        email: "",
+        phone: "",
+        insurance: {
+          insuranceProviderId: "",
+          insuranceNumber: "",
+        },
+        medicationList: [],
+      }
+      householdProfilesState = [...householdProfilesState, profile]
+      if (patientProfileState == null) {
+        applyHouseholdProfileAsCurrent(profile)
+      }
+      return clonePatientProfile(profile)
+    })
+  }
+
+  async function deletePatientProfile(profileId: string): Promise<PatientProfile | null> {
+    return withMockLatency(() => {
+      const exists = householdProfilesState.some((item) => item.id === profileId)
+      if (!exists) {
+        throw new Error('Profil nicht gefunden.')
+      }
+      if (patientProfileState?.id === profileId) {
+        syncCurrentProfileToHousehold()
+      }
+      householdProfilesState = householdProfilesState.filter((item) => item.id !== profileId)
+      if (patientProfileState?.id === profileId) {
+        applyHouseholdProfileAsCurrent(householdProfilesState[0] ?? null)
+      }
+      return patientProfileState == null ? null : clonePatientProfile(patientProfileState)
+    })
   }
 
   function resolveDoctorsOffice(
@@ -815,7 +920,7 @@ export function createMockApiClient(
           },
         ]
       }
-
+      syncCurrentProfileToHousehold()
       return patientMedicationsState.map((medication) => ({ ...medication }))
     })
   }
@@ -827,6 +932,7 @@ export function createMockApiClient(
       patientMedicationsState = patientMedicationsState.filter(
         (medication) => medication.id !== medicationId
       )
+      syncCurrentProfileToHousehold()
       return patientMedicationsState.map((medication) => ({ ...medication }))
     })
   }
@@ -1604,6 +1710,8 @@ export function createMockApiClient(
     messagesState = structuredClone(messagesByConversation)
     myDoctorIds = new Set<string>(initialMyDoctorIds)
     patientMedicationsState = structuredClone(patientMedicationsSeed)
+    patientProfileState = structuredClone(patientProfileSeed)
+    householdProfilesState = structuredClone(householdPatientProfilesSeed)
     appointmentsState = createAppointmentsState()
     prescriptionsState = structuredClone(prescriptionsSeed)
     referralsState = structuredClone(referralsSeed)
@@ -1628,8 +1736,12 @@ export function createMockApiClient(
     fetchAppointment,
     fetchPatientMedications,
     fetchPatientProfile,
+    importPatientBackup,
     fetchPatientProfileById,
     fetchPatientProfiles,
+    selectPatientProfile,
+    createPatientProfile,
+    deletePatientProfile,
     fetchPracticeConversation,
     fetchPracticeConversations,
     fetchPracticeMessages,

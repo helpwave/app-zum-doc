@@ -128,6 +128,22 @@
   "insuranceNumberOptional": "Versichertennummer (optional)",
   "selectDateOfBirth": "Geburtsdatum wählen",
   "medicationList": "Medikamentenliste",
+  "profileAge": "{age} Jahre",
+  "@profileAge": {
+    "placeholders": {
+      "age": {
+        "type": "number"
+      }
+    }
+  },
+  "medicationCount": "{count} Medikamente",
+  "@medicationCount": {
+    "placeholders": {
+      "count": {
+        "type": "number"
+      }
+    }
+  },
   "addMedication": "Medikament hinzufügen",
   "goodToKnow": "Gut zu wissen",
   "medicationListHint": "Fügen Sie Medikamente hinzu, die Sie regelmäßig verwenden, um sie beim Bestellen eines Rezeptes direkt auswählen zu können.",
@@ -204,5 +220,33 @@
   "referralReason": "Grund für die Überweisung",
   "referralReasonPlaceholder": "Beschreiben Sie uns Ihr Anliegen, damit wir Ihren Termin optimal planen können.",
   "cancelReferralConfirm": "Möchten Sie diese Überweisungsanfrage wirklich stornieren?",
-  "loadingReferral": "Überweisung wird geladen…"
+  "loadingReferral": "Überweisung wird geladen…",
+  "loadFromBackup": "Aus Backup laden",
+  "noProfileTitle": "Noch kein Profil",
+  "noProfileDescription": "Importieren Sie ein App-zum-Doc-Backup, um Ihre persönlichen Daten wiederherzustellen.",
+  "manageProfiles": "Profile verwalten",
+  "createProfile": "Profil erstellen",
+  "importProfiles": "Profile importieren",
+  "importProfile": "Profil importieren",
+  "deleteProfile": "Profil löschen",
+  "deleteProfileTitle": "Profil löschen?",
+  "deleteProfileConfirm": "Möchten Sie {name} wirklich löschen?",
+  "@deleteProfileConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "noManagedProfiles": "Noch keine Profile. Erstellen Sie eines, um zu starten.",
+  "migrationTitle": "Backup wiederherstellen",
+  "migrationDescription": "Wählen Sie eine .azd-backup-Datei und geben Sie das Passwort ein, mit dem sie verschlüsselt wurde.",
+  "migrationPassword": "Backup-Passwort",
+  "migrationDecrypt": "Entschlüsseln",
+  "migrationBackupLoadedSuccess": "Backup erfolgreich geladen",
+  "migrationBackupLoadedFailure": "Backup konnte nicht geladen werden",
+  "migrationImport": "Importieren",
+  "migrationSelectFile": "Backup-Datei",
+  "migrationImportReady": "Ihr Backup ist bereit. Importieren Sie es, um die Daten in diese App zu laden.",
+  "migrationInvalidFile": "Bitte wählen Sie eine gültige .azd-backup-Datei."
 }

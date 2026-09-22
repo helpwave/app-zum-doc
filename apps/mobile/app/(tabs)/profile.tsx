@@ -1,19 +1,21 @@
-import { ConfirmationModal } from "@/components/confirmation-modal"
 import {
   LocaleSetting,
-  ProfileHeader,
+  ProfileUserCarousel,
   ThemeModeSetting
 } from "@/components/profile-sections"
 import { QueryState } from "@/components/query-state"
 import { Section } from "@/components/section"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { formatPatientDateOfBirth, patientProfileFullName, toAppLocale } from "@app-zum-doc/utils/api"
-import { usePatientProfile } from "@app-zum-doc/utils/hooks"
+import { toPatientProfileSummary } from "@app-zum-doc/utils/api"
+import {
+  usePatientProfile,
+  usePatientProfiles,
+  useSelectPatientProfile,
+} from "@app-zum-doc/utils/hooks"
 import { Button, Card, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
-import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useRouter, type Href } from "expo-router"
-import { ChevronRight, LogOut, Pill, Scale, Shield } from "lucide-react-native"
-import { useState } from "react"
+import { Scale, Shield, Users } from "lucide-react-native"
+import { useMemo } from "react"
 import { Linking, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useAppTranslation } from "../../hooks/useAppTranslation"
@@ -24,9 +26,20 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
   const profileQuery = usePatientProfile()
-  const { locale: localizationLocale } = useLocalization()
-  const locale = toAppLocale(localizationLocale)
-  const [signOutComingSoonOpen, setSignOutComingSoonOpen] = useState(false)
+  const profilesQuery = usePatientProfiles()
+  const selectProfile = useSelectPatientProfile()
+
+  const profiles = useMemo(() => {
+    if (profilesQuery.data != null && profilesQuery.data.length > 0) {
+      return profilesQuery.data
+    }
+    if (profileQuery.data != null) {
+      return [toPatientProfileSummary(profileQuery.data)]
+    }
+    return []
+  }, [profileQuery.data, profilesQuery.data])
+
+  const selectedProfileId = profileQuery.data?.id ?? profiles[0]?.id ?? ""
 
   return (
     <View
@@ -43,67 +56,71 @@ export default function ProfileScreen() {
         error={profileQuery.error}
         onRetry={() => {
           void profileQuery.refetch()
+          void profilesQuery.refetch()
         }}
         loadingLabel={t("loadingProfile")}
       >
-        {profileQuery.data ? (
-          <ScrollView
-            contentContainerStyle={{
-              paddingTop: insets.top,
-              paddingHorizontal: theme.spacing.lg,
-              paddingBottom: theme.spacing.lg,
-              gap: theme.spacing.lg
-            }}
-            showsVerticalScrollIndicator={false}
-          >
-            <ProfileHeader profile={profileQuery.data} />
-            
-            <Section
-              title={t("personalData")}
-              trailing={
-                <Button
-                  accessibilityRole="button"
-                  onPress={() => {
-                    router.push("/personal-information" as Href)
-                  }}
-                  size="xs"
-                  color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color}}
-                  trailingIcon={ChevronRight}
-                  variant="foreground"
-                >
-                  {t("edit")}
-                </Button>
-              }
-            >
+        <ScrollView
+          contentContainerStyle={{
+            paddingTop: insets.top,
+            paddingBottom: theme.spacing.lg,
+            gap: theme.spacing.lg
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {profiles.length > 0 ? (
+            <ProfileUserCarousel
+              profiles={profiles}
+              selectedProfileId={selectedProfileId}
+              onSelectProfile={(profileId) => {
+                if (profileId === selectedProfileId) {
+                  return Promise.resolve()
+                }
+                return selectProfile.mutateAsync({ profileId }).then(() => undefined)
+              }}
+              onEdit={() => {
+                router.push("/personal-information" as Href)
+              }}
+              onMedications={() => {
+                router.push("/medications" as Href)
+              }}
+            />
+          ) : (
+            <View style={{ paddingHorizontal: theme.spacing.lg }}>
               <Card>
-                <ListItem 
-                  title={patientProfileFullName(profileQuery.data)}
-                  subtitle={t("name")} 
-                />
                 <ListItem
-                  subtitle={t("dateOfBirth")}
-                  title={formatPatientDateOfBirth(profileQuery.data.dateOfBirth, locale)}
+                  title={t("noProfileTitle")}
+                  subtitle={t("noProfileDescription")}
                 />
-                <ListItem subtitle={t("email")} title={profileQuery.data.email} />
-                <ListItem subtitle={t("phone")} title={profileQuery.data.phone} />
-                <ListNavigationItem
-                  title={t("medicationList")}
-                  leading={<ThemedIcon icon={Pill}/>}
-                  onPress={() => {
-                    router.push("/medications" as Href)
-                  }}
-                />
-                <ListNavigationItem 
-                  title={t("signOut")}
-                  leading={<ThemedIcon icon={LogOut}/>}
-                  color={theme.colors.negative}
-                  onPress={() => {
-                    setSignOutComingSoonOpen(true)
-                  }}
-                />
+                <View style={{ padding: theme.spacing.md, alignItems: "flex-start" }}>
+                  <Button
+                    onPress={() => {
+                      router.push("/migration" as Href)
+                    }}
+                  >
+                    {t("loadFromBackup")}
+                  </Button>
+                </View>
               </Card>
-            </Section>
-            
+            </View>
+          )}
+
+          <View
+            style={{
+              paddingHorizontal: theme.spacing.lg,
+              gap: theme.spacing.lg,
+            }}
+          >
+            <Card>
+              <ListNavigationItem
+                title={t("manageProfiles")}
+                leading={<ThemedIcon icon={Users}/>}
+                onPress={() => {
+                  router.push("/manage-profiles" as Href)
+                }}
+              />
+            </Card>
+
             <Section title={t("settingsSection")}>
               <Card>
                 <ThemeModeSetting />
@@ -129,15 +146,9 @@ export default function ProfileScreen() {
                 />
               </Card>
             </Section>
-          </ScrollView>
-        ) : null}
+          </View>
+        </ScrollView>
       </QueryState>
-      <ConfirmationModal
-        isOpen={signOutComingSoonOpen}
-        onIsOpenChange={setSignOutComingSoonOpen}
-        title={t("tabProfile")}
-        message={t("placeholderComingSoon")}
-      />
     </View>
   )
 }

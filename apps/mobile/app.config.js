@@ -54,6 +54,7 @@ module.exports = {
       "./plugins/with-android-release-signing.js",
       "./plugins/with-android-abi-splits.js",
       "./plugins/with-android-sdk-versions.js",
+      "./plugins/with-android-single-task.js",
     ],
   },
 }

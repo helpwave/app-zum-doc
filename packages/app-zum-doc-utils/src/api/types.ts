@@ -1,4 +1,5 @@
 export * from './address'
+export * from './backup'
 export * from './doctorsOffice'
 export * from './encryption'
 export * from './enums'

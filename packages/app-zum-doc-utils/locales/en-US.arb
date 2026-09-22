@@ -128,6 +128,22 @@
   "insuranceNumberOptional": "Insurance number (optional)",
   "selectDateOfBirth": "Select date of birth",
   "medicationList": "Medication list",
+  "profileAge": "{age} years",
+  "@profileAge": {
+    "placeholders": {
+      "age": {
+        "type": "number"
+      }
+    }
+  },
+  "medicationCount": "{count} medications",
+  "@medicationCount": {
+    "placeholders": {
+      "count": {
+        "type": "number"
+      }
+    }
+  },
   "addMedication": "Add medication",
   "goodToKnow": "Good to know",
   "medicationListHint": "Add medications you use regularly so you can select them directly when ordering a prescription.",
@@ -204,5 +220,33 @@
   "referralReason": "Reason for referral",
   "referralReasonPlaceholder": "Describe your request so we can plan your appointment as well as possible.",
   "cancelReferralConfirm": "Do you really want to cancel this referral request?",
-  "loadingReferral": "Loading referral…"
+  "loadingReferral": "Loading referral…",
+  "loadFromBackup": "Load from backup",
+  "noProfileTitle": "No profile yet",
+  "noProfileDescription": "Import an App zum Doc backup to restore your personal data.",
+  "manageProfiles": "Manage profiles",
+  "createProfile": "Create profile",
+  "importProfiles": "Import profiles",
+  "importProfile": "Import profile",
+  "deleteProfile": "Delete profile",
+  "deleteProfileTitle": "Delete profile?",
+  "deleteProfileConfirm": "Do you really want to delete {name}?",
+  "@deleteProfileConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "string"
+      }
+    }
+  },
+  "noManagedProfiles": "No profiles yet. Create one to get started.",
+  "migrationTitle": "Restore backup",
+  "migrationDescription": "Select a .azd-backup file and enter the password used to encrypt it.",
+  "migrationPassword": "Backup password",
+  "migrationDecrypt": "Decrypt",
+  "migrationBackupLoadedSuccess": "Backup loaded successfully",
+  "migrationBackupLoadedFailure": "Backup could not be loaded",
+  "migrationImport": "Import",
+  "migrationSelectFile": "Backup file",
+  "migrationImportReady": "Your backup is ready. Import it to load the data into this app.",
+  "migrationInvalidFile": "Please select a valid .azd-backup file."
 }

@@ -7,7 +7,7 @@ import {
   type MutationHookOptions,
   type QueryHookOptions
 } from './queryHook'
-import { medicationKeys } from './queryKeys'
+import { medicationKeys, profileKeys, profileListKeys } from './queryKeys'
 
 export function usePatientMedications(
   options: QueryHookOptions<undefined, Medication[]> = {}
@@ -61,6 +61,8 @@ export function useAddPatientMedication(
       const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)
       await queryClient.invalidateQueries({ queryKey: medicationKeys.patient })
+      await queryClient.invalidateQueries({ queryKey: profileListKeys.all })
+      await queryClient.invalidateQueries({ queryKey: profileKeys.patient })
       await onSuccess?.(...args)
     },
   })
@@ -80,6 +82,8 @@ export function useRemovePatientMedication(
       const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)
       await queryClient.invalidateQueries({ queryKey: medicationKeys.patient })
+      await queryClient.invalidateQueries({ queryKey: profileListKeys.all })
+      await queryClient.invalidateQueries({ queryKey: profileKeys.patient })
       await onSuccess?.(...args)
     },
   })
