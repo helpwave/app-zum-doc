@@ -1,3 +1,4 @@
+import type { BackupData } from './backup'
 import type { DoctorsOffice, MyDoctors, UpdateDoctorsOfficeInput } from './doctorsOffice'
 import type { AppLocale, MedicationSize, PatientRequestStatus, PatientRequestType } from './enums'
 import type { Medication, MedicationCatalogItem } from './medication'
@@ -49,7 +50,7 @@ export type ApiClient = {
   ) => Promise<Appointment>,
   fetchPatientMedications: () => Promise<Medication[]>,
   fetchPatientProfile: () => Promise<PatientProfile | null>,
-  importPatientBackup: (payload: unknown) => Promise<PatientProfile>,
+  importPatientBackup: (payload: BackupData) => Promise<PatientProfile>,
   fetchPatientProfileById: (params: {
     profileId: string,
   }) => Promise<PatientProfile>,

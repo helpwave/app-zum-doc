@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { CreatePatientProfileInput, PatientProfile } from '../api/types'
+import type { BackupData, CreatePatientProfileInput, PatientProfile } from '../api/types'
 import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
@@ -21,7 +21,7 @@ export function usePatientProfile(
 }
 
 export function useImportPatientBackup(
-  options: MutationHookOptions<PatientProfile, unknown> = {}
+  options: MutationHookOptions<PatientProfile, BackupData> = {}
 ) {
   const client = getApiClient()
   const queryClient = useQueryClient()
@@ -29,7 +29,7 @@ export function useImportPatientBackup(
 
   return useMutation({
     ...rest,
-    mutationFn: (payload: unknown) => client.importPatientBackup(payload),
+    mutationFn: (payload: BackupData) => client.importPatientBackup(payload),
     onSuccess: async (...args) => {
       const [profile] = args
       const current = queryClient.getQueryData<PatientProfile | null>(profileKeys.patient)

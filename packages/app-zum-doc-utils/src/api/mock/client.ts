@@ -25,7 +25,7 @@ import {
   type LocalizedTemporaryNotificationTile,
   type LocalizedTemporaryNotifications
 } from './data'
-import { parsePatientBackupPayload } from '../backup'
+import { type BackupData, type ProfileJson } from '../backup'
 import {
   WeekdayUtils,
   type Appointment,
@@ -401,19 +401,62 @@ export function createMockApiClient(
     ))
   }
 
-  async function importPatientBackup(payload: unknown): Promise<PatientProfile> {
+  function patientProfileFromBackup(profile: ProfileJson): PatientProfile {
+    const dateOfBirth = /^\d{4}-\d{2}-\d{2}$/.test(profile.dateOfBirth)
+      ? parseIsoDate(profile.dateOfBirth)
+      : new Date(profile.dateOfBirth)
+    if (Number.isNaN(dateOfBirth.getTime())) {
+      throw new Error('Invalid backup payload')
+    }
+    return {
+      id: profile.id == null
+        ? `imported-${profile.firstName}-${profile.lastName}-${profile.dateOfBirth}`
+        : String(profile.id),
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      dateOfBirth,
+      email: '',
+      phone: profile.phoneNumber,
+      insurance: {
+        insuranceProviderId: profile.insurance,
+        insuranceNumber: profile.insuranceNumber,
+      },
+      medicationList: profile.medications.map((item, index) => ({
+        id: `imported-medication-${profile.id ?? 'new'}-${index + 1}`,
+        name: item.name,
+        size: item.packageSize === 'n1' || item.packageSize === 'n2' || item.packageSize === 'n3'
+          ? item.packageSize
+          : 'n1',
+      })),
+    }
+  }
+
+  async function importPatientBackup(payload: BackupData): Promise<PatientProfile> {
     return withMockLatency(() => {
-      const parsed = parsePatientBackupPayload(payload)
-      const profile = clonePatientProfile(parsed.profile)
-      profile.medicationList = parsed.medications.map((item) => ({ ...item }))
-      const exists = householdProfilesState.some((item) => item.id === profile.id)
-      householdProfilesState = exists
-        ? householdProfilesState.map((item) => item.id === profile.id ? profile : item)
-        : [...householdProfilesState, profile]
-      if (patientProfileState == null || patientProfileState.id === profile.id) {
-        applyHouseholdProfileAsCurrent(profile)
+      if (payload.profile.length === 0) {
+        throw new Error('Invalid backup payload')
       }
-      return clonePatientProfile(profile)
+      const imported = payload.profile.map((profile) => patientProfileFromBackup(profile))
+      for (const profile of imported) {
+        const exists = householdProfilesState.some((item) => item.id === profile.id)
+        householdProfilesState = exists
+          ? householdProfilesState.map((item) => item.id === profile.id ? profile : item)
+          : [...householdProfilesState, profile]
+      }
+      const updatedCurrent = imported.find((item) => item.id === patientProfileState?.id)
+      if (updatedCurrent != null) {
+        applyHouseholdProfileAsCurrent(updatedCurrent)
+      } else if (patientProfileState == null) {
+        const firstProfile = imported[0]
+        if (firstProfile == null) {
+          throw new Error('Invalid backup payload')
+        }
+        applyHouseholdProfileAsCurrent(firstProfile)
+      }
+      if (patientProfileState == null) {
+        throw new Error('Invalid backup payload')
+      }
+      return clonePatientProfile(patientProfileState)
     })
   }
 

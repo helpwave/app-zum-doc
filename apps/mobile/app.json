@@ -14,9 +14,6 @@
       "buildNumber": "10",
       "config": {
         "usesNonExemptEncryption": false
-      },
-      "infoPlist": {
-        "LSSupportsOpeningDocumentsInPlace": false
       }
     },
     "android": {
@@ -44,22 +41,6 @@
     "plugins": [
       "expo-router",
       "react-native-quick-crypto",
-      [
-        "expo-share-intent",
-        {
-          "androidIntentFilters": [
-            "application/vnd.azd.backup"
-          ],
-          "androidMultiIntentFilters": [
-            "application/vnd.azd.backup"
-          ],
-          "iosActivationRules": {
-            "NSExtensionActivationSupportsFileWithMaxCount": 1
-          },
-          "iosShareExtensionName": "AzD"
-        }
-      ],
-      "./plugins/with-azd-document-type.js",
       [
         "expo-build-properties",
         {

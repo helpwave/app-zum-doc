@@ -4,23 +4,19 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { readFileInputItemText } from "@/lib/backup-file"
 import {
-  decryptEncryptedBackup,
-  fileNameFromUri,
   isAzdBackupFileName,
-  parseEncryptedBackupFile,
-  parsePatientBackupPayload,
+  loadBackupV1,
 } from "@app-zum-doc/utils/api"
 import { useImportPatientBackup } from "@app-zum-doc/utils/hooks"
 import {
   Button,
-  createFileInputItem,
   FileInput,
   Input,
   ThemedText,
   type FileInputItem,
 } from "@helpwave/hightide-native/components"
-import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { useEffect, useState } from "react"
+import { useRouter, type Href } from "expo-router"
+import { useState } from "react"
 import {
   KeyboardAvoidingView,
   Platform,
@@ -28,16 +24,6 @@ import {
 } from "react-native"
 
 const importMinimumDurationMs = 500
-
-function firstParam(value: string | string[] | undefined): string | undefined {
-  if (typeof value === "string" && value.length > 0) {
-    return value
-  }
-  if (Array.isArray(value) && typeof value[0] === "string" && value[0].length > 0) {
-    return value[0]
-  }
-  return undefined
-}
 
 function waitRemaining(startedAt: number, minimumMs: number): Promise<void> {
   const remaining = minimumMs - (Date.now() - startedAt)
@@ -53,8 +39,6 @@ export default function MigrationScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const router = useRouter()
-  const { uri: uriParam } = useLocalSearchParams<{ uri?: string | string[] }>()
-  const incomingUri = firstParam(uriParam)
   const importBackup = useImportPatientBackup()
 
   const [files, setFiles] = useState<FileInputItem[]>([])
@@ -63,26 +47,10 @@ export default function MigrationScreen() {
   const [isImporting, setIsImporting] = useState(false)
   const [importFailed, setImportFailed] = useState(false)
 
-  useEffect(() => {
-    if (incomingUri == null) {
-      return
-    }
-    const name = fileNameFromUri(incomingUri)
-    setFiles([
-      createFileInputItem({
-        name,
-        uri: incomingUri,
-      }),
-    ])
-    setFileError(undefined)
-    setImportFailed(false)
-  }, [incomingUri])
-
   const selectedFile = files[0]
   const selectedFileInvalid = selectedFile != null
     && selectedFile.name.length > 0
     && !isAzdBackupFileName(selectedFile.name)
-    && incomingUri == null
   const canImport = selectedFile != null
     && password.length > 0
     && !isImporting
@@ -98,13 +66,8 @@ export default function MigrationScreen() {
     const startedAt = Date.now()
     try {
       const text = await readFileInputItemText(selectedFile)
-      const encrypted = parseEncryptedBackupFile(text)
-      if (encrypted == null) {
-        throw new Error("Invalid backup file")
-      }
-      const decrypted = await decryptEncryptedBackup(encrypted, password)
-      parsePatientBackupPayload(decrypted)
-      await importBackup.mutateAsync(decrypted)
+      const payload = await loadBackupV1(text, password)
+      await importBackup.mutateAsync(payload)
       await waitRemaining(startedAt, importMinimumDurationMs)
       router.replace("/manage-profiles" as Href)
     } catch {
@@ -149,7 +112,7 @@ export default function MigrationScreen() {
             }}
             onEditComplete={(next) => {
               const nextFile = next[0]
-              if (nextFile != null && !isAzdBackupFileName(nextFile.name) && nextFile.uri !== incomingUri) {
+              if (nextFile != null && !isAzdBackupFileName(nextFile.name)) {
                 setFileError(t("migrationInvalidFile"))
               }
             }}
