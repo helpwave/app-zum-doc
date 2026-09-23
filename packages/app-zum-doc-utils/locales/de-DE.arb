@@ -33,6 +33,9 @@
   "myDoctors": "Meine Ärzte",
   "loadingMyDoctors": "Meine Ärzte werden geladen…",
   "noMyDoctors": "Du hast noch keine Ärzte hinzugefügt.",
+  "noDoctorsYet": "Noch keine Ärzte",
+  "noRequestsYet": "Noch keine Anfragen",
+  "noChatsYet": "Noch keine Chats",
   "myRequests": "Meine Anfragen",
   "recentRequests": "Aktuelle Anfragen",
   "allRequests": "Alle Anfragen",
@@ -248,5 +251,36 @@
   "migrationImport": "Importieren",
   "migrationSelectFile": "Backup-Datei",
   "migrationImportReady": "Ihr Backup ist bereit. Importieren Sie es, um die Daten in diese App zu laden.",
-  "migrationInvalidFile": "Bitte wählen Sie eine gültige .azd-backup-Datei."
+  "migrationInvalidFile": "Bitte wählen Sie eine gültige .azd-backup-Datei.",
+  "onboardingWelcomeTitle": "Willkommen in der App zum Doc",
+  "onboardingWelcomeDisclaimer": "Einige Funktionen sind nur verfügbar, wenn Ihr Arzt App zum Doc nutzt. Bitte klären Sie vorab mit Ihrem Arzt oder Ärtztin, ob diese in der App findbar sind.",
+  "onboardingNext": "Weiter",
+  "onboardingMainProfileTitle": "Ihr Profil",
+  "onboardingProfilesTitle": "Verwaltete Profile",
+  "onboardingAddUser": "Nutzer hinzufügen",
+  "onboardingImportBackup": "Aus AzD-Backup importieren",
+  "onboardingSkip": "Überspringen",
+  "onboardingBackupEntryHint": "Sie haben bereits ein Backup? Stellen Sie Ihre Daten aus einer AzD-Backup-Datei wieder her.",
+  "onboardingRestoreBackup": "Backup wiederherstellen",
+  "onboardingBackupSummaryTitle": "Geladenes Backup",
+  "onboardingBackupPickTitle": "Hauptprofil wählen",
+  "onboardingBackupCreateNew": "Neues Profil anlegen",
+  "onboardingBackupEmpty": "Keine",
+  "onboardingBackupMessageCount": "{count} Nachrichten",
+  "@onboardingBackupMessageCount": {
+    "placeholders": {
+      "count": {
+        "type": "number"
+      }
+    }
+  },
+  "addEmail": "E-Mail hinzufügen",
+  "addPhoneNumber": "Telefonnummer hinzufügen",
+  "addInsurance": "Versicherung hinzufügen",
+  "onboardingFinish": "Fertig",
+  "onboardingLoad": "Laden",
+  "onboardingContinue": "Weiter",
+  "onboardingAdd": "Hinzufügen",
+  "onboardingDeleteUser": "Nutzer entfernen",
+  "profiles": "Profile"
 }

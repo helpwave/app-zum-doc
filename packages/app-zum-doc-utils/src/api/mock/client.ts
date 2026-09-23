@@ -1,23 +1,5 @@
 import type { ApiClient } from '../client'
 import {
-  appointmentsSeed,
-  citiesSeed,
-  conversationsSeed,
-  doctorsOfficesSeed,
-  initialMyDoctorIds,
-  medicationCatalogSeed,
-  messagesByConversation,
-  patientMedicationsSeed,
-  patientProfileSeed,
-  householdPatientProfilesSeed,
-  patientProfilesSeed,
-  practiceConversationsSeed,
-  practiceMessagesByConversation,
-  practicePatientsSeed,
-  practiceTodayAppointmentsSeed,
-  prescriptionsSeed,
-  referralsSeed,
-  specializationsSeed,
   type DoctorsOfficeSeed,
   type LocalizedDoctorSeed,
   type LocalizedDoctorServiceSeed,
@@ -25,7 +7,9 @@ import {
   type LocalizedTemporaryNotificationTile,
   type LocalizedTemporaryNotifications
 } from './data'
+import { mockStore as store, resetMockStore, type MockPracticeAccount } from './store'
 import { type BackupData, type ProfileJson } from '../backup'
+import type { AppOnboardingProfileInput, CompleteAppOnboardingInput, OnboardingInformation } from '../appOnboarding'
 import {
   WeekdayUtils,
   type Appointment,
@@ -127,55 +111,8 @@ export function createMockApiClient(
     return `${date.getFullYear()}-${month}-${day}`
   }
 
-  function listedTodayAppointmentRecords(): AppointmentRecord[] {
-    const date = isoDate(new Date())
-    return practiceTodayAppointmentsSeed
-      .filter((item) => item.listed !== false)
-      .map((item): AppointmentRecord => {
-        const record: AppointmentRecord = {
-          id: item.id,
-          profileId: item.profileId,
-          time: item.time,
-          note: item.note,
-          isEmergency: false,
-          status: item.status,
-          doctorsOfficeId: defaultPracticeOfficeId,
-          date,
-        }
-        if (item.sickNote) {
-          record.sickNote = item.sickNote
-        }
-        return record
-      })
-  }
-
-  function createAppointmentsState(): AppointmentRecord[] {
-    return [
-      ...structuredClone(appointmentsSeed),
-      ...listedTodayAppointmentRecords(),
-    ]
-  }
-
-  function ensureListedTodayAppointments(): void {
-    const date = isoDate(new Date())
-    const listed = listedTodayAppointmentRecords()
-    const byId = new Map(appointmentsState.map((item) => [item.id, item]))
-    const next = appointmentsState.map((item) => {
-      if (!listed.some((today) => today.id === item.id)) {
-        return item
-      }
-      return { ...item, date }
-    })
-    for (const record of listed) {
-      if (!byId.has(record.id)) {
-        next.push(record)
-      }
-    }
-    appointmentsState = next
-  }
-
   function resolvePracticePatient(profileId: string): PatientProfile | undefined {
-    return practicePatientsState.find((item) => item.id === profileId)
+    return store.practicePatients.find((item) => item.id === profileId)
   }
 
   function startOfToday(): Date {
@@ -183,35 +120,33 @@ export function createMockApiClient(
     return new Date(now.getFullYear(), now.getMonth(), now.getDate())
   }
 
-  let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
-  let messagesState: Record<string, Message[]> = structuredClone(
-    messagesByConversation
-  )
-  let myDoctorIds = new Set<string>(initialMyDoctorIds)
-  let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
-  let patientProfileState: PatientProfile | null = structuredClone(patientProfileSeed)
-  let householdProfilesState: PatientProfile[] = structuredClone(householdPatientProfilesSeed)
-  let appointmentsState: AppointmentRecord[] = createAppointmentsState()
-  let prescriptionsState: PrescriptionRecord[] = structuredClone(prescriptionsSeed)
-  let referralsState: ReferralRecord[] = structuredClone(referralsSeed)
-  let doctorsOfficesState: Record<string, DoctorsOfficeSeed> = structuredClone(doctorsOfficesSeed)
-  let practiceConversationsState: ConversationPreview[] = structuredClone(practiceConversationsSeed)
-  let practiceMessagesState: Record<string, Message[]> = structuredClone(
-    practiceMessagesByConversation
-  )
-  let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
-  let blockedPracticePatientIds = new Set<string>()
-
-  type PracticeAccountState = {
-    hasDoctorsOffice: boolean,
-    publicKey: string | null,
+  function householdProfiles(): PatientProfile[] {
+    return store.mainProfile == null
+      ? store.managedProfiles
+      : [store.mainProfile, ...store.managedProfiles]
   }
 
-  function defaultPracticeAccount(): PracticeAccountState {
-    return {
-      hasDoctorsOffice: false,
-      publicKey: null,
+  function findHouseholdProfile(profileId: string): PatientProfile | undefined {
+    return householdProfiles().find((profile) => profile.id === profileId)
+  }
+
+  function currentProfile(): PatientProfile | null {
+    return store.mainProfile
+  }
+
+  function upsertProfile(profile: PatientProfile): PatientProfile {
+    const next = clonePatientProfile(profile)
+    if (store.mainProfile?.id === next.id) {
+      store.mainProfile = next
+      return next
     }
+    const index = store.managedProfiles.findIndex((item) => item.id === next.id)
+    if (index >= 0) {
+      store.managedProfiles[index] = next
+    } else {
+      store.managedProfiles = [...store.managedProfiles, next]
+    }
+    return store.managedProfiles.find((item) => item.id === next.id) ?? next
   }
 
   function toSpkiBase64(value: string): string | null {
@@ -232,11 +167,10 @@ export function createMockApiClient(
     }
   }
 
-  function writePracticeAccount(next: PracticeAccountState): void {
-    practiceAccountState = next
+  function writePracticeAccount(next: MockPracticeAccount): void {
+    store.practiceAccount = next
   }
 
-  let practiceAccountState: PracticeAccountState = defaultPracticeAccount()
   let forceFail = options.forceFail === true
 
   function sleep(ms: number): Promise<void> {
@@ -264,14 +198,14 @@ export function createMockApiClient(
 
   async function fetchConversations(): Promise<ConversationPreview[]> {
     return withMockLatency(() =>
-      conversationsState.map((conversation) => ({ ...conversation })))
+      store.conversations.map((conversation) => ({ ...conversation })))
   }
 
   async function fetchConversation(params: {
     conversationId: string,
   }): Promise<ConversationPreview> {
     return withMockLatency(() => {
-      const conversation = conversationsState.find(
+      const conversation = store.conversations.find(
         (item) => item.id === params.conversationId
       )
       if (!conversation) {
@@ -285,7 +219,7 @@ export function createMockApiClient(
     conversationId: string,
   }): Promise<Message[]> {
     return withMockLatency(() => {
-      const messages = messagesState[params.conversationId] ?? []
+      const messages = store.messages[params.conversationId] ?? []
       return messages.map((message) => ({ ...message }))
     })
   }
@@ -294,13 +228,13 @@ export function createMockApiClient(
     conversationId: string
   ): Promise<ConversationPreview[]> {
     return withMockLatency(() => {
-      conversationsState = conversationsState.map((conversation) => {
+      store.conversations = store.conversations.map((conversation) => {
         if (conversation.id !== conversationId) {
           return conversation
         }
         return { ...conversation, unreadCount: 0 }
       })
-      return conversationsState.map((conversation) => ({ ...conversation }))
+      return store.conversations.map((conversation) => ({ ...conversation }))
     })
   }
 
@@ -319,9 +253,9 @@ export function createMockApiClient(
         time: now,
       }
 
-      const existing = messagesState[conversationId] ?? []
-      messagesState = {
-        ...messagesState,
+      const existing = store.messages[conversationId] ?? []
+      store.messages = {
+        ...store.messages,
         [conversationId]: [...existing, message],
       }
 
@@ -333,7 +267,7 @@ export function createMockApiClient(
         status: 'sent',
       }
 
-      conversationsState = conversationsState.map((conversation) => {
+      store.conversations = store.conversations.map((conversation) => {
         if (conversation.id !== conversationId) {
           return conversation
         }
@@ -344,7 +278,7 @@ export function createMockApiClient(
         }
       })
 
-      return (messagesState[conversationId] ?? []).map((item) => ({ ...item }))
+      return (store.messages[conversationId] ?? []).map((item) => ({ ...item }))
     })
   }
 
@@ -354,7 +288,7 @@ export function createMockApiClient(
     actionId: string
   ): Promise<Message[]> {
     return withMockLatency(() => {
-      const existing = messagesState[conversationId] ?? []
+      const existing = store.messages[conversationId] ?? []
       const next: Message[] = existing.map((message) => {
         if (message.id !== messageId || message.type !== 'card') {
           return message
@@ -376,8 +310,8 @@ export function createMockApiClient(
         })
       }
 
-      messagesState = {
-        ...messagesState,
+      store.messages = {
+        ...store.messages,
         [conversationId]: next,
       }
 
@@ -387,8 +321,8 @@ export function createMockApiClient(
 
   async function fetchHomeSummary(params: { locale: AppLocale }): Promise<HomeSummary> {
     return withMockLatency(() => ({
-      myDoctors: [...myDoctorIds].flatMap((id) => {
-        const office = doctorsOfficesState[id]
+      myDoctors: [...store.myDoctorIds].flatMap((id) => {
+        const office = store.doctorsOffices[id]
         return office ? [toDoctorsOffice(office, params.locale)] : []
       }),
       recentRequests: buildRecentRequests(params.locale),
@@ -396,9 +330,10 @@ export function createMockApiClient(
   }
 
   async function fetchPatientProfile(): Promise<PatientProfile | null> {
-    return withMockLatency(() => (
-      patientProfileState == null ? null : clonePatientProfile(patientProfileState)
-    ))
+    return withMockLatency(() => {
+      const profile = currentProfile()
+      return profile == null ? null : clonePatientProfile(profile)
+    })
   }
 
   function patientProfileFromBackup(profile: ProfileJson): PatientProfile {
@@ -438,25 +373,17 @@ export function createMockApiClient(
       }
       const imported = payload.profile.map((profile) => patientProfileFromBackup(profile))
       for (const profile of imported) {
-        const exists = householdProfilesState.some((item) => item.id === profile.id)
-        householdProfilesState = exists
-          ? householdProfilesState.map((item) => item.id === profile.id ? profile : item)
-          : [...householdProfilesState, profile]
-      }
-      const updatedCurrent = imported.find((item) => item.id === patientProfileState?.id)
-      if (updatedCurrent != null) {
-        applyHouseholdProfileAsCurrent(updatedCurrent)
-      } else if (patientProfileState == null) {
-        const firstProfile = imported[0]
-        if (firstProfile == null) {
-          throw new Error('Invalid backup payload')
+        if (store.mainProfile == null) {
+          store.mainProfile = profile
+          continue
         }
-        applyHouseholdProfileAsCurrent(firstProfile)
+        upsertProfile(profile)
       }
-      if (patientProfileState == null) {
+      const current = currentProfile()
+      if (current == null) {
         throw new Error('Invalid backup payload')
       }
-      return clonePatientProfile(patientProfileState)
+      return clonePatientProfile(current)
     })
   }
 
@@ -464,7 +391,7 @@ export function createMockApiClient(
     profileId: string,
   }): Promise<PatientProfile> {
     return withMockLatency(() => {
-      const household = householdProfilesState.find((item) => item.id === params.profileId)
+      const household = findHouseholdProfile(params.profileId)
       if (household) {
         return clonePatientProfile(household)
       }
@@ -477,10 +404,9 @@ export function createMockApiClient(
   }
 
   async function fetchPracticePatients(): Promise<PracticePatient[]> {
-    return withMockLatency(() => {
-      ensureListedTodayAppointments()
-      return practicePatientsState.map((profile) => toPracticePatient(profile))
-    })
+    return withMockLatency(() => (
+      store.practicePatients.map((profile) => toPracticePatient(profile))
+    ))
   }
 
   function clonePatientProfile(profile: PatientProfile): PatientProfile {
@@ -492,20 +418,16 @@ export function createMockApiClient(
   }
 
   function syncCurrentProfileToHousehold() {
-    if (patientProfileState == null) {
+    const profile = currentProfile()
+    if (profile == null) {
       return
     }
-    patientProfileState.medicationList = patientMedicationsState.map((item) => ({ ...item }))
-    const current = clonePatientProfile(patientProfileState)
-    const exists = householdProfilesState.some((item) => item.id === current.id)
-    householdProfilesState = exists
-      ? householdProfilesState.map((item) => item.id === current.id ? current : item)
-      : [current, ...householdProfilesState]
+    upsertProfile(profile)
   }
 
   function lastVisitFor(profileId: string): Date | undefined {
     const dates: Date[] = []
-    for (const appointment of appointmentsState) {
+    for (const appointment of store.appointments) {
       if (appointment.profileId !== profileId || appointment.status === 'cancelled') {
         continue
       }
@@ -519,7 +441,7 @@ export function createMockApiClient(
   }
 
   function fallbackLastVisit(profileId: string): Date {
-    const index = Math.max(0, practicePatientsState.findIndex((item) => item.id === profileId))
+    const index = Math.max(0, store.practicePatients.findIndex((item) => item.id === profileId))
     return new Date(2025, 3, 24 + index, 8, 33)
   }
 
@@ -531,7 +453,7 @@ export function createMockApiClient(
       lastChangedAt: lastVisit,
       lastChangedBy: 'Max Mustermann',
       insuranceCardCurrent: true,
-      blocked: blockedPracticePatientIds.has(profile.id),
+      blocked: store.blockedPracticePatientIds.includes(profile.id),
     }
   }
 
@@ -545,7 +467,7 @@ export function createMockApiClient(
         throw new Error('Bitte Vorname, Nachname und Geburtsdatum angeben.')
       }
       const id = `patient-${Date.now()}`
-      const insuranceNumber = String(51_247_32 + practicePatientsState.length)
+      const insuranceNumber = String(51_247_32 + store.practicePatients.length)
       const profile: PatientProfile = {
         id,
         firstName,
@@ -559,19 +481,21 @@ export function createMockApiClient(
         },
         medicationList: [],
       }
-      practicePatientsState = [profile, ...practicePatientsState]
+      store.practicePatients = [profile, ...store.practicePatients]
       return toPracticePatient(profile)
     })
   }
 
   async function deletePracticePatient(profileId: string): Promise<void> {
     return withMockLatency(() => {
-      const exists = practicePatientsState.some((item) => item.id === profileId)
+      const exists = store.practicePatients.some((item) => item.id === profileId)
       if (!exists) {
         throw new Error('Profil nicht gefunden.')
       }
-      practicePatientsState = practicePatientsState.filter((item) => item.id !== profileId)
-      blockedPracticePatientIds.delete(profileId)
+      store.practicePatients = store.practicePatients.filter((item) => item.id !== profileId)
+      store.blockedPracticePatientIds = store.blockedPracticePatientIds.filter(
+        (id) => id !== profileId
+      )
     })
   }
 
@@ -585,23 +509,30 @@ export function createMockApiClient(
         throw new Error('Profil nicht gefunden.')
       }
       if (params.blocked) {
-        blockedPracticePatientIds.add(params.profileId)
+        if (!store.blockedPracticePatientIds.includes(params.profileId)) {
+          store.blockedPracticePatientIds = [
+            ...store.blockedPracticePatientIds,
+            params.profileId,
+          ]
+        }
       } else {
-        blockedPracticePatientIds.delete(params.profileId)
+        store.blockedPracticePatientIds = store.blockedPracticePatientIds.filter(
+          (id) => id !== params.profileId
+        )
       }
       return toPracticePatient(profile)
     })
   }
 
   async function fetchPatientProfiles(): Promise<PatientProfileSummary[]> {
-    return withMockLatency(() => householdProfilesState.map((profile) => toPatientProfileSummary(profile)))
+    return withMockLatency(() => householdProfiles().map((profile) => toPatientProfileSummary(profile)))
   }
 
   async function selectPatientProfile(params: {
     profileId: string,
   }): Promise<PatientProfile> {
     return withMockLatency(() => {
-      const next = householdProfilesState.find((item) => item.id === params.profileId)
+      const next = findHouseholdProfile(params.profileId)
       if (next == null) {
         throw new Error('Profil nicht gefunden.')
       }
@@ -613,12 +544,19 @@ export function createMockApiClient(
 
   function applyHouseholdProfileAsCurrent(profile: PatientProfile | null) {
     if (profile == null) {
-      patientProfileState = null
-      patientMedicationsState = []
+      store.mainProfile = null
       return
     }
-    patientProfileState = clonePatientProfile(profile)
-    patientMedicationsState = profile.medicationList.map((item) => ({ ...item }))
+    const stored = clonePatientProfile(profile)
+    const previousMain = store.mainProfile
+    store.managedProfiles = store.managedProfiles.filter((item) => item.id !== stored.id)
+    if (previousMain != null && previousMain.id !== stored.id) {
+      store.managedProfiles = [
+        clonePatientProfile(previousMain),
+        ...store.managedProfiles.filter((item) => item.id !== previousMain.id),
+      ]
+    }
+    store.mainProfile = stored
   }
 
   async function createPatientProfile(
@@ -643,9 +581,10 @@ export function createMockApiClient(
         },
         medicationList: [],
       }
-      householdProfilesState = [...householdProfilesState, profile]
-      if (patientProfileState == null) {
-        applyHouseholdProfileAsCurrent(profile)
+      if (store.mainProfile == null) {
+        store.mainProfile = profile
+      } else {
+        store.managedProfiles = [...store.managedProfiles, profile]
       }
       return clonePatientProfile(profile)
     })
@@ -653,18 +592,20 @@ export function createMockApiClient(
 
   async function deletePatientProfile(profileId: string): Promise<PatientProfile | null> {
     return withMockLatency(() => {
-      const exists = householdProfilesState.some((item) => item.id === profileId)
-      if (!exists) {
+      const isMain = store.mainProfile?.id === profileId
+      const isManaged = store.managedProfiles.some((item) => item.id === profileId)
+      if (!isMain && !isManaged) {
         throw new Error('Profil nicht gefunden.')
       }
-      if (patientProfileState?.id === profileId) {
-        syncCurrentProfileToHousehold()
+      if (isMain) {
+        const [nextMain, ...remaining] = store.managedProfiles
+        store.mainProfile = nextMain ?? null
+        store.managedProfiles = remaining
+      } else {
+        store.managedProfiles = store.managedProfiles.filter((item) => item.id !== profileId)
       }
-      householdProfilesState = householdProfilesState.filter((item) => item.id !== profileId)
-      if (patientProfileState?.id === profileId) {
-        applyHouseholdProfileAsCurrent(householdProfilesState[0] ?? null)
-      }
-      return patientProfileState == null ? null : clonePatientProfile(patientProfileState)
+      const current = currentProfile()
+      return current == null ? null : clonePatientProfile(current)
     })
   }
 
@@ -672,7 +613,7 @@ export function createMockApiClient(
     doctorsOfficeId: string,
     locale: AppLocale
   ): DoctorsOffice {
-    const office = doctorsOfficesState[doctorsOfficeId]
+    const office = store.doctorsOffices[doctorsOfficeId]
     if (!office) {
       throw new Error('Arztpraxis nicht gefunden.')
     }
@@ -681,9 +622,9 @@ export function createMockApiClient(
 
   function buildRecentRequests(locale: AppLocale): PatientRequest[] {
     return [
-      ...prescriptionsState.map((record) => toPrescription(record, locale)),
-      ...referralsState.map((record) => toReferral(record, locale)),
-      ...appointmentsState.map((record) => toAppointment(record, locale)),
+      ...store.prescriptions.map((record) => toPrescription(record, locale)),
+      ...store.referrals.map((record) => toReferral(record, locale)),
+      ...store.appointments.map((record) => toAppointment(record, locale)),
     ]
   }
 
@@ -730,7 +671,7 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Appointment> {
     return withMockLatency(() => {
-      const appointment = appointmentsState.find((item) => item.id === appointmentId)
+      const appointment = store.appointments.find((item) => item.id === appointmentId)
       if (!appointment) {
         throw new Error('Termin nicht gefunden.')
       }
@@ -743,13 +684,13 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Appointment> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[input.doctorsOfficeId]
+      const office = store.doctorsOffices[input.doctorsOfficeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
       const profile =
-        patientProfilesSeed.find((item) => item.id === input.profileId)
-        ?? patientProfilesSeed[0]
+        findHouseholdProfile(input.profileId)
+        ?? householdProfiles()[0]
       if (!profile) {
         throw new Error('Profil nicht gefunden.')
       }
@@ -764,7 +705,7 @@ export function createMockApiClient(
         note: input.note,
         status: 'requested',
       }
-      appointmentsState = [appointment, ...appointmentsState]
+      store.appointments = [appointment, ...store.appointments]
       return toAppointment(appointment, locale)
     })
   }
@@ -774,7 +715,7 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Appointment> {
     return withMockLatency(() => {
-      const existing = appointmentsState.find((item) => item.id === appointmentId)
+      const existing = store.appointments.find((item) => item.id === appointmentId)
       if (!existing) {
         throw new Error('Termin nicht gefunden.')
       }
@@ -782,7 +723,7 @@ export function createMockApiClient(
         ...existing,
         status: 'cancelled',
       }
-      appointmentsState = appointmentsState.map((item) =>
+      store.appointments = store.appointments.map((item) =>
         item.id === appointmentId ? appointment : item)
       return toAppointment(appointment, locale)
     })
@@ -793,7 +734,7 @@ export function createMockApiClient(
     locale: AppLocale,
   }): Promise<Prescription> {
     return withMockLatency(() => {
-      const prescription = prescriptionsState.find((item) => item.id === params.id)
+      const prescription = store.prescriptions.find((item) => item.id === params.id)
       if (!prescription) {
         throw new Error('Rezept nicht gefunden.')
       }
@@ -806,13 +747,13 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Prescription> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[input.doctorsOfficeId]
+      const office = store.doctorsOffices[input.doctorsOfficeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
       const profile =
-        patientProfilesSeed.find((item) => item.id === input.profileId)
-        ?? patientProfilesSeed[0]
+        findHouseholdProfile(input.profileId)
+        ?? householdProfiles()[0]
       if (!profile) {
         throw new Error('Profil nicht gefunden.')
       }
@@ -833,7 +774,7 @@ export function createMockApiClient(
         })),
         status: 'inProgress',
       }
-      prescriptionsState = [prescription, ...prescriptionsState]
+      store.prescriptions = [prescription, ...store.prescriptions]
       return toPrescription(prescription, locale)
     })
   }
@@ -843,7 +784,7 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Prescription> {
     return withMockLatency(() => {
-      const existing = prescriptionsState.find((item) => item.id === prescriptionId)
+      const existing = store.prescriptions.find((item) => item.id === prescriptionId)
       if (!existing) {
         throw new Error('Rezept nicht gefunden.')
       }
@@ -851,7 +792,7 @@ export function createMockApiClient(
         ...existing,
         status: 'cancelled',
       }
-      prescriptionsState = prescriptionsState.map((item) =>
+      store.prescriptions = store.prescriptions.map((item) =>
         item.id === prescriptionId ? prescription : item)
       return toPrescription(prescription, locale)
     })
@@ -862,7 +803,7 @@ export function createMockApiClient(
     locale: AppLocale,
   }): Promise<Referral> {
     return withMockLatency(() => {
-      const referral = referralsState.find((item) => item.id === params.id)
+      const referral = store.referrals.find((item) => item.id === params.id)
       if (!referral) {
         throw new Error('Überweisung nicht gefunden.')
       }
@@ -875,13 +816,13 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Referral> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[input.doctorsOfficeId]
+      const office = store.doctorsOffices[input.doctorsOfficeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
       const profile =
-        patientProfilesSeed.find((item) => item.id === input.profileId)
-        ?? patientProfilesSeed[0]
+        findHouseholdProfile(input.profileId)
+        ?? householdProfiles()[0]
       if (!profile) {
         throw new Error('Profil nicht gefunden.')
       }
@@ -897,7 +838,7 @@ export function createMockApiClient(
         reason: input.reason,
         status: 'inProgress',
       }
-      referralsState = [referral, ...referralsState]
+      store.referrals = [referral, ...store.referrals]
       return toReferral(referral, locale)
     })
   }
@@ -907,7 +848,7 @@ export function createMockApiClient(
     locale: AppLocale
   ): Promise<Referral> {
     return withMockLatency(() => {
-      const existing = referralsState.find((item) => item.id === referralId)
+      const existing = store.referrals.find((item) => item.id === referralId)
       if (!existing) {
         throw new Error('Überweisung nicht gefunden.')
       }
@@ -915,15 +856,20 @@ export function createMockApiClient(
         ...existing,
         status: 'cancelled',
       }
-      referralsState = referralsState.map((item) =>
+      store.referrals = store.referrals.map((item) =>
         item.id === referralId ? referral : item)
       return toReferral(referral, locale)
     })
   }
 
   async function fetchPatientMedications(): Promise<Medication[]> {
-    return withMockLatency(() =>
-      patientMedicationsState.map((medication) => ({ ...medication })))
+    return withMockLatency(() => {
+      const profile = currentProfile()
+      if (profile == null) {
+        return []
+      }
+      return profile.medicationList.map((medication) => ({ ...medication }))
+    })
   }
 
   async function searchMedications(params: {
@@ -931,7 +877,7 @@ export function createMockApiClient(
   }): Promise<MedicationCatalogItem[]> {
     return withMockLatency(() => {
       const query = params.search?.trim().toLowerCase() ?? ''
-      return medicationCatalogSeed
+      return store.medicationCatalog
         .filter((item) => !query || matchesQuery(item.name, query))
         .map((item) => ({ ...item }))
     }, { failKey: params.search })
@@ -942,20 +888,24 @@ export function createMockApiClient(
     size: MedicationSize,
   }): Promise<Medication[]> {
     return withMockLatency(() => {
-      const catalogItem = medicationCatalogSeed.find(
+      const catalogItem = store.medicationCatalog.find(
         (item) => item.id === params.catalogId
       )
       if (!catalogItem) {
         throw new Error('Medikament nicht gefunden.')
       }
 
-      const alreadyAdded = patientMedicationsState.some(
+      const profile = currentProfile()
+      if (profile == null) {
+        throw new Error('Profil nicht gefunden.')
+      }
+      const alreadyAdded = profile.medicationList.some(
         (medication) =>
           medication.name === catalogItem.name && medication.size === params.size
       )
       if (!alreadyAdded) {
-        patientMedicationsState = [
-          ...patientMedicationsState,
+        profile.medicationList = [
+          ...profile.medicationList,
           {
             id: `med-${catalogItem.id}-${params.size}-${Date.now()}`,
             name: catalogItem.name,
@@ -963,8 +913,7 @@ export function createMockApiClient(
           },
         ]
       }
-      syncCurrentProfileToHousehold()
-      return patientMedicationsState.map((medication) => ({ ...medication }))
+      return profile.medicationList.map((medication) => ({ ...medication }))
     })
   }
 
@@ -972,17 +921,20 @@ export function createMockApiClient(
     medicationId: string
   ): Promise<Medication[]> {
     return withMockLatency(() => {
-      patientMedicationsState = patientMedicationsState.filter(
+      const profile = currentProfile()
+      if (profile == null) {
+        return []
+      }
+      profile.medicationList = profile.medicationList.filter(
         (medication) => medication.id !== medicationId
       )
-      syncCurrentProfileToHousehold()
-      return patientMedicationsState.map((medication) => ({ ...medication }))
+      return profile.medicationList.map((medication) => ({ ...medication }))
     })
   }
 
   function localizedSpecialty(office: DoctorsOfficeSeed, locale: AppLocale): string {
     const fromIds = doctorsOfficeSpecializationIds(office)
-      .map((id) => specializationsSeed.find((item) => item.id === id)?.labels[locale])
+      .map((id) => store.specializations.find((item) => item.id === id)?.labels[locale])
       .filter((label): label is string => Boolean(label))
       .join(' - ')
     if (fromIds.length > 0) {
@@ -1153,7 +1105,7 @@ export function createMockApiClient(
 
   async function fetchMyDoctors(): Promise<MyDoctors> {
     return withMockLatency(() => ({
-      doctorIds: [...myDoctorIds],
+      doctorIds: [...store.myDoctorIds],
     }))
   }
 
@@ -1162,7 +1114,7 @@ export function createMockApiClient(
     locale: AppLocale,
   }): Promise<DoctorsOffice> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[params.id]
+      const office = store.doctorsOffices[params.id]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
@@ -1172,23 +1124,25 @@ export function createMockApiClient(
 
   async function addMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[doctorsOfficeId]
+      const office = store.doctorsOffices[doctorsOfficeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
-      myDoctorIds.add(office.id)
-      return { doctorIds: [...myDoctorIds] }
+      if (!store.myDoctorIds.includes(office.id)) {
+        store.myDoctorIds = [...store.myDoctorIds, office.id]
+      }
+      return { doctorIds: [...store.myDoctorIds] }
     })
   }
 
   async function removeMyDoctor(doctorsOfficeId: string): Promise<MyDoctors> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[doctorsOfficeId]
+      const office = store.doctorsOffices[doctorsOfficeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
-      myDoctorIds.delete(office.id)
-      return { doctorIds: [...myDoctorIds] }
+      store.myDoctorIds = store.myDoctorIds.filter((id) => id !== office.id)
+      return { doctorIds: [...store.myDoctorIds] }
     })
   }
 
@@ -1202,7 +1156,7 @@ export function createMockApiClient(
   }): Promise<SearchCity[]> {
     return withMockLatency(() => {
       const query = params.search?.trim().toLowerCase() ?? ''
-      return citiesSeed
+      return store.cities
         .map((city) => ({
           id: city.id,
           label: city.labels[params.locale],
@@ -1217,7 +1171,7 @@ export function createMockApiClient(
   }): Promise<SearchSpecialization[]> {
     return withMockLatency(() => {
       const query = params.search?.trim().toLowerCase() ?? ''
-      return specializationsSeed
+      return store.specializations
         .map((specialization) => ({
           id: specialization.id,
           label: specialization.labels[params.locale],
@@ -1231,9 +1185,9 @@ export function createMockApiClient(
   ): Promise<DoctorsOffice[]> {
     return withMockLatency(() => {
       const query = filters.query?.trim().toLowerCase() ?? ''
-      const cityById = new Map(citiesSeed.map((city) => [city.id, city]))
+      const cityById = new Map(store.cities.map((city) => [city.id, city]))
 
-      return Object.values(doctorsOfficesState)
+      return Object.values(store.doctorsOffices)
         .filter((office) => {
           if (filters.cityId && office.cityId !== filters.cityId) {
             return false
@@ -1259,15 +1213,22 @@ export function createMockApiClient(
   }
 
   function resolvePatientSummary(profileId: string): PatientProfileSummary {
-    const practicePatient = resolvePracticePatient(profileId)
-    if (practicePatient) {
-      return toPatientProfileSummary(practicePatient)
+    const profile = resolvePracticePatient(profileId)
+      ?? findHouseholdProfile(profileId)
+    if (profile) {
+      return toPatientProfileSummary(profile)
     }
-    const summary = patientProfilesSeed.find((item) => item.id === profileId)
-    if (summary) {
-      return { ...summary }
+    return {
+      id: profileId,
+      firstName: '',
+      lastName: '',
+      dateOfBirth: new Date(0),
+      insurance: {
+        insuranceProviderId: '',
+        insuranceNumber: '',
+      },
+      medicationCount: 0,
     }
-    return toPatientProfileSummary(patientProfileSeed)
   }
 
   function toPracticeRequest(request: PatientRequest): PracticeRequest {
@@ -1291,11 +1252,10 @@ export function createMockApiClient(
     locale: AppLocale,
   }): Promise<PracticeOverview> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[params.officeId]
+      const office = store.doctorsOffices[params.officeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
-      ensureListedTodayAppointments()
       const requests = practiceRequestsForOffice(params.officeId, params.locale)
       const open = requests.filter((request) =>
         isOpenPatientRequestStatus(request.status))
@@ -1306,49 +1266,60 @@ export function createMockApiClient(
       let sickNotes = 0
       let openAppointmentsWithoutSickNote = 0
 
-      for (const seed of practiceTodayAppointmentsSeed) {
-        const patient = resolvePracticePatient(seed.profileId) ?? patientProfileSeed
-        const company = findInsuranceCompany(patient.insurance.insuranceProviderId)
+      for (const item of store.appointments) {
+        if (
+          item.doctorsOfficeId !== params.officeId
+          || item.date !== today
+          || item.status === 'cancelled'
+        ) {
+          continue
+        }
+        const patient = resolvePracticePatient(item.profileId)
+          ?? findHouseholdProfile(item.profileId)
+        const company = patient == null
+          ? undefined
+          : findInsuranceCompany(patient.insurance.insuranceProviderId)
         if (company?.type === 'private') {
           todayAppointmentsPkv += 1
         } else {
           todayAppointmentsGkv += 1
         }
-        if (seed.sickNote) {
+        if (item.sickNote) {
           sickNotes += 1
         } else {
           openAppointmentsWithoutSickNote += 1
         }
       }
 
-      const todayAppointments = appointmentsState
+      const todayAppointments = store.appointments
         .filter((item) => (
           item.doctorsOfficeId === params.officeId
           && item.date === today
         ))
         .sort((left, right) => left.time.localeCompare(right.time))
         .map((item) => {
-          const patient = resolvePracticePatient(item.profileId) ?? patientProfileSeed
+          const patient = resolvePracticePatient(item.profileId)
+            ?? findHouseholdProfile(item.profileId)
           return {
             id: item.id,
             time: item.time,
             date: item.date,
-            patientName: patientProfileFullName(patient),
-            insuranceLabel: formatInsuranceChipLabel(patient.insurance),
+            patientName: patient == null ? '' : patientProfileFullName(patient),
+            insuranceLabel: patient == null ? '' : formatInsuranceChipLabel(patient.insurance),
             reason: item.note,
           }
         })
 
-      const unreadChatCount = practiceConversationsState.reduce(
+      const unreadChatCount = store.practiceConversations.reduce(
         (sum, conversation) => sum + conversation.unreadCount,
         0
       )
-      const overdueMessageCount = practiceConversationsState.filter((conversation) => (
+      const overdueMessageCount = store.practiceConversations.filter((conversation) => (
         conversation.unreadCount > 0
         && conversation.lastMessage.time < todayStart
       )).length
 
-      const recentMessages = [...practiceConversationsState]
+      const recentMessages = [...store.practiceConversations]
         .sort((left, right) =>
           right.lastMessage.time.getTime() - left.lastMessage.time.getTime())
         .slice(0, 6)
@@ -1371,7 +1342,7 @@ export function createMockApiClient(
         openAppointments: open.filter((request) => request.kind === 'appointment').length,
         openPrescriptions: open.filter((request) => request.kind === 'prescription').length,
         openReferrals: open.filter((request) => request.kind === 'referral').length,
-        patientCount: practicePatientsState.length,
+        patientCount: store.practicePatients.length,
         overdueMessageCount,
         unreadChatCount,
         todayAppointmentsGkv,
@@ -1395,7 +1366,6 @@ export function createMockApiClient(
     status?: PatientRequestStatus,
   }): Promise<PracticeRequest[]> {
     return withMockLatency(() => {
-      ensureListedTodayAppointments()
       return practiceRequestsForOffice(params.officeId, params.locale).filter((request) => {
         if (params.kind && request.kind !== params.kind) {
           return false
@@ -1413,15 +1383,15 @@ export function createMockApiClient(
     locale: AppLocale,
   }): Promise<PracticeRequest> {
     return withMockLatency(() => {
-      const appointment = appointmentsState.find((item) => item.id === params.id)
+      const appointment = store.appointments.find((item) => item.id === params.id)
       if (appointment) {
         return toPracticeRequest(toAppointment(appointment, params.locale))
       }
-      const prescription = prescriptionsState.find((item) => item.id === params.id)
+      const prescription = store.prescriptions.find((item) => item.id === params.id)
       if (prescription) {
         return toPracticeRequest(toPrescription(prescription, params.locale))
       }
-      const referral = referralsState.find((item) => item.id === params.id)
+      const referral = store.referrals.find((item) => item.id === params.id)
       if (referral) {
         return toPracticeRequest(toReferral(referral, params.locale))
       }
@@ -1437,7 +1407,7 @@ export function createMockApiClient(
   }): Promise<PracticeRequest> {
     return withMockLatency(() => {
       if (params.kind === 'appointment') {
-        const existing = appointmentsState.find((item) => item.id === params.id)
+        const existing = store.appointments.find((item) => item.id === params.id)
         if (!existing) {
           throw new Error('Termin nicht gefunden.')
         }
@@ -1448,13 +1418,13 @@ export function createMockApiClient(
           ...existing,
           status: params.status,
         }
-        appointmentsState = appointmentsState.map((item) =>
+        store.appointments = store.appointments.map((item) =>
           item.id === params.id ? appointment : item)
         return toPracticeRequest(toAppointment(appointment, params.locale))
       }
 
       if (params.kind === 'prescription') {
-        const existing = prescriptionsState.find((item) => item.id === params.id)
+        const existing = store.prescriptions.find((item) => item.id === params.id)
         if (!existing) {
           throw new Error('Rezept nicht gefunden.')
         }
@@ -1465,12 +1435,12 @@ export function createMockApiClient(
           ...existing,
           status: params.status,
         }
-        prescriptionsState = prescriptionsState.map((item) =>
+        store.prescriptions = store.prescriptions.map((item) =>
           item.id === params.id ? prescription : item)
         return toPracticeRequest(toPrescription(prescription, params.locale))
       }
 
-      const existing = referralsState.find((item) => item.id === params.id)
+      const existing = store.referrals.find((item) => item.id === params.id)
       if (!existing) {
         throw new Error('Überweisung nicht gefunden.')
       }
@@ -1481,7 +1451,7 @@ export function createMockApiClient(
         ...existing,
         status: params.status,
       }
-      referralsState = referralsState.map((item) =>
+      store.referrals = store.referrals.map((item) =>
         item.id === params.id ? referral : item)
       return toPracticeRequest(toReferral(referral, params.locale))
     })
@@ -1493,7 +1463,7 @@ export function createMockApiClient(
     input: UpdateDoctorsOfficeInput,
   }): Promise<DoctorsOffice> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[params.officeId]
+      const office = store.doctorsOffices[params.officeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
@@ -1568,8 +1538,8 @@ export function createMockApiClient(
         temporaryNotifications,
         services,
       }
-      doctorsOfficesState = {
-        ...doctorsOfficesState,
+      store.doctorsOffices = {
+        ...store.doctorsOffices,
         [params.officeId]: next,
       }
       return toDoctorsOffice(next, params.locale)
@@ -1578,20 +1548,20 @@ export function createMockApiClient(
 
   async function fetchPracticeOnboardingStatus(): Promise<PracticeOnboardingStatus> {
     return withMockLatency(() => ({
-      hasDoctorsOffice: practiceAccountState.hasDoctorsOffice,
-      hasPublicKey: practiceAccountState.publicKey != null,
+      hasDoctorsOffice: store.practiceAccount.hasDoctorsOffice,
+      hasPublicKey: store.practiceAccount.publicKey != null,
     }))
   }
 
   async function fetchPracticeEncryptionData(): Promise<PracticeEncryptionData> {
     return withMockLatency(() => ({
-      publicKey: practiceAccountState.publicKey,
+      publicKey: store.practiceAccount.publicKey,
     }))
   }
 
   async function fetchPracticeMyData(): Promise<PracticeMyData> {
     return withMockLatency(() => {
-      const office = doctorsOfficesState[defaultPracticeOfficeId]
+      const office = store.doctorsOffices[defaultPracticeOfficeId]
       if (!office) {
         throw new Error('Arztpraxis nicht gefunden.')
       }
@@ -1609,18 +1579,18 @@ export function createMockApiClient(
         throw new Error('Ungültiger öffentlicher Schlüssel.')
       }
       writePracticeAccount({
-        ...practiceAccountState,
+        ...store.practiceAccount,
         publicKey: normalized,
       })
       return {
-        hasDoctorsOffice: practiceAccountState.hasDoctorsOffice,
+        hasDoctorsOffice: store.practiceAccount.hasDoctorsOffice,
         hasPublicKey: true,
       }
     })
   }
 
   async function fetchEncryptionKeyTest(): Promise<EncryptionKeyTest> {
-    const publicKey = practiceAccountState.publicKey
+    const publicKey = store.practiceAccount.publicKey
     if (!publicKey) {
       throw new Error('Kein öffentlicher Schlüssel vorhanden.')
     }
@@ -1649,7 +1619,7 @@ export function createMockApiClient(
       },
     })
     writePracticeAccount({
-      ...practiceAccountState,
+      ...store.practiceAccount,
       hasDoctorsOffice: true,
     })
     return office
@@ -1657,14 +1627,14 @@ export function createMockApiClient(
 
   async function fetchPracticeConversations(): Promise<ConversationPreview[]> {
     return withMockLatency(() =>
-      practiceConversationsState.map((conversation) => ({ ...conversation })))
+      store.practiceConversations.map((conversation) => ({ ...conversation })))
   }
 
   async function fetchPracticeConversation(params: {
     conversationId: string,
   }): Promise<ConversationPreview> {
     return withMockLatency(() => {
-      const conversation = practiceConversationsState.find(
+      const conversation = store.practiceConversations.find(
         (item) => item.id === params.conversationId
       )
       if (!conversation) {
@@ -1678,7 +1648,7 @@ export function createMockApiClient(
     conversationId: string,
   }): Promise<Message[]> {
     return withMockLatency(() => {
-      const messages = practiceMessagesState[params.conversationId] ?? []
+      const messages = store.practiceMessages[params.conversationId] ?? []
       return messages.map((message) => ({ ...message }))
     })
   }
@@ -1687,13 +1657,13 @@ export function createMockApiClient(
     conversationId: string
   ): Promise<ConversationPreview[]> {
     return withMockLatency(() => {
-      practiceConversationsState = practiceConversationsState.map((conversation) => {
+      store.practiceConversations = store.practiceConversations.map((conversation) => {
         if (conversation.id !== conversationId) {
           return conversation
         }
         return { ...conversation, unreadCount: 0 }
       })
-      return practiceConversationsState.map((conversation) => ({ ...conversation }))
+      return store.practiceConversations.map((conversation) => ({ ...conversation }))
     })
   }
 
@@ -1702,7 +1672,7 @@ export function createMockApiClient(
     body: string
   ): Promise<Message[]> {
     return withMockLatency(() => {
-      const conversation = practiceConversationsState.find(
+      const conversation = store.practiceConversations.find(
         (item) => item.id === conversationId
       )
       if (!conversation) {
@@ -1719,9 +1689,9 @@ export function createMockApiClient(
         time: now,
       }
 
-      const existing = practiceMessagesState[conversationId] ?? []
-      practiceMessagesState = {
-        ...practiceMessagesState,
+      const existing = store.practiceMessages[conversationId] ?? []
+      store.practiceMessages = {
+        ...store.practiceMessages,
         [conversationId]: [...existing, message],
       }
 
@@ -1733,7 +1703,7 @@ export function createMockApiClient(
         status: 'sent',
       }
 
-      practiceConversationsState = practiceConversationsState.map((item) => {
+      store.practiceConversations = store.practiceConversations.map((item) => {
         if (item.id !== conversationId) {
           return item
         }
@@ -1744,26 +1714,75 @@ export function createMockApiClient(
         }
       })
 
-      return (practiceMessagesState[conversationId] ?? []).map((item) => ({ ...item }))
+      return (store.practiceMessages[conversationId] ?? []).map((item) => ({ ...item }))
+    })
+  }
+
+  function onboardingInformation(): OnboardingInformation {
+    return {
+      mainProfile: store.mainProfile == null
+        ? null
+        : toPatientProfileSummary(store.mainProfile),
+      managedProfiles: store.managedProfiles.map((profile) => toPatientProfileSummary(profile)),
+      hasOnboarded: store.hasOnboarded,
+    }
+  }
+
+  function profileFromOnboardingInput(profile: AppOnboardingProfileInput): PatientProfile {
+    const dateOfBirth = /^\d{4}-\d{2}-\d{2}$/.test(profile.dateOfBirth)
+      ? parseIsoDate(profile.dateOfBirth)
+      : new Date(profile.dateOfBirth)
+    if (Number.isNaN(dateOfBirth.getTime())) {
+      throw new Error('Invalid onboarding profile')
+    }
+    return {
+      id: profile.id,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      dateOfBirth,
+      email: profile.email,
+      phone: profile.phoneNumber,
+      insurance: {
+        insuranceProviderId: profile.insurance,
+        insuranceNumber: profile.insuranceNumber,
+      },
+      medicationList: profile.medications.map((item, index) => ({
+        id: `onboarding-medication-${profile.id}-${index + 1}`,
+        name: item.name,
+        size: item.packageSize === 'n1' || item.packageSize === 'n2' || item.packageSize === 'n3'
+          ? item.packageSize
+          : 'n1',
+      })),
+    }
+  }
+
+  async function fetchOnboardingInformation(): Promise<OnboardingInformation> {
+    return withMockLatency(() => onboardingInformation())
+  }
+
+  async function markAppOnboarded(): Promise<OnboardingInformation> {
+    return withMockLatency(() => {
+      if (currentProfile() == null) {
+        throw new Error('Admin profile is missing')
+      }
+      store.hasOnboarded = true
+      return onboardingInformation()
+    })
+  }
+
+  async function completeAppOnboarding(
+    input: CompleteAppOnboardingInput
+  ): Promise<OnboardingInformation> {
+    return withMockLatency(() => {
+      store.mainProfile = profileFromOnboardingInput(input.mainProfile)
+      store.managedProfiles = input.managedProfiles.map((profile) => profileFromOnboardingInput(profile))
+      store.hasOnboarded = true
+      return onboardingInformation()
     })
   }
 
   function reset(): void {
-    conversationsState = structuredClone(conversationsSeed)
-    messagesState = structuredClone(messagesByConversation)
-    myDoctorIds = new Set<string>(initialMyDoctorIds)
-    patientMedicationsState = structuredClone(patientMedicationsSeed)
-    patientProfileState = structuredClone(patientProfileSeed)
-    householdProfilesState = structuredClone(householdPatientProfilesSeed)
-    appointmentsState = createAppointmentsState()
-    prescriptionsState = structuredClone(prescriptionsSeed)
-    referralsState = structuredClone(referralsSeed)
-    doctorsOfficesState = structuredClone(doctorsOfficesSeed)
-    practiceConversationsState = structuredClone(practiceConversationsSeed)
-    practiceMessagesState = structuredClone(practiceMessagesByConversation)
-    practicePatientsState = structuredClone(practicePatientsSeed)
-    blockedPracticePatientIds = new Set<string>()
-    writePracticeAccount(defaultPracticeAccount())
+    resetMockStore()
   }
 
   return {
@@ -1782,6 +1801,9 @@ export function createMockApiClient(
     importPatientBackup,
     fetchPatientProfileById,
     fetchPatientProfiles,
+    fetchOnboardingInformation,
+    markAppOnboarded,
+    completeAppOnboarding,
     selectPatientProfile,
     createPatientProfile,
     deletePatientProfile,

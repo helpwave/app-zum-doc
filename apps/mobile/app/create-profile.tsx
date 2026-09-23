@@ -3,6 +3,7 @@ import { DateInput } from "@/components/date-input"
 import { LabeledField } from "@/components/labeled-field"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import { useKeyBoard } from "@/hooks/useKeyBoardIsVisible"
 import { startOfDay, toIsoDate } from "@app-zum-doc/utils/api"
 import { useCreatePatientProfile } from "@app-zum-doc/utils/hooks"
 import { Button, Input } from "@helpwave/hightide-native/components"
@@ -30,13 +31,15 @@ export default function CreateProfileScreen() {
     && dateOfBirth.length > 0
     && !createProfile.isPending
 
+  const { isVisible: isKeyboardVisible } = useKeyBoard()
+
   return (
     <KeyboardAvoidingView
       style={{
         flex: 1,
         backgroundColor: theme.colors.background.color,
       }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
     >
       <AppBar title={t("createProfile")} />
       <ScrollView
@@ -77,23 +80,23 @@ export default function CreateProfileScreen() {
             endDate={toIsoDate(today)}
           />
         </LabeledField>
-        <Button
-          disabled={!canSubmit}
-          isProcessing={createProfile.isPending}
-          onPress={() => {
-            void createProfile.mutateAsync({
-              firstName: firstName.trim(),
-              lastName: lastName.trim(),
-              dateOfBirth,
-            }).then(() => {
-              router.back()
-            })
-          }}
-          style={{ alignSelf: "flex-end" }}
-        >
-          {t("createProfile")}
-        </Button>
       </ScrollView>
+      <Button
+        disabled={!canSubmit}
+        isProcessing={createProfile.isPending}
+        onPress={() => {
+          void createProfile.mutateAsync({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            dateOfBirth,
+          }).then(() => {
+            router.back()
+          })
+        }}
+        style={{ alignSelf: "flex-end" }}
+      >
+        {t("createProfile")}
+      </Button>
     </KeyboardAvoidingView>
   )
 }

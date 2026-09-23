@@ -33,6 +33,9 @@
   "myDoctors": "My doctors",
   "loadingMyDoctors": "Loading my doctors…",
   "noMyDoctors": "You have not added any doctors yet.",
+  "noDoctorsYet": "No Doctors yet",
+  "noRequestsYet": "No requests yet",
+  "noChatsYet": "No chats yet",
   "myRequests": "My requests",
   "recentRequests": "Current requests",
   "allRequests": "All requests",
@@ -248,5 +251,36 @@
   "migrationImport": "Import",
   "migrationSelectFile": "Backup file",
   "migrationImportReady": "Your backup is ready. Import it to load the data into this app.",
-  "migrationInvalidFile": "Please select a valid .azd-backup file."
+  "migrationInvalidFile": "Please select a valid .azd-backup file.",
+  "onboardingWelcomeTitle": "Welcome to App zum Doc",
+  "onboardingWelcomeDisclaimer": "Some functions are only available if your Doctor uses App zum Doc. Please check in advance with your doctor or whether you can find them in the app.",
+  "onboardingNext": "Next",
+  "onboardingMainProfileTitle": "Your profile",
+  "onboardingProfilesTitle": "Managed profiles",
+  "onboardingAddUser": "Add user",
+  "onboardingImportBackup": "Import from AzD-Backup",
+  "onboardingSkip": "Skip",
+  "onboardingBackupEntryHint": "Already have a backup? Restore your data from an AzD backup file.",
+  "onboardingRestoreBackup": "Restore backup",
+  "onboardingBackupSummaryTitle": "Loaded backup",
+  "onboardingBackupPickTitle": "Choose main profile",
+  "onboardingBackupCreateNew": "Create a new profile",
+  "onboardingBackupEmpty": "None",
+  "onboardingBackupMessageCount": "{count} messages",
+  "@onboardingBackupMessageCount": {
+    "placeholders": {
+      "count": {
+        "type": "number"
+      }
+    }
+  },
+  "addEmail": "Add Email",
+  "addPhoneNumber": "Add phone number",
+  "addInsurance": "Add insurance",
+  "onboardingFinish": "Finish",
+  "onboardingLoad": "Load",
+  "onboardingContinue": "Continue",
+  "onboardingAdd": "Add",
+  "onboardingDeleteUser": "Remove user",
+  "profiles": "Profile"
 }

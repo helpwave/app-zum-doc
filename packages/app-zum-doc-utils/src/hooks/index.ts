@@ -1,6 +1,7 @@
 export * from './apiClient'
 export * from './queryHook'
 export * from './queryKeys'
+export * from './useAppOnboarding'
 export * from './useAppointments'
 export * from './useConversations'
 export * from './useDoctorSearch'

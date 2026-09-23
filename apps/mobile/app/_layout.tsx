@@ -1,6 +1,7 @@
 import { installBackupQuickCrypto } from "@/lib/install-backup-crypto"
 import { AppStack } from "@/components/app-stack"
 import { HightideGate } from "@/components/hightide-gate"
+import { OnboardingGate } from "@/components/onboarding-gate"
 import { queryClient } from "@/lib/query-client"
 import "@/styles/web-font"
 import { azdSupportedThemes } from "@/theme/azd-theme"
@@ -23,7 +24,9 @@ function AppContent() {
       >
         <SafeAreaProvider>
           <HightideGate>
-            <AppStack />
+            <OnboardingGate>
+              <AppStack />
+            </OnboardingGate>
           </HightideGate>
         </SafeAreaProvider>
       </HightideProvider>

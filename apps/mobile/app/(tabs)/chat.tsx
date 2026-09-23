@@ -4,13 +4,12 @@ import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { ConversationPreview } from "@app-zum-doc/utils/api"
 import { useConversations } from "@app-zum-doc/utils/hooks"
 import {
-  ChatConversationList,
   SearchBar,
 } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"
 import { useMemo, useState } from "react"
 import { ScrollView, View } from "react-native"
-import { ConversationRow } from "@/components/conversation-row"
+import { ConversationEmptyCard, ConversationPlaceholderRow, ConversationRow } from "@/components/conversation-row"
 import { AppBar } from "@/components/app-bar"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
@@ -72,7 +71,7 @@ export default function ChatListScreen() {
       </AppBar>
 
       <QueryState
-        isPending={conversationsQuery.isPending}
+        isPending={false}
         isError={conversationsQuery.isError}
         error={conversationsQuery.error}
         onRetry={() => {
@@ -81,7 +80,11 @@ export default function ChatListScreen() {
         loadingLabel={t("loadingChats")}
       >
         <ScrollView keyboardShouldPersistTaps="always">
-          {conversations.map((item) => (
+          {conversationsQuery.isPending ? (
+            <ConversationPlaceholderRow />
+          ) : (conversationsQuery.data ?? []).length === 0 ? (
+            <ConversationEmptyCard />
+          ) : conversations.map((item) => (
             <ConversationRow
               key={item.id}
               conversation={item}

@@ -1,25 +1,10 @@
 import { AppBar } from "@/components/app-bar"
-import { DateInput } from "@/components/date-input"
-import { LabeledField } from "@/components/labeled-field"
 import { QueryState } from "@/components/query-state"
-import { Section } from "@/components/section"
-import { SegmentedControl } from "@/components/segmented-control"
+import { ProfileFormFields, profileFormValuesFromPatient, type ProfileFormValues } from "@/components/profile-form-fields"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import {
-  filterInsuranceCompaniesByType,
-  findInsuranceCompany,
-  startOfDay,
-  toIsoDate,
-  type InsuranceType,
-  type PatientProfile,
-} from "@app-zum-doc/utils/api"
 import { usePatientProfile } from "@app-zum-doc/utils/hooks"
-import {
-  Input,
-  Select,
-} from "@helpwave/hightide-native/components"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import {
   KeyboardAvoidingView,
   Platform,
@@ -28,138 +13,23 @@ import {
 } from "react-native"
 
 type PersonalInformationFormProps = {
-  profile: PatientProfile
+  values: ProfileFormValues
+  onChange: (values: ProfileFormValues) => void
 }
 
-function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
-  const t = useAppTranslation()
+function PersonalInformationForm({ values, onChange }: PersonalInformationFormProps) {
   const { theme } = useAzdTheme()
-  const today = startOfDay(new Date())
-
-  const [firstName, setFirstName] = useState(profile.firstName)
-  const [lastName, setLastName] = useState(profile.lastName)
-  const [dateOfBirth, setDateOfBirth] = useState(toIsoDate(profile.dateOfBirth))
-  const [email, setEmail] = useState(profile.email)
-  const [phone, setPhone] = useState(profile.phone)
-  const [insuranceType, setInsuranceType] = useState<InsuranceType>(
-    findInsuranceCompany(profile.insurance.insuranceProviderId)?.type ?? "public",
-  )
-  const [insuranceProviderId, setInsuranceProviderId] = useState<string | null>(
-    profile.insurance.insuranceProviderId || null,
-  )
-  const [insuranceNumber, setInsuranceNumber] = useState(
-    profile.insurance.insuranceNumber,
-  )
-
-  const insuranceOptions = useMemo(() =>
-    filterInsuranceCompaniesByType(insuranceType).map((company) => ({
-      id: company.id,
-      label: company.name,
-    })), [insuranceType])
-
-  useEffect(() => {
-    const selectedCompany = findInsuranceCompany(insuranceProviderId ?? "")
-    if (selectedCompany && selectedCompany.type !== insuranceType) {
-      setInsuranceProviderId(null)
-    }
-  }, [insuranceProviderId, insuranceType])
 
   return (
     <ScrollView
       contentContainerStyle={{
         paddingHorizontal: theme.spacing.lg,
         paddingVertical: theme.spacing.lg,
-        gap: theme.spacing.lg,
       }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <LabeledField label={t("firstName")}>
-        <Input
-          value={firstName}
-          onValueChange={setFirstName}
-          autoComplete="given-name"
-          textContentType="givenName"
-          style={{ width: "100%" }}
-        />
-      </LabeledField>
-
-      <LabeledField label={t("lastName")}>
-        <Input
-          value={lastName}
-          onValueChange={setLastName}
-          autoComplete="family-name"
-          textContentType="familyName"
-          style={{ width: "100%" }}
-        />
-      </LabeledField>
-
-      <LabeledField label={t("dateOfBirth")}>
-        <DateInput
-          value={dateOfBirth}
-          onValueChange={setDateOfBirth}
-          placeholder={t("dateOfBirth")}
-          title={t("selectDateOfBirth")}
-          hasYearSelect
-          startDate={toIsoDate(new Date(today.getFullYear() - 120, 0, 1))}
-          endDate={toIsoDate(today)}
-        />
-      </LabeledField>
-
-      <LabeledField label={t("email")}>
-        <Input
-          value={email}
-          onValueChange={setEmail}
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          style={{ width: "100%" }}
-        />
-      </LabeledField>
-
-      <LabeledField label={t("phoneNumber")}>
-        <Input
-          value={phone}
-          onValueChange={setPhone}
-          keyboardType="phone-pad"
-          autoComplete="tel"
-          textContentType="telephoneNumber"
-          style={{ width: "100%" }}
-        />
-      </LabeledField>
-
-      <Section title={t("insuranceType")}>
-        <SegmentedControl
-          value={insuranceType}
-          onChange={setInsuranceType}
-          options={[
-            { id: "public", label: t("insuranceStatutory") },
-            { id: "private", label: t("insurancePrivate") },
-          ]}
-        />
-      </Section>
-
-      <LabeledField label={t("insuranceProvider")}>
-        <Select
-          value={insuranceProviderId}
-          onValueChange={setInsuranceProviderId}
-          placeholder={t("insuranceProvider")}
-          style={{ width: "100%" }}
-        >
-          {insuranceOptions.map((option) => (
-            <Select.Option key={option.id} value={option.id} label={option.label} />
-          ))}
-        </Select>
-      </LabeledField>
-
-      <LabeledField label={t("insuranceNumberOptional")}>
-        <Input
-          value={insuranceNumber}
-          onValueChange={setInsuranceNumber}
-          autoCapitalize="characters"
-          style={{ width: "100%" }}
-        />
-      </LabeledField>
+      <ProfileFormFields values={values} onChange={onChange} />
     </ScrollView>
   )
 }
@@ -168,6 +38,9 @@ export default function PersonalInformationScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const profileQuery = usePatientProfile()
+  const [values, setValues] = useState<ProfileFormValues | null>(null)
+  const profile = profileQuery.data
+  const formValues = values ?? (profile == null ? null : profileFormValuesFromPatient(profile))
 
   return (
     <KeyboardAvoidingView
@@ -189,13 +62,16 @@ export default function PersonalInformationScreen() {
         }}
         loadingLabel={t("loadingProfile")}
       >
-        {profileQuery.data ? (
+        {formValues ? (
           <View
             style={{
               flex: 1,
             }}
           >
-            <PersonalInformationForm profile={profileQuery.data} />
+            <PersonalInformationForm
+              values={formValues}
+              onChange={setValues}
+            />
           </View>
         ) : null}
       </QueryState>

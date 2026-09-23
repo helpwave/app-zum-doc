@@ -62,7 +62,7 @@ export default function ProfileScreen() {
       >
         <ScrollView
           contentContainerStyle={{
-            paddingTop: insets.top,
+            paddingTop: insets.top + theme.spacing.lg,
             paddingBottom: theme.spacing.lg,
             gap: theme.spacing.lg
           }}
@@ -111,15 +111,17 @@ export default function ProfileScreen() {
               gap: theme.spacing.lg,
             }}
           >
-            <Card>
-              <ListNavigationItem
-                title={t("manageProfiles")}
-                leading={<ThemedIcon icon={Users}/>}
-                onPress={() => {
-                  router.push("/manage-profiles" as Href)
-                }}
-              />
-            </Card>
+            <Section title={t("profiles")}>
+              <Card>
+                <ListNavigationItem
+                  title={t("manageProfiles")}
+                  leading={<ThemedIcon icon={Users}/>}
+                  onPress={() => {
+                    router.push("/manage-profiles" as Href)
+                  }}
+                />
+              </Card>
+            </Section>
 
             <Section title={t("settingsSection")}>
               <Card>

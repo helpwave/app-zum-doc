@@ -1,4 +1,12 @@
-import { RequestTile, StartDoctorCard, StartHero } from "@/components/home-sections"
+import {
+  RequestEmptyCard,
+  RequestPlaceholderCard,
+  RequestTile,
+  StartDoctorCard,
+  StartDoctorEmptyCard,
+  StartDoctorPlaceholderCard,
+  StartHero,
+} from "@/components/home-sections"
 import { QueryState } from "@/components/query-state"
 import { hrefForRequest } from "@/lib/request-routes"
 import { homeQuickActions } from "@/lib/quick-actions"
@@ -47,7 +55,7 @@ export default function HomeScreen() {
       }}
     >
       <QueryState
-        isPending={homeQuery.isPending}
+        isPending={false}
         isError={homeQuery.isError}
         error={homeQuery.error}
         onRetry={() => {
@@ -55,7 +63,7 @@ export default function HomeScreen() {
         }}
         loadingLabel={t("loadingHome")}
       >
-        {homeQuery.data ? (
+        {homeQuery.isError ? null : (
           <ScrollView
             contentContainerStyle={{
               paddingBottom: theme.spacing.lg,
@@ -91,30 +99,36 @@ export default function HomeScreen() {
                   />
                 )}
               >
-                <View style={{ marginHorizontal: -theme.spacing.lg, marginVertical: -theme.spacing.lg }}>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                      paddingHorizontal: theme.spacing.lg,
-                      paddingVertical: theme.spacing.lg,
-                      gap: theme.spacing.md + theme.spacing.sm,
-                    }}
-                  >
-                    {homeQuery.data.myDoctors.map((doctor) => (
-                      <StartDoctorCard
-                        key={doctor.id}
-                        doctor={doctor}
-                        onPress={() => {
-                          router.push({
-                            pathname: "/doctor/[id]",
-                            params: { id: doctor.id },
-                          })
-                        }}
-                      />
-                    ))}
-                  </ScrollView>
-                </View>
+                {!homeQuery.isPending && (homeQuery.data?.myDoctors.length ?? 0) === 0 ? (
+                  <StartDoctorEmptyCard />
+                ) : (
+                  <View style={{ marginHorizontal: -theme.spacing.lg, marginVertical: -theme.spacing.lg }}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{
+                        paddingHorizontal: theme.spacing.lg,
+                        paddingVertical: theme.spacing.lg,
+                        gap: theme.spacing.md + theme.spacing.sm,
+                      }}
+                    >
+                      {homeQuery.isPending ? (
+                        <StartDoctorPlaceholderCard />
+                      ) : homeQuery.data?.myDoctors.map((doctor) => (
+                        <StartDoctorCard
+                          key={doctor.id}
+                          doctor={doctor}
+                          onPress={() => {
+                            router.push({
+                              pathname: "/doctor/[id]",
+                              params: { id: doctor.id },
+                            })
+                          }}
+                        />
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
               </Section>
 
               <Section
@@ -128,7 +142,11 @@ export default function HomeScreen() {
                 )}
               >
                 <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
-                  {homeQuery.data.recentRequests.map((request) => (
+                  {homeQuery.isPending ? (
+                    <RequestPlaceholderCard />
+                  ) : (homeQuery.data?.recentRequests.length ?? 0) === 0 ? (
+                    <RequestEmptyCard />
+                  ) : homeQuery.data?.recentRequests.map((request) => (
                     <RequestTile
                       key={request.id}
                       request={request}
@@ -141,7 +159,7 @@ export default function HomeScreen() {
               </Section>
             </View>
           </ScrollView>
-        ) : null}
+        )}
       </QueryState>
     </View>
   )

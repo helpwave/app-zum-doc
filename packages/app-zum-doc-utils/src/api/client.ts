@@ -1,3 +1,4 @@
+import type { CompleteAppOnboardingInput, OnboardingInformation } from './appOnboarding'
 import type { BackupData } from './backup'
 import type { DoctorsOffice, MyDoctors, UpdateDoctorsOfficeInput } from './doctorsOffice'
 import type { AppLocale, MedicationSize, PatientRequestStatus, PatientRequestType } from './enums'
@@ -55,6 +56,9 @@ export type ApiClient = {
     profileId: string,
   }) => Promise<PatientProfile>,
   fetchPatientProfiles: () => Promise<PatientProfileSummary[]>,
+  fetchOnboardingInformation: () => Promise<OnboardingInformation>,
+  markAppOnboarded: () => Promise<OnboardingInformation>,
+  completeAppOnboarding: (input: CompleteAppOnboardingInput) => Promise<OnboardingInformation>,
   selectPatientProfile: (params: {
     profileId: string,
   }) => Promise<PatientProfile>,
