@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
+  AppZumDocLogo,
   Button,
   ExpansionIcon,
   FilterFunctions,
@@ -15,7 +16,7 @@ import {
   type IdentifierFilterValue,
   type SortingListItem
 } from '@helpwave/hightide'
-import { Info, LoaderCircle, Pencil } from 'lucide-react'
+import { Info, Pencil } from 'lucide-react'
 import {
   findInsuranceCompany,
   formatPatientDateLong,
@@ -387,8 +388,8 @@ export function PatientTable({
             />
           </Table>
           {isFetchingMore && (
-            <div className="flex-row-2 items-center justify-center py-3 text-description">
-              <LoaderCircle className="size-4 animate-spin" aria-hidden />
+            <div className="flex-col-2 items-center justify-center py-3 text-description">
+              <AppZumDocLogo animate="loading" height={128} width={128} />
               <span>{t('loadingMorePatients')}</span>
             </div>
           )}
