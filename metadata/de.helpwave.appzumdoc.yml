@@ -20,9 +20,9 @@ RepoType: git
 Repo: https://github.com/helpwave/app-zum-doc.git
 Binaries: https://github.com/helpwave/app-zum-doc/releases/download/android@%v/app-arm64-v8a-release.apk
 Builds:
-  - versionName: 0.0.10
-    versionCode: 10
-    commit: android@0.0.10
+  - versionName: 0.0.11
+    versionCode: 11
+    commit: android@0.0.11
     subdir: apps/mobile
     sudo:
       - apt-get update
@@ -77,5 +77,5 @@ AllowedAPKSigningKeys: b0974e053c12fc9b20aa6f9f5c278c288b585494958b6b872787c5dee
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^android@
 UpdateCheckData: apps/mobile/app.json|"versionCode":\s(\d+)|.|"version":\s"([\d.]+)"
-CurrentVersion: 0.0.10
-CurrentVersionCode: 10
+CurrentVersion: 0.0.11
+CurrentVersionCode: 11
