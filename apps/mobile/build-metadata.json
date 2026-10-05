@@ -13,8 +13,5 @@
     "runner": "macos-15",
     "xcode": "26.3",
     "deploymentTarget": "15.1"
-  },
-  "fdroid": {
-    "node": "24.9.0"
   }
 }

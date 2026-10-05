@@ -9,3 +9,4 @@ node_modules/
 *.jks
 *.p12
 tsconfig.tsbuildinfo
+/fdroid-out/
