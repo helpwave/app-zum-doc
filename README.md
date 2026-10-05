@@ -5,10 +5,10 @@
 # App zum Doc
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](apps/mobile/LICENSE)
-[![Version](https://img.shields.io/badge/version-0.0.6-095763.svg)](https://github.com/helpwave/app-zum-doc/releases)
+[![Version](https://img.shields.io/badge/version-0.0.13-095763.svg)](https://github.com/helpwave/app-zum-doc/releases)
 [![GitHub release](https://img.shields.io/github/v/release/helpwave/app-zum-doc)](https://github.com/helpwave/app-zum-doc/releases)
 [![Android build](https://img.shields.io/github/actions/workflow/status/helpwave/app-zum-doc/app-zum-doc-mobile-android-build.yaml?branch=main&label=Android%20build)](https://github.com/helpwave/app-zum-doc/actions/workflows/app-zum-doc-mobile-android-build.yaml)
-[![F-Droid](https://img.shields.io/badge/F--Droid-0.0.6-095763.svg)](https://github.com/helpwave/app-zum-doc/releases)
+[![F-Droid](https://img.shields.io/badge/F--Droid-0.0.13-095763.svg)](https://github.com/helpwave/app-zum-doc/releases)
 [![Website](https://img.shields.io/badge/website-app--zum--doc.de-095763.svg)](https://app-zum-doc.de/)
 
 [App zum Doc](https://app-zum-doc.de/) is end-to-end encrypted booking and a full patient portal. Appointments, prescriptions, referrals, imaging results and inpatient pre-admission forms travel over a structured, encrypted channel between the practice and the patient. iOS, Android and modern browsers — no extra hardware, PVS-independent, hosted in Germany.

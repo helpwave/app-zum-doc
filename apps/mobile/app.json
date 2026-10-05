@@ -2,7 +2,7 @@
   "expo": {
     "name": "App zum Doc",
     "slug": "app-zum-doc",
-    "version": "0.0.11",
+    "version": "0.0.13",
     "orientation": "portrait",
     "icon": "./assets/images/azd-logo.png",
     "scheme": "appzumdoc",
@@ -11,13 +11,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "de.helpwave.appzumdoc",
-      "buildNumber": "11",
+      "buildNumber": "13",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
-      "versionCode": 11,
+      "versionCode": 13,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/azd-logo-foreground.png",
