@@ -84,6 +84,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@app-zum-doc/license-check':
+        specifier: workspace:*
+        version: link:../../packages/license-check
       '@app-zum-doc/utils':
         specifier: workspace:*
         version: link:../../packages/app-zum-doc-utils
@@ -245,6 +248,8 @@ importers:
       typescript:
         specifier: ~5.9.2
         version: 5.9.3
+
+  packages/license-check: {}
 
 packages:
 

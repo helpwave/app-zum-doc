@@ -21,9 +21,11 @@
     "prebuild:ios": "CI=1 expo prebuild --platform ios",
     "android:release": "cd android && ./gradlew assembleRelease bundleRelease",
     "build": "CI=1 expo export --platform web",
+    "generate-licenses": "license-check --package ./package.json --output ./generated/licenses.ts",
     "test": "node -e \"process.exit(0)\""
   },
   "dependencies": {
+    "@app-zum-doc/license-check": "workspace:*",
     "@app-zum-doc/utils": "workspace:*",
     "@expo/vector-icons": "^15.0.3",
     "@helpwave/hightide-design": "0.7.6",

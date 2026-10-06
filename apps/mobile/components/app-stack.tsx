@@ -98,6 +98,20 @@ export function AppStack() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="licenses"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="license-detail"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
       </Stack>
     </>
   )

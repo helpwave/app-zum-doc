@@ -14,7 +14,7 @@ import {
 } from "@app-zum-doc/utils/hooks"
 import { Button, Card, ListItem, ListNavigationItem, ThemedIcon } from "@helpwave/hightide-native/components"
 import { useRouter, type Href } from "expo-router"
-import { Scale, Shield, Users } from "lucide-react-native"
+import { FileText, Scale, Shield, Users } from "lucide-react-native"
 import { useMemo } from "react"
 import { Linking, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -127,6 +127,13 @@ export default function ProfileScreen() {
               <Card>
                 <ThemeModeSetting />
                 <LocaleSetting />
+                <ListNavigationItem
+                  title={t("licenses")}
+                  leading={<ThemedIcon icon={FileText}/>}
+                  onPress={() => {
+                    router.push("/licenses" as Href)
+                  }}
+                />
               </Card>
             </Section>
 

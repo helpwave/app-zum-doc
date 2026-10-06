@@ -282,5 +282,10 @@
   "onboardingContinue": "Continue",
   "onboardingAdd": "Add",
   "onboardingDeleteUser": "Remove user",
-  "profiles": "Profile"
+  "profiles": "Profile",
+  "licenses": "Licenses",
+  "licensesDescription": "Third-party software used in this app.",
+  "packageHomepage": "Website",
+  "packageRepository": "Repository",
+  "licenseNotFound": "License details were not found."
 }

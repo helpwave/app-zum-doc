@@ -282,5 +282,10 @@
   "onboardingContinue": "Weiter",
   "onboardingAdd": "Hinzufügen",
   "onboardingDeleteUser": "Nutzer entfernen",
-  "profiles": "Profile"
+  "profiles": "Profile",
+  "licenses": "Lizenzen",
+  "licensesDescription": "Fremdsoftware, die in dieser App verwendet wird.",
+  "packageHomepage": "Webseite",
+  "packageRepository": "Repository",
+  "licenseNotFound": "Lizenzangaben wurden nicht gefunden."
 }
