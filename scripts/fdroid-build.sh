@@ -13,10 +13,20 @@ OUT="$(mkdir -p "${2:?usage: $0 <commit> <out-dir>}" && cd "$2" && pwd)"
 
 source /etc/profile.d/bsenv.sh
 
-git clone -q https://gitlab.com/fdroid/fdroidserver.git "${fdroidserver}"
+retry() {
+  local n
+  for n in 1 2 3 4; do
+    "$@" && return
+    echo "attempt ${n} failed: $*" >&2
+    sleep $((n * 15))
+  done
+  return 1
+}
+
+retry git clone -q --filter=blob:none https://gitlab.com/fdroid/fdroidserver.git "${fdroidserver}"
 git -C "${fdroidserver}" checkout -q "${FDROIDSERVER_REF}"
-git -C "${home_vagrant}/gradlew-fdroid" pull -q
-git clone -q --depth 1 --filter=blob:none --sparse https://gitlab.com/fdroid/fdroiddata.git /tmp/fdroiddata
+retry git -C "${home_vagrant}/gradlew-fdroid" pull -q
+retry git clone -q --depth 1 --filter=blob:none --sparse https://gitlab.com/fdroid/fdroiddata.git /tmp/fdroiddata
 git -C /tmp/fdroiddata sparse-checkout set config
 
 cd "${home_vagrant}"

@@ -2,24 +2,48 @@ name: Publish F-Droid
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "android@*"
+    paths:
+      - "apps/mobile/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "fastlane/**"
+      - "metadata/**"
+      - "scripts/fdroid-*.sh"
+      - ".github/workflows/app-zum-doc-mobile-android-publish-fdroid.yaml"
   pull_request:
     paths:
+      - "apps/mobile/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "fastlane/**"
       - "metadata/**"
       - "scripts/fdroid-*.sh"
       - ".github/workflows/app-zum-doc-mobile-android-publish-fdroid.yaml"
   workflow_dispatch:
+
+concurrency:
+  group: fdroid-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 env:
   FDROID_APPID: de.helpwave.appzumdoc
+  FDROID_IMAGE: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
 
 jobs:
   verify:
     runs-on: "ubuntu-24.04" # @sync android.runner
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - run: |
@@ -32,24 +56,86 @@ jobs:
 
   build:
     needs: verify
-    name: Build with the F-Droid buildserver
+    name: Build with the F-Droid buildserver (${{ matrix.name }})
     runs-on: "ubuntu-24.04" # @sync android.runner
-    container: registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: a
+            subnet: 172.30.0.0/24
+            hostname: buildserver-a
+            tz: UTC
+            cpus: "0-3"
+          - name: b
+            subnet: 10.77.0.0/24
+            hostname: buildserver-b
+            tz: Pacific/Auckland
+            cpus: "0-1"
     steps:
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup
+
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - run: scripts/fdroid-build.sh "${GITHUB_SHA}" "${RUNNER_TEMP}/fdroid"
+
+      - name: Build
+        env:
+          SUBNET: ${{ matrix.subnet }}
+          BUILD_HOSTNAME: ${{ matrix.hostname }}
+          BUILD_TZ: ${{ matrix.tz }}
+          BUILD_CPUS: ${{ matrix.cpus }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/fdroid"
+          docker network create --subnet "${SUBNET}" fdroid
+          docker run --rm --network fdroid --hostname "${BUILD_HOSTNAME}" --cpuset-cpus "${BUILD_CPUS}" -e TZ="${BUILD_TZ}" \
+            -v "${GITHUB_WORKSPACE}:/repo" -v "${RUNNER_TEMP}/fdroid:/out" \
+            "${FDROID_IMAGE}" /repo/scripts/fdroid-build.sh "${GITHUB_SHA}" /out
+
       - uses: actions/upload-artifact@v6
         with:
-          name: fdroid-unsigned
+          name: fdroid-unsigned-${{ matrix.name }}
           path: ${{ runner.temp }}/fdroid/*.apk
+          if-no-files-found: error
+
+  reproducible:
+    needs: build
+    name: Builds from different environments are identical
+    runs-on: "ubuntu-24.04" # @sync android.runner
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: fdroid-unsigned-*
+          path: ${{ runner.temp }}/apk
+
+      - run: |
+          set -euo pipefail
+          cd "${RUNNER_TEMP}/apk"
+          a="$(ls fdroid-unsigned-a/*.apk)"
+          b="$(ls fdroid-unsigned-b/*.apk)"
+          sha256sum "${a}" "${b}"
+          cmp -s "${a}" "${b}" && exit 0
+          unzip -q "${a}" -d a
+          unzip -q "${b}" -d b
+          diff -rq a b || true
+          diff -rq a b | awk '/ differ$/ {print $2}' | while read -r f; do
+            echo "::group::${f#a/}"
+            diff <(strings -n 4 "${f}") <(strings -n 4 "b/${f#a/}") | head -n 40 || true
+            echo "::endgroup::"
+          done
+          echo "::error::The F-Droid build depends on the build environment, so F-Droid cannot reproduce our APK."
+          exit 1
 
   release:
     if: github.ref_type == 'tag'
-    needs: build
+    needs: reproducible
     name: Sign and publish GitHub release
     runs-on: "ubuntu-24.04" # @sync android.runner
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
@@ -57,7 +143,7 @@ jobs:
 
       - uses: actions/download-artifact@v7
         with:
-          name: fdroid-unsigned
+          name: fdroid-unsigned-a
           path: ${{ runner.temp }}/unsigned
 
       - uses: android-actions/setup-android@v4

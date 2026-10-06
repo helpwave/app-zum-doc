@@ -18,12 +18,12 @@
 F-Droid builds the app from source and ships it with our signature ([reproducible builds](https://f-droid.org/docs/Reproducible_Builds/)). `metadata/de.helpwave.appzumdoc.yml` is the recipe in fdroiddata.
 
 1. Tag with `scripts/mobile-sync.sh tag android --push` (creates `android@x.y.z`).
-2. [Publish F-Droid](https://github.com/helpwave/app-zum-doc/actions/workflows/app-zum-doc-mobile-android-publish-fdroid.yaml) builds the recipe in F-Droid's buildserver image (`scripts/fdroid-build.sh`), signs that APK with the release key, checks it with `apksigcopier`, and attaches `app-zum-doc-x.y.z.apk` to the GitHub release.
+2. [Publish F-Droid](https://github.com/helpwave/app-zum-doc/actions/workflows/app-zum-doc-mobile-android-publish-fdroid.yaml) builds the recipe twice in F-Droid's buildserver image (`scripts/fdroid-build.sh`) with a different IP, hostname, timezone and CPU count, fails if the two APKs differ, signs the APK with the release key, checks it with `apksigcopier`, and attaches `app-zum-doc-x.y.z.apk` to the GitHub release.
 3. F-Droid's checkupdates picks up the tag, rebuilds the same commit, compares against that APK (`Binaries`) and publishes it with our signature (`AllowedAPKSigningKeys`).
 
 Version bumps need nothing in fdroiddata. Any other change to the recipe's build steps must also be sent to fdroiddata, otherwise F-Droid's build no longer matches our APK.
 
-Pull requests that touch the recipe or the scripts run the same build. Locally: `docker run --rm -v "$PWD:/repo" registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie /repo/scripts/fdroid-build.sh "$(git rev-parse HEAD)" /repo/fdroid-out`.
+Pushes to `main` and pull requests that touch the app, its dependencies, the recipe or the scripts run the same two builds, so anything F-Droid could not reproduce fails before a release. Locally: `docker run --rm -v "$PWD:/repo" registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie /repo/scripts/fdroid-build.sh "$(git rev-parse HEAD)" /repo/fdroid-out`.
 
 Listing copy and graphics live in `apps/mobile/fastlane/metadata/android/` (`en-US`, `de-DE`) and are linked from `fastlane/metadata/android` at the repository root so F-Droid can harvest them. Inclusion metadata is `metadata/de.helpwave.appzumdoc.yml`.
 

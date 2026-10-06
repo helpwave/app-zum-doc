@@ -17,8 +17,8 @@ Binaries:
   https://github.com/helpwave/app-zum-doc/releases/download/android@%v/app-zum-doc-%v.apk
 
 Builds:
-  - versionName: 0.0.13
-    versionCode: 13
+  - versionName: 0.0.14
+    versionCode: 14
     commit: d05d0d4365e4743e371179fbd57c485d5959d3fa
     sudo:
       - echo "deb https://deb.debian.org/debian forky main" > /etc/apt/sources.list.d/forky.list
@@ -62,5 +62,5 @@ AllowedAPKSigningKeys: b0974e053c12fc9b20aa6f9f5c278c288b585494958b6b872787c5dee
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^android@
 UpdateCheckData: apps/mobile/app.json|"versionCode":\s(\d+)|.|"version":\s"([\d.]+)"
-CurrentVersion: 0.0.13
-CurrentVersionCode: 13
+CurrentVersion: 0.0.14
+CurrentVersionCode: 14
