@@ -55,6 +55,7 @@ module.exports = {
       "./plugins/with-android-abi-splits.js",
       "./plugins/with-android-sdk-versions.js",
       "./plugins/with-android-reproducible-dev-server-ip.js",
+      "./plugins/with-android-gradle-memory.js",
     ],
   },
 }
