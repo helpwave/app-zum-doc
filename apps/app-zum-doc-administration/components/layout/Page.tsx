@@ -5,6 +5,7 @@ import Link from 'next/link'
 import {
   AppPage,
   AppZumDocBadge,
+  AppZumDocLogo,
   HelpwaveLogo,
   type AppPageNavigationItem
 } from '@helpwave/hightide'
@@ -13,7 +14,6 @@ import {
   Forward,
   Inbox,
   LayoutDashboard,
-  LoaderCircle,
   MessageSquare,
   Pill,
   Users
@@ -176,7 +176,7 @@ export function QueryState({
     return (
       <div className="flex flex-1 items-center justify-center w-full h-full">
         <div className="flex-col-3 items-center justify-center p-6 rounded-2xl surface coloring-solid">
-          <LoaderCircle className="size-8 animate-spin" aria-hidden />
+          <AppZumDocLogo animate="loading" height={128} width={128} />
           <span className="text-description">{loadingLabel}</span>
         </div>
       </div>

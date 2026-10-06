@@ -1,3 +1,4 @@
+import { AppZumDocLogo } from "@/components/app-zum-doc-logo"
 import { BottomSheetOverlay } from "@/components/bottom-sheet-overlay"
 import { Stepper } from "@/components/stepper"
 import { VirtualList } from "@/components/virtual-list"
@@ -19,7 +20,7 @@ import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { useDebouncer } from "@helpwave/hightide-utils/hooks"
 import { Check, Pill } from "lucide-react-native"
 import { useEffect, useState } from "react"
-import { ActivityIndicator, View } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 type AddMedicationSheetProps = {
@@ -174,7 +175,7 @@ export function AddMedicationSheet({
                     alignItems: "center",
                   }}
                 >
-                  <ActivityIndicator color={theme.colors.primary.color} />
+                  <AppZumDocLogo animate="loading" height={128} width={128} />
                 </View>
               ) : items.length === 0 ? (
                 <ThemedText

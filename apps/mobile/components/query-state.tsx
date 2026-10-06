@@ -1,10 +1,10 @@
+import { AppZumDocLogo } from "@/components/app-zum-doc-logo"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { Button, Card, ThemedText } from "@helpwave/hightide-native/components"
 import { RotateCcw } from "lucide-react-native"
 import type { ReactNode } from "react"
 import {
-  ActivityIndicator,
   View,
   type StyleProp,
   type ViewStyle,
@@ -51,7 +51,7 @@ export function QueryState({
             gap: theme.spacing.md
           }}
         >
-          <ActivityIndicator size="large" color={theme.colors.primary.color} />
+          <AppZumDocLogo animate="loading" height={128} width={128} />
           <ThemedText
             style={{
               ...theme.typography.body.sm,

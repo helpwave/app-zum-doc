@@ -1,5 +1,6 @@
+import { AppZumDocLogo } from "@/components/app-zum-doc-logo"
 import { useTheme } from "@helpwave/hightide-native/global-contexts"
-import { ActivityIndicator, Text, View } from "react-native"
+import { Text, View } from "react-native"
 
 export function LoadingView() {
   const { theme } = useTheme()
@@ -7,7 +8,7 @@ export function LoadingView() {
 
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ActivityIndicator color={color} />
+      <AppZumDocLogo animate="loading" height={128} width={128} />
       <Text style={{ color, ...theme.typography.body.md }}>Initializing</Text>
     </View>
   )
