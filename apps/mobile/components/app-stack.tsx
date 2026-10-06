@@ -22,6 +22,27 @@ export function AppStack() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="migration"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="manage-profiles"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="create-profile"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="chat/[id]"
           options={{
             animation: "slide_from_right",
@@ -72,6 +93,20 @@ export function AppStack() {
         />
         <Stack.Screen
           name="requests/referral/[id]"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="licenses"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="license-detail"
           options={{
             animation: "slide_from_right",
             headerShown: false,

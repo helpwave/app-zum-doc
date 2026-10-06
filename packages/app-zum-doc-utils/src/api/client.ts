@@ -1,8 +1,10 @@
+import type { CompleteAppOnboardingInput, OnboardingInformation } from './appOnboarding'
+import type { BackupData } from './backup'
 import type { DoctorsOffice, MyDoctors, UpdateDoctorsOfficeInput } from './doctorsOffice'
 import type { AppLocale, MedicationSize, PatientRequestStatus, PatientRequestType } from './enums'
 import type { Medication, MedicationCatalogItem } from './medication'
 import type { ConversationPreview, Message } from './message'
-import type { PatientProfile, PatientProfileSummary, PracticePatient, CreatePracticePatientInput } from './patientProfile'
+import type { PatientProfile, PatientProfileSummary, PracticePatient, CreatePracticePatientInput, CreatePatientProfileInput } from './patientProfile'
 import type {
   CompletePracticeOnboardingInput,
   EncryptionKeyTest,
@@ -48,11 +50,20 @@ export type ApiClient = {
     locale: AppLocale
   ) => Promise<Appointment>,
   fetchPatientMedications: () => Promise<Medication[]>,
-  fetchPatientProfile: () => Promise<PatientProfile>,
+  fetchPatientProfile: () => Promise<PatientProfile | null>,
+  importPatientBackup: (payload: BackupData) => Promise<PatientProfile>,
   fetchPatientProfileById: (params: {
     profileId: string,
   }) => Promise<PatientProfile>,
   fetchPatientProfiles: () => Promise<PatientProfileSummary[]>,
+  fetchOnboardingInformation: () => Promise<OnboardingInformation>,
+  markAppOnboarded: () => Promise<OnboardingInformation>,
+  completeAppOnboarding: (input: CompleteAppOnboardingInput) => Promise<OnboardingInformation>,
+  selectPatientProfile: (params: {
+    profileId: string,
+  }) => Promise<PatientProfile>,
+  createPatientProfile: (input: CreatePatientProfileInput) => Promise<PatientProfile>,
+  deletePatientProfile: (profileId: string) => Promise<PatientProfile | null>,
   fetchPracticeConversation: (params: {
     conversationId: string,
   }) => Promise<ConversationPreview>,

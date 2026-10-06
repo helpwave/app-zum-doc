@@ -203,6 +203,94 @@ export function StartDoctorCard({ doctor, onPress }: StartDoctorCardProps) {
   return <DoctorCard doctor={doctor} onPress={onPress} style={{ width}} />
 }
 
+export function StartDoctorPlaceholderCard() {
+  const { theme } = useAzdTheme()
+  const { width: windowWidth } = useWindowDimensions()
+  const width = Math.min(windowWidth * 0.8, theme.semantics.container.md.size * 6)
+  const avatarSize = theme.semantics.container.md.size * 2
+
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        width,
+        height: theme.semantics.container.md.size * 3,
+        flexDirection: "row",
+        gap: theme.spacing.lg,
+        backgroundColor: theme.colors.surface.color,
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+        ...StyleAdapterUtils.borderRadius({
+          type: "all",
+          value: theme.borderRadius.xl,
+        }),
+        ...StyleAdapterUtils.padding({
+          type: "all",
+          value: theme.padding.lg,
+        }),
+      }}
+    >
+      <View
+        style={{
+          width: avatarSize,
+          borderRadius: theme.borderRadius.md,
+          backgroundColor: theme.colors.disabled.color,
+        }}
+      />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "space-around",
+        }}
+      >
+        <View style={{ gap: theme.spacing.sm }}>
+          <PlaceholderBar width="70%" height={theme.typography.heading.md.fontSize ?? 20} />
+          <PlaceholderBar width="45%" height={theme.typography.body.sm.fontSize ?? 14} />
+        </View>
+        <View style={{ gap: theme.spacing.md }}>
+          <PlaceholderBar width="40%" height={theme.typography.body.sm.fontSize ?? 14} />
+          <PlaceholderBar width="55%" height={theme.typography.body.sm.fontSize ?? 14} />
+        </View>
+      </View>
+    </View>
+  )
+}
+
+export function StartDoctorEmptyCard() {
+  const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+
+  return (
+    <View
+      style={{
+        height: theme.semantics.container.md.size * 3,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: theme.colors.surface.color,
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+        ...StyleAdapterUtils.borderRadius({
+          type: "all",
+          value: theme.borderRadius.xl,
+        }),
+        ...StyleAdapterUtils.padding({
+          type: "all",
+          value: theme.padding.lg,
+        }),
+      }}
+    >
+      <ThemedText
+        appearance="description"
+        style={{
+          ...theme.typography.body.md,
+          textAlign: "center",
+        }}
+      >
+        {t("noDoctorsYet")}
+      </ThemedText>
+    </View>
+  )
+}
+
 type RequestTileProps = {
   request: RequestBase
   onPress: () => void
@@ -321,5 +409,90 @@ export function RequestTile({ request, onPress }: RequestTileProps) {
         </ThemedText>
       </Chip>
     </ThemedPressable>
+  )
+}
+
+function PlaceholderBar({
+  width,
+  height,
+}: {
+  width: number | `${number}%`
+  height: number
+}) {
+  const { theme } = useAzdTheme()
+
+  return (
+    <View
+      style={{
+        width,
+        height,
+        borderRadius: theme.borderRadius.sm,
+        backgroundColor: theme.colors.disabled.color,
+      }}
+    />
+  )
+}
+
+export function RequestPlaceholderCard() {
+  const { theme } = useAzdTheme()
+
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        flexDirection: "row",
+        borderRadius: theme.borderRadius.lg,
+        paddingLeft: theme.spacing.lg,
+        paddingRight: theme.spacing.lg,
+        paddingTop: theme.spacing.lg,
+        paddingBottom: theme.spacing.lg,
+        gap: theme.spacing.md + theme.spacing.sm,
+        alignItems: "flex-start",
+        backgroundColor: theme.colors.surface.color,
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+      }}
+    >
+      <View style={{ flex: 1, gap: theme.spacing.md }}>
+        <View style={{ gap: theme.spacing.sm }}>
+          <PlaceholderBar width="42%" height={theme.typography.body.md.fontSize ?? 16} />
+          <PlaceholderBar width="68%" height={theme.typography.heading.md.fontSize ?? 20} />
+        </View>
+        <PlaceholderBar width="36%" height={theme.spacing.xl} />
+      </View>
+      <PlaceholderBar width={theme.semantics.container.md.size * 2} height={theme.spacing.xl} />
+    </View>
+  )
+}
+
+export function RequestEmptyCard() {
+  const t = useAppTranslation()
+  const { theme } = useAzdTheme()
+
+  return (
+    <View
+      style={{
+        minHeight: theme.semantics.container.md.size * 2,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: theme.borderRadius.lg,
+        paddingLeft: theme.spacing.lg,
+        paddingRight: theme.spacing.lg,
+        paddingTop: theme.spacing.lg,
+        paddingBottom: theme.spacing.lg,
+        backgroundColor: theme.colors.surface.color,
+        boxShadow: StyleAdapterUtils.shadow(theme.shadow.container),
+      }}
+    >
+      <ThemedText
+        appearance="description"
+        style={{
+          ...theme.typography.body.md,
+          textAlign: "center",
+        }}
+      >
+        {t("noRequestsYet")}
+      </ThemedText>
+    </View>
   )
 }

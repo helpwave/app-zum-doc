@@ -1,89 +1,93 @@
-import type { AppLocale } from "./enums/appLocale"
-import type { PatientInsuranceInformation } from "./insurance"
-import type { Medication } from "./medication"
+import type { AppLocale } from './enums/appLocale'
+import type { PatientInsuranceInformation } from './insurance'
+import type { Medication } from './medication'
 
 export type PatientProfile = {
-  id: string
-  firstName: string
-  lastName: string
-  dateOfBirth: Date
-  email: string
-  phone: string
-  insurance: PatientInsuranceInformation
-  medicationList: Medication[]
+  id: string,
+  firstName: string,
+  lastName: string,
+  dateOfBirth: Date,
+  email: string,
+  phone: string,
+  insurance: PatientInsuranceInformation,
+  medicationList: Medication[],
 }
 
 export type PatientProfileSummary = {
-  id: string
-  firstName: string
-  lastName: string
-  dateOfBirth: Date
+  id: string,
+  firstName: string,
+  lastName: string,
+  dateOfBirth: Date,
+  insurance: PatientInsuranceInformation,
+  medicationCount: number,
 }
 
 export function patientProfileFullName(
-  profile: Pick<PatientProfile, "firstName" | "lastName">,
+  profile: Pick<PatientProfile, 'firstName' | 'lastName'>
 ): string {
   return `${profile.firstName} ${profile.lastName}`
 }
 
 export function toPatientProfileSummary(
-  profile: PatientProfile,
+  profile: PatientProfile
 ): PatientProfileSummary {
   return {
     id: profile.id,
     firstName: profile.firstName,
     lastName: profile.lastName,
     dateOfBirth: profile.dateOfBirth,
+    insurance: { ...profile.insurance },
+    medicationCount: profile.medicationList.length,
   }
 }
 
 export function formatPatientDateOfBirth(
   dateOfBirth: Date,
-  locale: AppLocale,
+  locale: AppLocale
 ): string {
   return dateOfBirth.toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
   })
 }
 
 export function formatPatientDayMonth(
   date: Date,
-  locale: AppLocale,
+  locale: AppLocale
 ): string {
   return date.toLocaleDateString(locale, {
-    day: "numeric",
-    month: "long",
+    day: 'numeric',
+    month: 'long',
   })
 }
 
 export function formatPatientDateLong(
   date: Date,
-  locale: AppLocale,
+  locale: AppLocale
 ): string {
   return date.toLocaleDateString(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   })
 }
 
 export function formatPatientDateTimeLong(
   date: Date,
-  locale: AppLocale,
+  locale: AppLocale
 ): string {
   const datePart = formatPatientDateLong(date, locale)
   const timePart = date.toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "2-digit",
+    hour: 'numeric',
+    minute: '2-digit',
   })
   return `${datePart} - ${timePart}`
 }
 
 export function patientAgeYears(
   dateOfBirth: Date,
-  now: Date = new Date(),
+  now: Date = new Date()
 ): number {
   let age = now.getFullYear() - dateOfBirth.getFullYear()
   const monthDelta = now.getMonth() - dateOfBirth.getMonth()
@@ -94,15 +98,21 @@ export function patientAgeYears(
 }
 
 export type PracticePatient = PatientProfile & {
-  lastVisit: Date
-  lastChangedAt: Date
-  lastChangedBy: string
-  insuranceCardCurrent: boolean
-  blocked: boolean
+  lastVisit: Date,
+  lastChangedAt: Date,
+  lastChangedBy: string,
+  insuranceCardCurrent: boolean,
+  blocked: boolean,
 }
 
 export type CreatePracticePatientInput = {
-  firstName: string
-  lastName: string
-  dateOfBirth: string
+  firstName: string,
+  lastName: string,
+  dateOfBirth: string,
+}
+
+export type CreatePatientProfileInput = {
+  firstName: string,
+  lastName: string,
+  dateOfBirth: string,
 }

@@ -1,4 +1,6 @@
 export * from './address'
+export * from './appOnboarding'
+export * from './backup'
 export * from './client'
 export * from './doctorsOffice'
 export * from './encryption'

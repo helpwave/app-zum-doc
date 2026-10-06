@@ -1,5 +1,7 @@
+import { installBackupQuickCrypto } from "@/lib/install-backup-crypto"
 import { AppStack } from "@/components/app-stack"
 import { HightideGate } from "@/components/hightide-gate"
+import { OnboardingGate } from "@/components/onboarding-gate"
 import { queryClient } from "@/lib/query-client"
 import "@/styles/web-font"
 import { azdSupportedThemes } from "@/theme/azd-theme"
@@ -8,7 +10,9 @@ import { HightideProvider } from "@helpwave/hightide-native/global-contexts"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 
-export default function RootLayout() {
+installBackupQuickCrypto()
+
+function AppContent() {
   return (
     <QueryClientProvider client={queryClient}>
       <HightideProvider
@@ -20,10 +24,16 @@ export default function RootLayout() {
       >
         <SafeAreaProvider>
           <HightideGate>
-            <AppStack />
+            <OnboardingGate>
+              <AppStack />
+            </OnboardingGate>
           </HightideGate>
         </SafeAreaProvider>
       </HightideProvider>
     </QueryClientProvider>
   )
+}
+
+export default function RootLayout() {
+  return <AppContent />
 }
