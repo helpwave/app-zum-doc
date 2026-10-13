@@ -13,6 +13,7 @@ export const AppLocaleUtils = {
   typeCheck: isAppLocaleValue,
 }
 
+/** API content is only available in German and English, all other UI locales fall back to English */
 export function toAppLocale(locale: string): AppLocale {
-  return locale === 'en-US' ? 'en-US' : 'de-DE'
+  return locale === 'de-DE' ? 'de-DE' : 'en-US'
 }
