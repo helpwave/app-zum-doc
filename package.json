@@ -28,7 +28,7 @@
     }
   },
   "dependencies": {
-    "expo": "~54.0.37",
+    "expo": "~54.0.38",
     "react": "19.1.0",
     "react-native": "0.81.5"
   }
