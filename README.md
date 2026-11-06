@@ -25,7 +25,7 @@ Version bumps need nothing in fdroiddata. Any other change to the recipe's build
 
 Pushes to `main` and pull requests that touch the app, its dependencies, the recipe or the scripts run the same two builds, so anything F-Droid could not reproduce fails before a release. Locally: `docker run --rm -v "$PWD:/repo" registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie /repo/scripts/fdroid-build.sh "$(git rev-parse HEAD)" /repo/fdroid-out`.
 
-Listing copy and graphics live in `apps/mobile/fastlane/metadata/android/` (`en-US`, `de-DE`) and are linked from `fastlane/metadata/android` at the repository root so F-Droid can harvest them. Inclusion metadata is `metadata/de.helpwave.appzumdoc.yml`.
+Listing copy and graphics live in `apps/mobile/fastlane/metadata/android/` (descriptions and graphics in `en-US` and `de-DE`, localized titles for every listing language, see [apps/mobile/docs/app-name-localization.md](apps/mobile/docs/app-name-localization.md)) and are linked from `fastlane/metadata/android` at the repository root so F-Droid can harvest them. Inclusion metadata is `metadata/de.helpwave.appzumdoc.yml`.
 
 ## Obtainium
 

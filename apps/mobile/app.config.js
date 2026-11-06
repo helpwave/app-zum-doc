@@ -1,4 +1,5 @@
 const appJson = require("./app.json")
+const appNames = require("./app-names.json")
 
 function storeVersion(raw) {
   let value = String(raw ?? "").trim()
@@ -32,6 +33,15 @@ function resolveIosBuildNumber() {
   return String(appJson.expo.ios?.buildNumber ?? resolveVersionCode())
 }
 
+function resolveLocales() {
+  return Object.fromEntries(
+    Object.entries(appNames).map(([locale, name]) => [
+      locale,
+      { ios: { CFBundleDisplayName: name }, android: { app_name: name } },
+    ]),
+  )
+}
+
 function resolveIosTeamId() {
   return process.env.IOS_TEAM_ID?.trim() || appJson.expo.ios?.appleTeamId
 }
@@ -40,6 +50,7 @@ module.exports = {
   expo: {
     ...appJson.expo,
     version: resolveVersion(),
+    locales: resolveLocales(),
     android: {
       ...appJson.expo.android,
       versionCode: resolveVersionCode(),
@@ -56,6 +67,7 @@ module.exports = {
       "./plugins/with-android-sdk-versions.js",
       "./plugins/with-android-reproducible-dev-server-ip.js",
       "./plugins/with-android-gradle-memory.js",
+      "./plugins/with-ios-known-regions.js",
     ],
   },
 }
