@@ -133,6 +133,7 @@
   "medicationListHint": "Adăugați medicamentele pe care le utilizați în mod regulat, pentru a le putea selecta direct atunci când comandați o rețetă.",
   "understood": "Am înțeles",
   "scanMedication": "Scanați medicamentul",
+  "cameraPermissionDenied": "Permiteți accesul la cameră pentru a scana codul unui medicament.",
   "searchMedicationPlaceholder": "Căutați medicament",
   "selectMedicationSize": "Selectați mărimea ambalajului",
   "deleteMedication": "Eliminați medicamentul",

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Medication, MedicationCatalogItem, MedicationSize } from '../api/types'
+import type { Medication, MedicationSearchPage, MedicationSize } from '../api/types'
 import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
@@ -22,8 +22,9 @@ export function usePatientMedications(
 
 type UseMedicationSearchParameter = {
   search: string,
+  page: number,
 }
-type UseMedicationSearchProps = QueryHookOptions<UseMedicationSearchParameter, MedicationCatalogItem[]>
+type UseMedicationSearchProps = QueryHookOptions<UseMedicationSearchParameter, MedicationSearchPage>
 
 export function useMedicationSearch({
   parameters,
@@ -43,6 +44,7 @@ export function useMedicationSearch({
 
 type AddPatientMedicationInput = {
   catalogId: string,
+  name: string,
   size: MedicationSize,
 }
 
@@ -55,8 +57,8 @@ export function useAddPatientMedication(
 
   return useMutation({
     ...rest,
-    mutationFn: ({ catalogId, size }: AddPatientMedicationInput) =>
-      client.addPatientMedication({ catalogId, size }),
+    mutationFn: ({ catalogId, name, size }: AddPatientMedicationInput) =>
+      client.addPatientMedication({ catalogId, name, size }),
     onSuccess: async (...args) => {
       const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)

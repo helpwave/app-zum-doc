@@ -1,5 +1,10 @@
 import type { ApiClient } from '../client'
 import {
+  fetchMedicalProductByPzn,
+  fetchMedicalProductsByName,
+  medicalProductSearchBaseUrl,
+} from '../medicalProductSearch'
+import {
   appointmentsSeed,
   citiesSeed,
   conversationsSeed,
@@ -38,6 +43,8 @@ import {
   type DoctorsOfficeOpeningHours,
   type Medication,
   type MedicationCatalogItem,
+  type MedicationPznSearch,
+  type MedicationSearchPage,
   type MedicationSize,
   type Message,
   type MessagePreview,
@@ -780,37 +787,60 @@ export function createMockApiClient(
 
   async function searchMedications(params: {
     search?: string,
-  }): Promise<MedicationCatalogItem[]> {
+    page?: number,
+  }): Promise<MedicationSearchPage> {
+    const baseUrl = medicalProductSearchBaseUrl()
+    const page = Math.max(1, params.page ?? 1)
+    if (baseUrl) {
+      return fetchMedicalProductsByName(baseUrl, params.search ?? "", page)
+    }
     return withMockLatency(() => {
       const query = params.search?.trim().toLowerCase() ?? ''
-      return medicationCatalogSeed
+      const matches = medicationCatalogSeed
         .filter((item) => !query || matchesQuery(item.name, query))
         .map((item) => ({ ...item }))
+      return pageMedicationCatalog(matches, page)
     }, { failKey: params.search })
+  }
+
+  async function searchMedicationByPzn(pzn: string): Promise<MedicationPznSearch> {
+    const baseUrl = medicalProductSearchBaseUrl()
+    if (baseUrl) {
+      return fetchMedicalProductByPzn(baseUrl, pzn)
+    }
+    return {
+      date: "",
+      source: "",
+      hasResult: false,
+      results: null,
+    }
   }
 
   async function addPatientMedication(params: {
     catalogId: string,
+    name: string,
     size: MedicationSize,
   }): Promise<Medication[]> {
     return withMockLatency(() => {
       const catalogItem = medicationCatalogSeed.find(
         (item) => item.id === params.catalogId
       )
-      if (!catalogItem) {
+      const name = catalogItem?.name ?? params.name.trim()
+      if (!name) {
         throw new Error('Medikament nicht gefunden.')
       }
+      const catalogId = catalogItem?.id ?? params.catalogId
 
       const alreadyAdded = patientMedicationsState.some(
         (medication) =>
-          medication.name === catalogItem.name && medication.size === params.size
+          medication.name === name && medication.size === params.size
       )
       if (!alreadyAdded) {
         patientMedicationsState = [
           ...patientMedicationsState,
           {
-            id: `med-${catalogItem.id}-${params.size}-${Date.now()}`,
-            name: catalogItem.name,
+            id: `med-${catalogId}-${params.size}-${Date.now()}`,
+            name,
             size: params.size,
           },
         ]
@@ -1045,6 +1075,22 @@ export function createMockApiClient(
 
   function matchesQuery(haystack: string, query: string): boolean {
     return haystack.toLowerCase().includes(query)
+  }
+
+  function pageMedicationCatalog(
+    items: MedicationCatalogItem[],
+    page: number,
+  ): MedicationSearchPage {
+    const pageSize = 20
+    const start = (page - 1) * pageSize
+    return {
+      date: "",
+      source: "",
+      page,
+      pageSize,
+      hasMore: start + pageSize < items.length,
+      results: items.slice(start, start + pageSize),
+    }
   }
 
   async function fetchCities(params: {
@@ -1650,6 +1696,7 @@ export function createMockApiClient(
     markPracticeConversationRead,
     resolveCardAction,
     searchMedications,
+    searchMedicationByPzn,
     sendMessage,
     sendPracticeMessage,
     addMyDoctor,

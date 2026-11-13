@@ -26,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 type AddMedicationSheetProps = {
   visible: boolean
   isSubmitting?: boolean
+  initialItem?: MedicationCatalogItem | null
   onSubmit: (selection: {
     catalogId: string
     name: string
@@ -39,6 +40,7 @@ const stepCount = 2
 export function AddMedicationSheet({
   visible,
   isSubmitting = false,
+  initialItem = null,
   onSubmit,
   onClose,
 }: AddMedicationSheetProps) {
@@ -48,6 +50,8 @@ export function AddMedicationSheet({
   const debounceSearch = useDebouncer()
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [items, setItems] = useState<MedicationCatalogItem[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [selectedItem, setSelectedItem] = useState<MedicationCatalogItem | null>(
     null,
@@ -56,11 +60,11 @@ export function AddMedicationSheet({
   const searchQuery = useMedicationSearch({
     parameters: {
       search: debouncedSearch,
+      page,
     },
-    enabled: visible,
+    enabled: visible && currentStep === 0,
   })
-  const items = searchQuery.data ?? []
-  const showInitialLoading = searchQuery.isPending && items.length === 0
+  const showInitialLoading = searchQuery.isPending && page === 1 && items.length === 0
   const isLastStep = currentStep === stepCount - 1
   const canGoForward =
     currentStep === 0 ? selectedItem != null : selectedSize != null
@@ -71,10 +75,34 @@ export function AddMedicationSheet({
     }
     setSearch("")
     setDebouncedSearch("")
-    setCurrentStep(0)
-    setSelectedItem(null)
+    setPage(1)
+    setItems([])
     setSelectedSize(undefined)
-  }, [visible])
+    if (initialItem) {
+      setSelectedItem(initialItem)
+      setCurrentStep(1)
+      return
+    }
+    setSelectedItem(null)
+    setCurrentStep(0)
+  }, [visible, initialItem])
+
+  useEffect(() => {
+    const pageData = searchQuery.data
+    if (!pageData || pageData.page !== page) {
+      return
+    }
+    setItems((current) => {
+      if (page === 1) {
+        return pageData.results
+      }
+      const seen = new Set(current.map((item) => item.id))
+      return [
+        ...current,
+        ...pageData.results.filter((item) => !seen.has(item.id)),
+      ]
+    })
+  }, [page, searchQuery.data])
 
   const close = () => {
     onClose()
@@ -104,11 +132,13 @@ export function AddMedicationSheet({
 
   const updateSearch = (value: string, immediate = false) => {
     setSearch(value)
+    setPage(1)
     if (immediate) {
       setDebouncedSearch(value)
       return
     }
     debounceSearch(() => {
+      setPage(1)
       setDebouncedSearch(value)
     })
   }
@@ -177,7 +207,7 @@ export function AddMedicationSheet({
                 >
                   <AppZumDocLogo animate="loading" height={128} width={128} />
                 </View>
-              ) : items.length === 0 ? (
+              ) : items.length === 0 && debouncedSearch.trim().length > 0 ? (
                 <ThemedText
                   appearance="description"
                   style={{
@@ -191,14 +221,20 @@ export function AddMedicationSheet({
                 </ThemedText>
               ) : (
                 <VirtualList
-                  data={[...items]}
+                  data={items}
                   keyExtractor={(item) => item.id}
                   style={{ marginTop: theme.spacing.md, flex: 1 }}
+                  onEndReached={() => {
+                    if (searchQuery.data?.hasMore && !searchQuery.isFetching) {
+                      setPage((value) => value + 1)
+                    }
+                  }}
                   renderItem={({ item }) => {
                     const isSelected = item.id === selectedItem?.id
                     return (
                       <ListActionItem
                         title={item.name}
+                        subtitle={item.ingredient ? item.ingredient : undefined}
                         color={isSelected ? theme.colors.primary : undefined}
                         leading={<ThemedIcon icon={Pill} />}
                         trailing={

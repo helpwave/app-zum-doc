@@ -133,6 +133,7 @@
   "medicationListHint": "Reçete isterken doğrudan seçebilmek için düzenli olarak kullandığınız ilaçları ekleyin.",
   "understood": "Anladım",
   "scanMedication": "İlaç tara",
+  "cameraPermissionDenied": "İlaç barkodunu taramak için kamera erişimine izin verin.",
   "searchMedicationPlaceholder": "İlaç ara",
   "selectMedicationSize": "Ambalaj boyutunu seçin",
   "deleteMedication": "İlacı kaldır",

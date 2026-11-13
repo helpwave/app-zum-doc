@@ -1,6 +1,6 @@
 import type { DoctorsOffice, MyDoctors, UpdateDoctorsOfficeInput } from './doctorsOffice'
 import type { AppLocale, MedicationSize, PatientRequestStatus, PatientRequestType } from './enums'
-import type { Medication, MedicationCatalogItem } from './medication'
+import type { Medication, MedicationPznSearch, MedicationSearchPage } from './medication'
 import type { ConversationPreview, Message } from './message'
 import type { PatientProfile, PatientProfileSummary, PracticePatient, CreatePracticePatientInput } from './patientProfile'
 import type {
@@ -111,7 +111,9 @@ export type ApiClient = {
   ) => Promise<Message[]>,
   searchMedications: (params: {
     search?: string,
-  }) => Promise<MedicationCatalogItem[]>,
+    page?: number,
+  }) => Promise<MedicationSearchPage>,
+  searchMedicationByPzn: (pzn: string) => Promise<MedicationPznSearch>,
   sendMessage: (
     conversationId: string,
     body: string
@@ -123,6 +125,7 @@ export type ApiClient = {
   addMyDoctor: (doctorsOfficeId: string) => Promise<MyDoctors>,
   addPatientMedication: (params: {
     catalogId: string,
+    name: string,
     size: MedicationSize,
   }) => Promise<Medication[]>,
   cancelAppointment: (

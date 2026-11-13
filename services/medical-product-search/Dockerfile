@@ -1,0 +1,14 @@
+FROM rust:1-bookworm AS build
+WORKDIR /src
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+RUN useradd --system --no-create-home medical-product-search
+COPY --from=build /src/target/release/medical-product-search /usr/local/bin/medical-product-search
+USER medical-product-search
+ENV DATA_DIR=/data
+ENV BIND=0.0.0.0:8080
+EXPOSE 8080
+CMD ["medical-product-search"]

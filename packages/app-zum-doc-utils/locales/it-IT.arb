@@ -133,6 +133,7 @@
   "medicationListHint": "Aggiunga i farmaci che assume regolarmente, così potrà selezionarli direttamente quando ordina una ricetta.",
   "understood": "Ho capito",
   "scanMedication": "Scansiona farmaco",
+  "cameraPermissionDenied": "Consenti l’accesso alla fotocamera per scansionare il codice di un farmaco.",
   "searchMedicationPlaceholder": "Cerca farmaco",
   "selectMedicationSize": "Seleziona confezione",
   "deleteMedication": "Rimuovi farmaco",

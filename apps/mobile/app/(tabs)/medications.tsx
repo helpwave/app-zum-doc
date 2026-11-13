@@ -1,9 +1,9 @@
 import { AddMedicationSheet } from "@/components/add-medication-sheet"
 import { AppBar } from "@/components/app-bar"
-import { ConfirmationModal } from "@/components/confirmation-modal"
 import { QueryState } from "@/components/query-state"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
+import type { MedicationCatalogItem } from "@app-zum-doc/utils/api"
 import {
   useAddPatientMedication,
   usePatientMedications,
@@ -17,20 +17,36 @@ import {
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
+import { useRouter, type Href, useLocalSearchParams } from "expo-router"
 import { Camera, CirclePlus, Pill, Trash, TriangleAlert } from "lucide-react-native"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ScrollView, View } from "react-native"
 
 export default function MedicationsScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
+  const router = useRouter()
+  const params = useLocalSearchParams<{
+    catalogId?: string
+    catalogName?: string
+    catalogIngredient?: string
+  }>()
   const medicationsQuery = usePatientMedications()
   const addMedication = useAddPatientMedication()
   const removeMedication = useRemovePatientMedication()
 
   const [hintDismissed, setHintDismissed] = useState(false)
   const [sheetVisible, setSheetVisible] = useState(false)
-  const [scanComingSoonOpen, setScanComingSoonOpen] = useState(false)
+  const scannedItem = useMemo<MedicationCatalogItem | null>(() => {
+    if (!params.catalogId || !params.catalogName) {
+      return null
+    }
+    return {
+      id: params.catalogId,
+      name: params.catalogName,
+      ingredient: params.catalogIngredient || undefined,
+    }
+  }, [params.catalogId, params.catalogIngredient, params.catalogName])
 
   const medications = medicationsQuery.data ?? []
   const showHint = medications.length === 0 && !hintDismissed
@@ -52,7 +68,7 @@ export default function MedicationsScreen() {
             color={theme.colors.surfaceInverse}
             accessibilityLabel={t("scanMedication")}
             onPress={() => {
-              setScanComingSoonOpen(true)
+              router.push("/scan-medication" as Href)
             }}
           />
         }
@@ -176,22 +192,27 @@ export default function MedicationsScreen() {
       </QueryState>
 
       <AddMedicationSheet
-        visible={sheetVisible}
+        visible={sheetVisible || scannedItem != null}
+        initialItem={scannedItem}
         isSubmitting={addMedication.isPending}
         onSubmit={(selection) => {
           void addMedication.mutateAsync(selection).then(() => {
             setSheetVisible(false)
+            router.setParams({
+              catalogId: "",
+              catalogName: "",
+              catalogIngredient: "",
+            })
           })
         }}
         onClose={() => {
           setSheetVisible(false)
+          router.setParams({
+            catalogId: "",
+            catalogName: "",
+            catalogIngredient: "",
+          })
         }}
-      />
-      <ConfirmationModal
-        isOpen={scanComingSoonOpen}
-        onIsOpenChange={setScanComingSoonOpen}
-        title={t("medicationList")}
-        message={t("placeholderComingSoon")}
       />
     </View>
   )

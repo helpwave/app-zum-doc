@@ -133,6 +133,7 @@
   "medicationListHint": "Voeg medicijnen toe die u regelmatig gebruikt, zodat u ze direct kunt selecteren wanneer u een recept aanvraagt.",
   "understood": "Begrepen",
   "scanMedication": "Medicijn scannen",
+  "cameraPermissionDenied": "Sta cameratoegang toe om een medicijnbarcode te scannen.",
   "searchMedicationPlaceholder": "Medicijn zoeken",
   "selectMedicationSize": "Verpakkingsgrootte selecteren",
   "deleteMedication": "Medicijn verwijderen",

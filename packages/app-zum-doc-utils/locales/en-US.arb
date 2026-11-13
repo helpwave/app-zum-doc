@@ -133,6 +133,7 @@
   "medicationListHint": "Add medications you use regularly so you can select them directly when ordering a prescription.",
   "understood": "Understood",
   "scanMedication": "Scan medication",
+  "cameraPermissionDenied": "Allow camera access to scan a medication barcode.",
   "searchMedicationPlaceholder": "Search medication",
   "selectMedicationSize": "Select pack size",
   "deleteMedication": "Remove medication",

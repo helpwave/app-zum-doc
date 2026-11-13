@@ -133,6 +133,7 @@
   "medicationListHint": "Añada los medicamentos que toma con regularidad para poder seleccionarlos directamente al pedir una receta.",
   "understood": "Entendido",
   "scanMedication": "Escanear medicamento",
+  "cameraPermissionDenied": "Permite el acceso a la cámara para escanear el código de un medicamento.",
   "searchMedicationPlaceholder": "Buscar medicamento",
   "selectMedicationSize": "Seleccionar tamaño del envase",
   "deleteMedication": "Quitar medicamento",

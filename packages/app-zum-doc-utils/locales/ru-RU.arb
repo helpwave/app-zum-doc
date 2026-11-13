@@ -133,6 +133,7 @@
   "medicationListHint": "Добавьте лекарства, которые вы принимаете регулярно, чтобы выбирать их напрямую при заказе рецепта.",
   "understood": "Понятно",
   "scanMedication": "Сканировать лекарство",
+  "cameraPermissionDenied": "Разрешите доступ к камере, чтобы сканировать штрихкод лекарства.",
   "searchMedicationPlaceholder": "Поиск лекарства",
   "selectMedicationSize": "Выбрать размер упаковки",
   "deleteMedication": "Удалить лекарство",
