@@ -1,10 +1,13 @@
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { ThemedPressable } from "@helpwave/hightide-native/components"
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs"
+import { Tabs } from "expo-router"
 import { Home, MessageCircle, UserRound } from "lucide-react-native"
+import { type ComponentProps } from "react"
 import { Text, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+
+type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0]
 
 const tabIcons = {
   index: Home,
@@ -33,7 +36,7 @@ function highlightedTab(routeName: string): VisibleTab | null {
   return null
 }
 
-export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function AzdTabBar({ state, descriptors, emitter, navigateToTab }: TabBarProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const insets = useSafeAreaInsets()
@@ -77,18 +80,18 @@ export function AzdTabBar({ state, descriptors, navigation }: BottomTabBarProps)
             accessibilityState={{ selected: selected }}
             accessibilityLabel={label}
             onPress={() => {
-              const event = navigation.emit({
+              const event = emitter.emit({
                 type: "tabPress",
                 target: route.key,
                 canPreventDefault: true,
               })
 
               if (!selected && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params)
+                navigateToTab(route.key)
               }
             }}
             onLongPress={() => {
-              navigation.emit({
+              emitter.emit({
                 type: "tabLongPress",
                 target: route.key,
               })

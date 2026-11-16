@@ -20,7 +20,7 @@ import {
   Sparkles,
   UserMinus,
 } from "lucide-react-native"
-import { useMemo, useRef, useState } from "react"
+import { type ComponentRef, useMemo, useRef, useState } from "react"
 import {
   ColorValue,
   Linking,
@@ -61,7 +61,7 @@ export function DoctorDetailHero({
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const window = useWindowDimensions()
-  const moreButtonRef = useRef<View>(null)
+  const moreButtonRef = useRef<ComponentRef<typeof View>>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 })
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false)
