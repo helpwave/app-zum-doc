@@ -789,31 +789,14 @@ export function createMockApiClient(
     search?: string,
     page?: number,
   }): Promise<MedicationSearchPage> {
-    const baseUrl = medicalProductSearchBaseUrl()
+    const baseUrl = requireMedicalProductSearchBaseUrl()
     const page = Math.max(1, params.page ?? 1)
-    if (baseUrl) {
-      return fetchMedicalProductsByName(baseUrl, params.search ?? "", page)
-    }
-    return withMockLatency(() => {
-      const query = params.search?.trim().toLowerCase() ?? ''
-      const matches = medicationCatalogSeed
-        .filter((item) => !query || matchesQuery(item.name, query))
-        .map((item) => ({ ...item }))
-      return pageMedicationCatalog(matches, page)
-    }, { failKey: params.search })
+    return fetchMedicalProductsByName(baseUrl, params.search ?? "", page)
   }
 
   async function searchMedicationByPzn(pzn: string): Promise<MedicationPznSearch> {
-    const baseUrl = medicalProductSearchBaseUrl()
-    if (baseUrl) {
-      return fetchMedicalProductByPzn(baseUrl, pzn)
-    }
-    return {
-      date: "",
-      source: "",
-      hasResult: false,
-      results: null,
-    }
+    const baseUrl = requireMedicalProductSearchBaseUrl()
+    return fetchMedicalProductByPzn(baseUrl, pzn)
   }
 
   async function addPatientMedication(params: {
@@ -1077,20 +1060,12 @@ export function createMockApiClient(
     return haystack.toLowerCase().includes(query)
   }
 
-  function pageMedicationCatalog(
-    items: MedicationCatalogItem[],
-    page: number,
-  ): MedicationSearchPage {
-    const pageSize = 20
-    const start = (page - 1) * pageSize
-    return {
-      date: "",
-      source: "",
-      page,
-      pageSize,
-      hasMore: start + pageSize < items.length,
-      results: items.slice(start, start + pageSize),
+  function requireMedicalProductSearchBaseUrl() {
+    const baseUrl = medicalProductSearchBaseUrl()
+    if (!baseUrl) {
+      throw new Error("Medikamentensuche ist nicht konfiguriert.")
     }
+    return baseUrl
   }
 
   async function fetchCities(params: {
