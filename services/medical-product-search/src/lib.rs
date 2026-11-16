@@ -8,6 +8,8 @@ use nucleo_matcher::{Config, Matcher, Utf32Str};
 use serde::Deserialize;
 use serde::Serialize;
 
+pub mod db;
+
 pub const PAGE_SIZE: usize = 20;
 
 const MEDICINAL_HEADER: &str = "RMP_KEY";
@@ -38,6 +40,18 @@ impl From<serde_json::Error> for LoadError {
         Self::Metadata(error.to_string())
     }
 }
+
+impl std::fmt::Display for LoadError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Io(error) => write!(formatter, "{error}"),
+            Self::Metadata(message) => write!(formatter, "{message}"),
+            Self::Csv(error) => write!(formatter, "{error}"),
+        }
+    }
+}
+
+impl std::error::Error for LoadError {}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Product {
@@ -91,7 +105,8 @@ struct MetadataFile {
 
 pub fn load_dataset(data_dir: &Path) -> Result<Dataset, LoadError> {
     let metadata_path = data_dir.join("metadata.json");
-    let metadata: MetadataFile = serde_json::from_reader(BufReader::new(File::open(metadata_path)?))?;
+    let metadata: MetadataFile =
+        serde_json::from_reader(BufReader::new(File::open(metadata_path)?))?;
     let medical_path = resolve_data_path(data_dir, &metadata.medical_products)?;
     let pharmaceutical_path = resolve_data_path(data_dir, &metadata.pharmaceutical_product)?;
     let substance_path = resolve_data_path(data_dir, &metadata.substance)?;
@@ -130,7 +145,11 @@ pub fn search_by_name(dataset: &Dataset, query: &str, page: u32) -> NameSearch {
 
 pub fn search_by_pzn(dataset: &Dataset, pzn: &str) -> PznSearch {
     let needle = pzn.trim();
-    let product = dataset.products.iter().find(|product| product.pzn == needle).cloned();
+    let product = dataset
+        .products
+        .iter()
+        .find(|product| product.pzn == needle)
+        .cloned();
     PznSearch {
         date: dataset.date.clone(),
         source: dataset.source.clone(),
@@ -143,9 +162,13 @@ fn resolve_data_path(data_dir: &Path, relative: &str) -> Result<PathBuf, LoadErr
     let relative_path = Path::new(relative);
     let leaves_directory = relative.is_empty()
         || relative_path.is_absolute()
-        || relative_path.components().any(|component| component == Component::ParentDir);
+        || relative_path
+            .components()
+            .any(|component| component == Component::ParentDir);
     if leaves_directory {
-        return Err(LoadError::Metadata(format!("invalid data path: {relative}")));
+        return Err(LoadError::Metadata(format!(
+            "invalid data path: {relative}"
+        )));
     }
     Ok(data_dir.join(relative_path))
 }
@@ -184,7 +207,10 @@ fn read_substances(path: &Path) -> Result<HashMap<String, Vec<(i64, String)>>, L
             continue;
         }
         let rank = field(row, 5).parse::<i64>().unwrap_or(i64::MAX);
-        substances.entry(pharmaceutical_key).or_default().push((rank, field(row, 2)));
+        substances
+            .entry(pharmaceutical_key)
+            .or_default()
+            .push((rank, field(row, 2)));
     }
     Ok(substances)
 }
@@ -198,7 +224,10 @@ fn read_pharmaceutical_products(path: &Path) -> Result<HashMap<String, Vec<Strin
         if medical_key.is_empty() || pharmaceutical_key.is_empty() {
             continue;
         }
-        products.entry(medical_key).or_default().push(pharmaceutical_key);
+        products
+            .entry(medical_key)
+            .or_default()
+            .push(pharmaceutical_key);
     }
     Ok(products)
 }
@@ -232,7 +261,11 @@ fn ingredient_for(
     substances: &HashMap<String, Vec<(i64, String)>>,
 ) -> String {
     let mut ranked = Vec::new();
-    for pharmaceutical_key in pharmaceutical_products.get(medical_key).into_iter().flatten() {
+    for pharmaceutical_key in pharmaceutical_products
+        .get(medical_key)
+        .into_iter()
+        .flatten()
+    {
         for substance in substances.get(pharmaceutical_key).into_iter().flatten() {
             ranked.push(substance.clone());
         }
@@ -255,7 +288,10 @@ fn rank_matches<'a>(products: &'a [Product], query: &str) -> Vec<&'a Product> {
     if folded_query.is_empty() {
         return Vec::new();
     }
-    let tokens: Vec<&str> = folded_query.split_whitespace().filter(|token| !token.is_empty()).collect();
+    let tokens: Vec<&str> = folded_query
+        .split_whitespace()
+        .filter(|token| !token.is_empty())
+        .collect();
     let mut matcher = Matcher::new(Config::DEFAULT);
     let pattern = Pattern::parse(&folded_query, CaseMatching::Ignore, Normalization::Smart);
     let mut scored = Vec::new();
@@ -270,7 +306,9 @@ fn rank_matches<'a>(products: &'a [Product], query: &str) -> Vec<&'a Product> {
         scored.push((score, product));
     }
     scored.sort_by(|left, right| {
-        right.0.cmp(&left.0)
+        right
+            .0
+            .cmp(&left.0)
             .then_with(|| left.1.name.to_lowercase().cmp(&right.1.name.to_lowercase()))
             .then_with(|| left.1.id.cmp(&right.1.id))
     });
@@ -287,7 +325,10 @@ mod tests {
 
     impl TempDir {
         fn new() -> Self {
-            let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+            let nanos = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos();
             let path = std::env::temp_dir().join(format!("medical-product-search-{nanos}"));
             fs::create_dir_all(&path).unwrap();
             Self(path)
@@ -310,7 +351,8 @@ mod tests {
               "pharmaceuticalProduct": "20261015-REFERENCE_PHARMACEUTICAL_PRODUCT.dsv",
               "substance": "20261015-REFERENCE_SUBSTANCE.dsv"
             }"#,
-        ).unwrap();
+        )
+        .unwrap();
         fs::write(
             dir.join("20261015-REFERENCE_MEDICINAL_PRODUCT.dsv"),
             "RMP_KEY|RMP_PZN|RMP_COUNT_SUBSTANCE|RMP_MULTIPLE_PPT|RMP_PFM_PUT_SHORT|RMP_PFM_PUT_LONG|RMP_PFM_NAME|RMP_PFM_TERM_ID|RMP_MPD_NAME\n\
@@ -338,7 +380,11 @@ mod tests {
         write_fixture(&dir.0);
         let dataset = load_dataset(&dir.0).unwrap();
         assert_eq!(dataset.products.len(), 2);
-        let ibuprofen = dataset.products.iter().find(|product| product.id == "1").unwrap();
+        let ibuprofen = dataset
+            .products
+            .iter()
+            .find(|product| product.id == "1")
+            .unwrap();
         assert_eq!(ibuprofen.ingredient, "Macrogol, Ibuprofen");
         assert_eq!(ibuprofen.kind, "Tabletten");
 
@@ -367,7 +413,9 @@ mod tests {
         let dir = TempDir::new();
         let mut lines = String::from("RMP_KEY|RMP_PZN|RMP_COUNT_SUBSTANCE|RMP_MULTIPLE_PPT|RMP_PFM_PUT_SHORT|RMP_PFM_PUT_LONG|RMP_PFM_NAME|RMP_PFM_TERM_ID|RMP_MPD_NAME\n");
         for index in 1..=25 {
-            lines.push_str(&format!("{index}|{index:08}|0|0|TAB|Tabletten|Tab|1|Aspirin {index}\n"));
+            lines.push_str(&format!(
+                "{index}|{index:08}|0|0|TAB|Tabletten|Tab|1|Aspirin {index}\n"
+            ));
         }
         fs::write(dir.0.join("metadata.json"), r#"{"date":"2026-10-15T00:00:00.000Z","sourceUrl":"https://portal.bfarm.de/amguifree","medicalProducts":"products.dsv","pharmaceuticalProduct":"pharma.dsv","substance":"substances.dsv"}"#).unwrap();
         fs::write(dir.0.join("products.dsv"), lines).unwrap();

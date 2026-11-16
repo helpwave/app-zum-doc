@@ -7,8 +7,11 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 RUN useradd --system --no-create-home medical-product-search
 COPY --from=build /src/target/release/medical-product-search /usr/local/bin/medical-product-search
+COPY --from=build /src/target/release/medical-product-search-import /usr/local/bin/medical-product-search-import
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 USER medical-product-search
 ENV DATA_DIR=/data
 ENV BIND=0.0.0.0:8080
 EXPOSE 8080
-CMD ["medical-product-search"]
+ENTRYPOINT ["docker-entrypoint.sh"]

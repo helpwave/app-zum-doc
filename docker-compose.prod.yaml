@@ -1,0 +1,33 @@
+name: medical-product-search
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: medical_product_search
+      POSTGRES_PASSWORD: medical_product_search
+      POSTGRES_DB: medical_product_search
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medical_product_search -d medical_product_search"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - medical-product-search-postgres:/var/lib/postgresql/data
+
+  medical-product-search:
+    image: ghcr.io/helpwave/app-zum-doc/medical-product-search:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://medical_product_search:medical_product_search@postgres:5432/medical_product_search
+      DATA_DIR: /data
+      BIND: 0.0.0.0:8080
+    volumes:
+      - ./services/medical-product-search/data:/data:ro
+    ports:
+      - "8080:8080"
+
+volumes:
+  medical-product-search-postgres:
