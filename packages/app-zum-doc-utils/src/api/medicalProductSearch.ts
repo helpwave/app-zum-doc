@@ -1,46 +1,79 @@
 import type {
   MedicationCatalogItem,
   MedicationPznSearch,
-  MedicationSearchPage,
-} from "./medication"
+  MedicationSearchPage
+} from './medication'
 
 const pageSize = 20
 
+export class MedicalProductSearchUnavailableError extends Error {
+  constructor() {
+    super('Medikamentensuche ist nicht erreichbar.')
+    this.name = 'MedicalProductSearchUnavailableError'
+  }
+}
+
 type ServiceProduct = {
-  id: string
-  pzn: string
-  type: string
-  name: string
-  ingredient: string
+  id: string,
+  pzn: string,
+  type: string,
+  name: string,
+  ingredient: string,
 }
 
 type ServiceNameSearch = {
-  date: string
-  source: string
-  page: number
-  pageSize: number
-  hasMore: boolean
-  results: ServiceProduct[]
+  date: string,
+  source: string,
+  page: number,
+  pageSize: number,
+  hasMore: boolean,
+  results: ServiceProduct[],
 }
 
 type ServicePznSearch = {
-  date: string
-  source: string
-  hasResult: boolean
-  results: ServiceProduct | null
+  date: string,
+  source: string,
+  hasResult: boolean,
+  results: ServiceProduct | null,
 }
 
 export function medicalProductSearchBaseUrl() {
   const value = process.env.EXPO_PUBLIC_MEDICAL_PRODUCT_SEARCH_URL
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     return undefined
   }
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
 }
 
+async function readJson<T>(url: URL): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(url)
+  } catch {
+    throw new MedicalProductSearchUnavailableError()
+  }
+  if (!response.ok) {
+    throw new Error('Medikamentensuche fehlgeschlagen.')
+  }
+  return await response.json() as T
+}
+
+function serviceUrl(baseUrl: string, path: string) {
+  const normalized = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+  return new URL(path, normalized)
+}
+
+function toCatalogItem(product: ServiceProduct): MedicationCatalogItem {
+  return {
+    id: product.id,
+    name: product.name,
+    ingredient: product.ingredient,
+  }
+}
+
 export function pznFromBarcode(value: string) {
-  const digits = value.replace(/\D/g, "")
+  const digits = value.replace(/\D/g, '')
   if (digits.length === 7 || digits.length === 8) {
     return digits
   }
@@ -53,11 +86,11 @@ export function pznFromBarcode(value: string) {
 export async function fetchMedicalProductsByName(
   baseUrl: string,
   search: string,
-  page: number,
+  page: number
 ): Promise<MedicationSearchPage> {
-  const url = serviceUrl(baseUrl, "search/name/")
-  url.searchParams.set("q", search)
-  url.searchParams.set("page", String(Math.max(1, page)))
+  const url = serviceUrl(baseUrl, 'search/name/')
+  url.searchParams.set('q', search)
+  url.searchParams.set('page', String(Math.max(1, page)))
   const body = await readJson<ServiceNameSearch>(url)
   return {
     date: body.date,
@@ -71,10 +104,10 @@ export async function fetchMedicalProductsByName(
 
 export async function fetchMedicalProductByPzn(
   baseUrl: string,
-  pzn: string,
+  pzn: string
 ): Promise<MedicationPznSearch> {
-  const url = serviceUrl(baseUrl, "search/pzn/")
-  url.searchParams.set("pzn", pzn)
+  const url = serviceUrl(baseUrl, 'search/pzn/')
+  url.searchParams.set('pzn', pzn)
   const body = await readJson<ServicePznSearch>(url)
   return {
     date: body.date,
@@ -86,8 +119,8 @@ export async function fetchMedicalProductByPzn(
 
 export function emptyMedicationSearchPage(page = 1): MedicationSearchPage {
   return {
-    date: "",
-    source: "",
+    date: '',
+    source: '',
     page,
     pageSize,
     hasMore: false,
@@ -95,23 +128,3 @@ export function emptyMedicationSearchPage(page = 1): MedicationSearchPage {
   }
 }
 
-function toCatalogItem(product: ServiceProduct): MedicationCatalogItem {
-  return {
-    id: product.id,
-    name: product.name,
-    ingredient: product.ingredient,
-  }
-}
-
-function serviceUrl(baseUrl: string, path: string) {
-  const normalized = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`
-  return new URL(path, normalized)
-}
-
-async function readJson<T>(url: URL): Promise<T> {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error("Medikamentensuche fehlgeschlagen.")
-  }
-  return await response.json() as T
-}

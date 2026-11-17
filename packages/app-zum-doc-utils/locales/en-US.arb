@@ -100,6 +100,7 @@
   "selectSpecialization": "Select specialty",
   "searchSpecialization": "Search for specialty",
   "noSearchResults": "No results found.",
+  "medicationSearchUnavailable": "The medication search server could not be reached.",
   "loadingDoctorSearch": "Loading search…",
   "loadingCities": "Loading cities…",
   "loadingSpecializations": "Loading specialties…",

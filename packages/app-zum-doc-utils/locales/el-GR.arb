@@ -100,6 +100,7 @@
   "selectSpecialization": "Επιλογή ειδικότητας",
   "searchSpecialization": "Αναζήτηση ειδικότητας",
   "noSearchResults": "Δεν βρέθηκαν αποτελέσματα.",
+  "medicationSearchUnavailable": "Δεν είναι δυνατή η σύνδεση με τον διακομιστή αναζήτησης φαρμάκων.",
   "loadingDoctorSearch": "Φόρτωση αναζήτησης…",
   "loadingCities": "Φόρτωση πόλεων…",
   "loadingSpecializations": "Φόρτωση ειδικοτήτων…",

@@ -100,6 +100,7 @@
   "selectSpecialization": "Specialisme selecteren",
   "searchSpecialization": "Specialisme zoeken",
   "noSearchResults": "Geen resultaten gevonden.",
+  "medicationSearchUnavailable": "De server voor medicijnzoeken is niet bereikbaar.",
   "loadingDoctorSearch": "Zoekopdracht laden…",
   "loadingCities": "Plaatsen laden…",
   "loadingSpecializations": "Specialismen laden…",

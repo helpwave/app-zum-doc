@@ -5,12 +5,14 @@ import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
+  MedicalProductSearchUnavailableError,
   MedicationSizeUtils,
   type MedicationCatalogItem,
   type MedicationSize,
 } from "@app-zum-doc/utils/api"
 import { useMedicationSearch } from "@app-zum-doc/utils/hooks"
 import {
+  Button,
   ListActionItem,
   SearchBar,
   ThemedIcon,
@@ -18,7 +20,7 @@ import {
 } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { useDebouncer } from "@helpwave/hightide-utils/hooks"
-import { Check, Pill } from "lucide-react-native"
+import { Check, Pill, RotateCcw } from "lucide-react-native"
 import { useEffect, useState } from "react"
 import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -63,6 +65,7 @@ export function AddMedicationSheet({
       page,
     },
     enabled: visible && currentStep === 0,
+    retry: false,
   })
   const showInitialLoading = searchQuery.isPending && page === 1 && items.length === 0
   const isLastStep = currentStep === stepCount - 1
@@ -206,6 +209,36 @@ export function AddMedicationSheet({
                   }}
                 >
                   <AppZumDocLogo animate="loading" height={128} width={128} />
+                </View>
+              ) : searchQuery.isError ? (
+                <View
+                  style={{
+                    paddingHorizontal: theme.spacing.lg,
+                    paddingVertical: theme.spacing.xl,
+                    alignItems: "center",
+                    gap: theme.spacing.md,
+                  }}
+                >
+                  <ThemedText
+                    appearance="description"
+                    style={{
+                      ...theme.typography.body.md,
+                      textAlign: "center",
+                    }}
+                  >
+                    {searchQuery.error instanceof MedicalProductSearchUnavailableError
+                      ? t("medicationSearchUnavailable")
+                      : searchQuery.error?.message ?? t("errorUnknown")}
+                  </ThemedText>
+                  <Button
+                    size="md"
+                    onPress={() => {
+                      void searchQuery.refetch()
+                    }}
+                    leadingIcon={RotateCcw}
+                  >
+                    {t("retry")}
+                  </Button>
                 </View>
               ) : items.length === 0 && debouncedSearch.trim().length > 0 ? (
                 <ThemedText

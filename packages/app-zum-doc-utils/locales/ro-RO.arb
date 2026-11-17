@@ -100,6 +100,7 @@
   "selectSpecialization": "Selectați specialitatea",
   "searchSpecialization": "Căutați o specialitate",
   "noSearchResults": "Nu s-au găsit rezultate.",
+  "medicationSearchUnavailable": "Serverul de căutare a medicamentelor nu poate fi contactat.",
   "loadingDoctorSearch": "Se încarcă căutarea…",
   "loadingCities": "Se încarcă orașele…",
   "loadingSpecializations": "Se încarcă specialitățile…",

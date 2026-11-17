@@ -100,6 +100,7 @@
   "selectSpecialization": "Seleziona specializzazione",
   "searchSpecialization": "Cerca specializzazione",
   "noSearchResults": "Nessun risultato trovato.",
+  "medicationSearchUnavailable": "Impossibile connettersi al server di ricerca farmaci.",
   "loadingDoctorSearch": "Caricamento ricerca…",
   "loadingCities": "Caricamento città…",
   "loadingSpecializations": "Caricamento specializzazioni…",

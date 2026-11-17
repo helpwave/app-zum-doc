@@ -100,6 +100,7 @@
   "selectSpecialization": "Выбрать специальность",
   "searchSpecialization": "Поиск специальности",
   "noSearchResults": "Ничего не найдено.",
+  "medicationSearchUnavailable": "Не удалось подключиться к серверу поиска лекарств.",
   "loadingDoctorSearch": "Загрузка поиска…",
   "loadingCities": "Загрузка городов…",
   "loadingSpecializations": "Загрузка специальностей…",

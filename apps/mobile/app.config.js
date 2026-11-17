@@ -36,10 +36,51 @@ function resolveIosTeamId() {
   return process.env.IOS_TEAM_ID?.trim() || appJson.expo.ios?.appleTeamId
 }
 
+function isDevMode() {
+  return process.env.CI !== "1" && process.env.NODE_ENV !== "production"
+}
+
+function resolveMedicalProductSearchUrl() {
+  const fromEnv = process.env.EXPO_PUBLIC_MEDICAL_PRODUCT_SEARCH_URL?.trim()
+  if (fromEnv) {
+    return fromEnv
+  }
+  return isDevMode()
+    ? "http://127.0.0.1:8080"
+    : "https://medication-search.helpwave.de"
+}
+
+const medicalProductSearchUrl = resolveMedicalProductSearchUrl()
+process.env.EXPO_PUBLIC_MEDICAL_PRODUCT_SEARCH_URL = medicalProductSearchUrl
+
+function withDevCleartext(plugin) {
+  const name = Array.isArray(plugin) ? plugin[0] : plugin
+  if (name !== "expo-build-properties" || !isDevMode()) {
+    return plugin
+  }
+  const options = Array.isArray(plugin) && plugin[1] ? plugin[1] : {}
+  return [
+    "expo-build-properties",
+    {
+      ...options,
+      android: {
+        ...options.android,
+        usesCleartextTraffic: true,
+      },
+    },
+  ]
+}
+
+const devMode = isDevMode()
+
 module.exports = {
   expo: {
     ...appJson.expo,
     version: resolveVersion(),
+    extra: {
+      ...(appJson.expo.extra ?? {}),
+      medicalProductSearchUrl,
+    },
     android: {
       ...appJson.expo.android,
       versionCode: resolveVersionCode(),
@@ -48,9 +89,19 @@ module.exports = {
       ...appJson.expo.ios,
       buildNumber: resolveIosBuildNumber(),
       ...(resolveIosTeamId() ? { appleTeamId: resolveIosTeamId() } : {}),
+      ...(devMode
+        ? {
+          infoPlist: {
+            ...(appJson.expo.ios?.infoPlist ?? {}),
+            NSAppTransportSecurity: {
+              NSAllowsArbitraryLoads: true,
+            },
+          },
+        } : {}
+      ),
     },
     plugins: [
-      ...(appJson.expo.plugins ?? []),
+      ...(appJson.expo.plugins ?? []).map(withDevCleartext),
       "./plugins/with-android-release-signing.js",
       "./plugins/with-android-abi-splits.js",
       "./plugins/with-android-sdk-versions.js",

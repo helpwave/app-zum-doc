@@ -84,6 +84,7 @@ export type AppZumDocTranslationEntries = {
   'medicationList': string,
   'medicationListHint': string,
   'medicationPackageSize': string,
+  'medicationSearchUnavailable': string,
   'medicationSize': (values: { size: string }) => string,
   'medicationsSection': string,
   'messagePlaceholder': string,
@@ -252,6 +253,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Medikamentenliste`,
     'medicationListHint': `Fügen Sie Medikamente hinzu, die Sie regelmäßig verwenden, um sie beim Bestellen eines Rezeptes direkt auswählen zu können.`,
     'medicationPackageSize': `Packungsgröße`,
+    'medicationSearchUnavailable': `Der Server für die Medikamentensuche ist nicht erreichbar.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - klein`,
@@ -452,6 +454,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Λίστα φαρμάκων`,
     'medicationListHint': `Προσθέστε τα φάρμακα που χρησιμοποιείτε τακτικά, ώστε να μπορείτε να τα επιλέγετε απευθείας κατά την παραγγελία συνταγής.`,
     'medicationPackageSize': `Μέγεθος συσκευασίας`,
+    'medicationSearchUnavailable': `Δεν είναι δυνατή η σύνδεση με τον διακομιστή αναζήτησης φαρμάκων.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - μικρή`,
@@ -652,6 +655,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Medication list`,
     'medicationListHint': `Add medications you use regularly so you can select them directly when ordering a prescription.`,
     'medicationPackageSize': `Pack size`,
+    'medicationSearchUnavailable': `The medication search server could not be reached.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - small`,
@@ -852,6 +856,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Lista de medicamentos`,
     'medicationListHint': `Añada los medicamentos que toma con regularidad para poder seleccionarlos directamente al pedir una receta.`,
     'medicationPackageSize': `Tamaño del envase`,
+    'medicationSearchUnavailable': `No se puede conectar con el servidor de búsqueda de medicamentos.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - pequeño`,
@@ -1052,6 +1057,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Liste de médicaments`,
     'medicationListHint': `Ajoutez les médicaments que vous prenez régulièrement afin de pouvoir les sélectionner directement lors d’une demande d’ordonnance.`,
     'medicationPackageSize': `Conditionnement`,
+    'medicationSearchUnavailable': `Impossible de joindre le serveur de recherche de médicaments.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - petit`,
@@ -1252,6 +1258,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Elenco farmaci`,
     'medicationListHint': `Aggiunga i farmaci che assume regolarmente, così potrà selezionarli direttamente quando ordina una ricetta.`,
     'medicationPackageSize': `Confezione`,
+    'medicationSearchUnavailable': `Impossibile connettersi al server di ricerca farmaci.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - piccola`,
@@ -1452,6 +1459,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Medicatielijst`,
     'medicationListHint': `Voeg medicijnen toe die u regelmatig gebruikt, zodat u ze direct kunt selecteren wanneer u een recept aanvraagt.`,
     'medicationPackageSize': `Verpakkingsgrootte`,
+    'medicationSearchUnavailable': `De server voor medicijnzoeken is niet bereikbaar.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - klein`,
@@ -1652,6 +1660,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Lista leków`,
     'medicationListHint': `Dodaj regularnie przyjmowane leki, aby móc je wybrać bezpośrednio podczas zamawiania recepty.`,
     'medicationPackageSize': `Wielkość opakowania`,
+    'medicationSearchUnavailable': `Nie można połączyć się z serwerem wyszukiwania leków.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - małe`,
@@ -1852,6 +1861,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Lista de medicamentos`,
     'medicationListHint': `Adicione os medicamentos que você usa regularmente para poder selecioná-los diretamente ao pedir uma receita.`,
     'medicationPackageSize': `Tamanho da embalagem`,
+    'medicationSearchUnavailable': `Não foi possível conectar ao servidor de busca de medicamentos.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - pequena`,
@@ -2052,6 +2062,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Lista de medicamente`,
     'medicationListHint': `Adăugați medicamentele pe care le utilizați în mod regulat, pentru a le putea selecta direct atunci când comandați o rețetă.`,
     'medicationPackageSize': `Mărimea ambalajului`,
+    'medicationSearchUnavailable': `Serverul de căutare a medicamentelor nu poate fi contactat.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - mic`,
@@ -2252,6 +2263,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `Список лекарств`,
     'medicationListHint': `Добавьте лекарства, которые вы принимаете регулярно, чтобы выбирать их напрямую при заказе рецепта.`,
     'medicationPackageSize': `Размер упаковки`,
+    'medicationSearchUnavailable': `Не удалось подключиться к серверу поиска лекарств.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - маленькая`,
@@ -2452,6 +2464,7 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationList': `İlaç listesi`,
     'medicationListHint': `Reçete isterken doğrudan seçebilmek için düzenli olarak kullandığınız ilaçları ekleyin.`,
     'medicationPackageSize': `Ambalaj boyutu`,
+    'medicationSearchUnavailable': `İlaç arama sunucusuna bağlanılamadı.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
         'n1': `N1 - küçük`,
