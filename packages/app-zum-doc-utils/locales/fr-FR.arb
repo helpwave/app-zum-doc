@@ -134,6 +134,8 @@
   "medicationListHint": "Ajoutez les médicaments que vous prenez régulièrement afin de pouvoir les sélectionner directement lors d’une demande d’ordonnance.",
   "understood": "Compris",
   "scanMedication": "Scanner un médicament",
+  "scanAgain": "Scanner à nouveau",
+  "add": "Ajouter",
   "cameraPermissionDenied": "Autorisez l’accès à la caméra pour scanner le code d’un médicament.",
   "searchMedicationPlaceholder": "Rechercher un médicament",
   "selectMedicationSize": "Sélectionner le conditionnement",

@@ -1,28 +1,146 @@
 import { AppBar } from "@/components/app-bar"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
-import { pznFromBarcode } from "@app-zum-doc/utils/api"
+import {
+  setScannedMedication,
+  setScannedMedicationNotFound,
+} from "@/state/scanned-medication"
+import {
+  MedicalProductSearchUnavailableError,
+  pznFromBarcode,
+} from "@app-zum-doc/utils/api"
 import { getApiClient } from "@app-zum-doc/utils/hooks"
 import { Button, ThemedText } from "@helpwave/hightide-native/components"
-import { CameraView, useCameraPermissions } from "expo-camera"
-import { useRouter, type Href } from "expo-router"
-import { useState } from "react"
+import {
+  CameraView,
+  useCameraPermissions,
+  type BarcodeType,
+} from "expo-camera"
+import { useFocusEffect, useRouter, type Href } from "expo-router"
+import { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
+
+const barcodeTypes: BarcodeType[] = [
+  "ean13",
+  "ean8",
+  "code128",
+  "code39",
+  "datamatrix",
+  "qr",
+  "code93",
+  "codabar",
+  "itf14",
+]
 
 export default function ScanMedicationScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const router = useRouter()
   const [permission, requestPermission] = useCameraPermissions()
-  const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [cameraReady, setCameraReady] = useState(false)
+  const [useEmbeddedCamera, setUseEmbeddedCamera] = useState(
+    !CameraView.isModernBarcodeScannerAvailable,
+  )
+  const scanLock = useRef(false)
 
-  const openScannedProduct = (catalogId: string, catalogName: string, catalogIngredient: string) => {
-    const id = encodeURIComponent(catalogId)
-    const name = encodeURIComponent(catalogName)
-    const ingredient = encodeURIComponent(catalogIngredient)
-    router.navigate(`/(tabs)/medications?catalogId=${id}&catalogName=${name}&catalogIngredient=${ingredient}` as Href)
-  }
+  const returnToPreviousScreen = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back()
+      return
+    }
+    router.replace("/(tabs)/medications" as Href)
+  }, [router])
+
+  const finishWithMedication = useCallback((
+    catalogId: string,
+    catalogName: string,
+    catalogIngredient: string,
+  ) => {
+    setScannedMedication({
+      id: catalogId,
+      name: catalogName,
+      ingredient: catalogIngredient || undefined,
+    })
+    returnToPreviousScreen()
+  }, [returnToPreviousScreen])
+
+  const acceptBarcode = useCallback((data: string, raw?: string) => {
+    if (scanLock.current) {
+      return
+    }
+    const pzn = pznFromBarcode(data) ?? (raw ? pznFromBarcode(raw) : null)
+    if (!pzn) {
+      setMessage(t("noSearchResults"))
+      return
+    }
+    scanLock.current = true
+    setBusy(true)
+    setMessage(null)
+    void getApiClient().searchMedicationByPzn(pzn).then((result) => {
+      if (!result.hasResult || result.results == null) {
+        setScannedMedicationNotFound()
+        returnToPreviousScreen()
+        return
+      }
+      finishWithMedication(
+        result.results.id,
+        result.results.name,
+        result.results.ingredient ?? "",
+      )
+    }).catch((error: unknown) => {
+      scanLock.current = false
+      setBusy(false)
+      setMessage(
+        error instanceof MedicalProductSearchUnavailableError
+          ? t("medicationSearchUnavailable")
+          : t("errorTitle"),
+      )
+    })
+  }, [finishWithMedication, returnToPreviousScreen, t])
+
+  const acceptBarcodeRef = useRef(acceptBarcode)
+  acceptBarcodeRef.current = acceptBarcode
+
+  const openScanner = useCallback(() => {
+    if (!CameraView.isModernBarcodeScannerAvailable) {
+      setUseEmbeddedCamera(true)
+      return
+    }
+    void CameraView.launchScanner({
+      barcodeTypes,
+      isGuidanceEnabled: true,
+      isHighlightingEnabled: true,
+    }).catch((error: unknown) => {
+      const code = typeof error === "object" && error != null && "code" in error
+        ? String(error.code)
+        : ""
+      const text = error instanceof Error ? error.message : ""
+      const cancelled = code.toLowerCase().includes("cancel") || text.toLowerCase().includes("cancel")
+      if (!cancelled) {
+        setUseEmbeddedCamera(true)
+      }
+    })
+  }, [])
+
+  useFocusEffect(useCallback(() => {
+    if (!permission?.granted || useEmbeddedCamera) {
+      return
+    }
+    const subscription = CameraView.onModernBarcodeScanned(({ data, raw }) => {
+      void CameraView.dismissScanner()
+      acceptBarcodeRef.current(
+        typeof data === "string" ? data : "",
+        typeof raw === "string" ? raw : undefined,
+      )
+    })
+    openScanner()
+    return () => {
+      subscription.remove()
+      void CameraView.dismissScanner()
+    }
+  }, [openScanner, permission?.granted, useEmbeddedCamera]))
 
   return (
     <View
@@ -33,37 +151,64 @@ export default function ScanMedicationScreen() {
     >
       <AppBar title={t("scanMedication")} />
       {permission == null ? null : permission.granted ? (
-        <CameraView
-          style={{ flex: 1 }}
-          facing="back"
-          barcodeScannerSettings={{
-            barcodeTypes: ["ean13", "ean8", "code128", "code39", "datamatrix", "qr"],
-          }}
-          onBarcodeScanned={busy ? undefined : ({ data }) => {
-            const pzn = pznFromBarcode(data)
-            if (!pzn) {
-              setMessage(t("noSearchResults"))
-              return
-            }
-            setBusy(true)
-            setMessage(null)
-            void getApiClient().searchMedicationByPzn(pzn).then((result) => {
-              if (!result.hasResult || result.results == null) {
-                setBusy(false)
-                setMessage(t("noSearchResults"))
-                return
+        useEmbeddedCamera ? (
+          <CameraView
+            style={{ flex: 1 }}
+            facing="back"
+            mode="picture"
+            autofocus={cameraReady ? "on" : "off"}
+            barcodeScannerSettings={{ barcodeTypes }}
+            onCameraReady={() => {
+              setCameraReady(true)
+            }}
+            onBarcodeScanned={cameraReady
+              ? ({ data, raw }) => {
+                acceptBarcode(
+                  typeof data === "string" ? data : "",
+                  typeof raw === "string" ? raw : undefined,
+                )
               }
-              openScannedProduct(
-                result.results.id,
-                result.results.name,
-                result.results.ingredient ?? "",
-              )
-            }).catch(() => {
-              setBusy(false)
-              setMessage(t("errorTitle"))
-            })
-          }}
-        />
+              : undefined}
+          />
+        ) : (
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: theme.spacing.lg,
+              gap: theme.spacing.lg,
+            }}
+          >
+            {message ? (
+              <ThemedText
+                appearance="description"
+                style={{
+                  ...theme.typography.body.md,
+                  textAlign: "center",
+                }}
+              >
+                {message}
+              </ThemedText>
+            ) : (
+              <ThemedText
+                appearance="description"
+                style={{
+                  ...theme.typography.body.md,
+                  textAlign: "center",
+                }}
+              >
+                {busy ? t("loadingMedications") : t("scanMedication")}
+              </ThemedText>
+            )}
+            <Button
+              disabled={busy}
+              onPress={openScanner}
+            >
+              {t("scanMedication")}
+            </Button>
+          </View>
+        )
       ) : (
         <View
           style={{
@@ -92,7 +237,7 @@ export default function ScanMedicationScreen() {
           </Button>
         </View>
       )}
-      {message ? (
+      {useEmbeddedCamera && message ? (
         <ThemedText
           appearance="description"
           style={{

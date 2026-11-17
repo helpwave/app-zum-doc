@@ -134,6 +134,8 @@
   "medicationListHint": "Dodaj regularnie przyjmowane leki, aby móc je wybrać bezpośrednio podczas zamawiania recepty.",
   "understood": "Rozumiem",
   "scanMedication": "Zeskanuj lek",
+  "scanAgain": "Skanuj ponownie",
+  "add": "Dodaj",
   "cameraPermissionDenied": "Zezwól na dostęp do aparatu, aby zeskanować kod leku.",
   "searchMedicationPlaceholder": "Szukaj leku",
   "selectMedicationSize": "Wybierz wielkość opakowania",

@@ -134,6 +134,8 @@
   "medicationListHint": "Fügen Sie Medikamente hinzu, die Sie regelmäßig verwenden, um sie beim Bestellen eines Rezeptes direkt auswählen zu können.",
   "understood": "Verstanden",
   "scanMedication": "Medikament scannen",
+  "scanAgain": "Erneut scannen",
+  "add": "Hinzufügen",
   "cameraPermissionDenied": "Erlaube den Kamerazugriff, um einen Medikamenten-Barcode zu scannen.",
   "searchMedicationPlaceholder": "Medikament suchen",
   "selectMedicationSize": "Packungsgröße wählen",

@@ -73,12 +73,13 @@ function toCatalogItem(product: ServiceProduct): MedicationCatalogItem {
 }
 
 export function pznFromBarcode(value: string) {
+  const ntin = value.match(/4150(\d{8})/)
+  if (ntin?.[1]) {
+    return ntin[1]
+  }
   const digits = value.replace(/\D/g, '')
   if (digits.length === 7 || digits.length === 8) {
     return digits
-  }
-  if (digits.length > 8) {
-    return digits.slice(-8)
   }
   return null
 }
