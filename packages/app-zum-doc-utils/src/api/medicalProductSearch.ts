@@ -72,16 +72,65 @@ function toCatalogItem(product: ServiceProduct): MedicationCatalogItem {
   }
 }
 
-export function pznFromBarcode(value: string) {
-  const ntin = value.match(/4150(\d{8})/)
-  if (ntin?.[1]) {
-    return ntin[1]
+export type MedicationBarcodeFormat = 'code39' | 'datamatrix'
+
+const code39Pzn = /^(?:-(\d{8})|(\d{8})|(\d{7}))$/
+
+function pznFromCode39(value: string) {
+  const match = value.trim().match(code39Pzn)
+  if (match?.[1]) {
+    return match[1]
   }
-  const digits = value.replace(/\D/g, '')
-  if (digits.length === 7 || digits.length === 8) {
-    return digits
+  if (match?.[2]) {
+    return match[2]
+  }
+  if (match?.[3]) {
+    return `0${match[3]}`
   }
   return null
+}
+
+function pznFromGtin14(gtin: string) {
+  if (!gtin.startsWith('04150')) {
+    return null
+  }
+  return gtin.slice(5, 13)
+}
+
+function pznFromNtin13(ntin: string) {
+  if (!ntin.startsWith('4150')) {
+    return null
+  }
+  return ntin.slice(4, 12)
+}
+
+function pznFromDataMatrix(value: string) {
+  const gtin = value.match(/(?:\(01\)|(?:^|\u001d)01)(\d{14})/)
+  if (gtin?.[1]) {
+    const pzn = pznFromGtin14(gtin[1])
+    if (pzn) {
+      return pzn
+    }
+  }
+  const ppn = value.match(/9N(11\d{10})/)
+  if (ppn?.[1]) {
+    return ppn[1].slice(2, 10)
+  }
+  const compact = value.trim()
+  if (/^\d{14}$/.test(compact)) {
+    return pznFromGtin14(compact)
+  }
+  if (/^\d{13}$/.test(compact)) {
+    return pznFromNtin13(compact)
+  }
+  return null
+}
+
+export function pznFromBarcode(value: string, format: MedicationBarcodeFormat) {
+  if (format === 'code39') {
+    return pznFromCode39(value)
+  }
+  return pznFromDataMatrix(value)
 }
 
 export async function fetchMedicalProductsByName(

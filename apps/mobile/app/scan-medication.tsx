@@ -8,6 +8,7 @@ import {
 import {
   MedicalProductSearchUnavailableError,
   pznFromBarcode,
+  type MedicationBarcodeFormat,
 } from "@app-zum-doc/utils/api"
 import { getApiClient } from "@app-zum-doc/utils/hooks"
 import { Button, ThemedText } from "@helpwave/hightide-native/components"
@@ -20,17 +21,24 @@ import { useFocusEffect, useRouter, type Href } from "expo-router"
 import { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
 
-const barcodeTypes: BarcodeType[] = [
-  "ean13",
-  "ean8",
-  "code128",
-  "code39",
-  "datamatrix",
-  "qr",
-  "code93",
-  "codabar",
-  "itf14",
-]
+const barcodeTypes: BarcodeType[] = ["code39", "datamatrix"]
+
+function medicationBarcodeFormat(type: string | number): MedicationBarcodeFormat | null {
+  if (type === 2 || type === "2" || type === "code39") {
+    return "code39"
+  }
+  if (type === 16 || type === "16" || type === "datamatrix") {
+    return "datamatrix"
+  }
+  const name = String(type).toLowerCase().replace(/[^a-z0-9]/g, "")
+  if (name.includes("code39")) {
+    return "code39"
+  }
+  if (name.includes("datamatrix")) {
+    return "datamatrix"
+  }
+  return null
+}
 
 export default function ScanMedicationScreen() {
   const t = useAppTranslation()
@@ -66,11 +74,14 @@ export default function ScanMedicationScreen() {
     returnToPreviousScreen()
   }, [returnToPreviousScreen])
 
-  const acceptBarcode = useCallback((data: string, raw?: string) => {
+  const acceptBarcode = useCallback((type: string | number, data: string, raw?: string) => {
     if (scanLock.current) {
       return
     }
-    const pzn = pznFromBarcode(data) ?? (raw ? pznFromBarcode(raw) : null)
+    const format = medicationBarcodeFormat(type)
+    const pzn = format == null
+      ? null
+      : (raw ? pznFromBarcode(raw, format) : null) ?? pznFromBarcode(data, format)
     if (!pzn) {
       setMessage(t("noSearchResults"))
       return
@@ -128,9 +139,11 @@ export default function ScanMedicationScreen() {
     if (!permission?.granted || useEmbeddedCamera) {
       return
     }
-    const subscription = CameraView.onModernBarcodeScanned(({ data, raw }) => {
+    const subscription = CameraView.onModernBarcodeScanned(({ type, data, raw }) => {
       void CameraView.dismissScanner()
+      console.log("type", type)
       acceptBarcodeRef.current(
+        type,
         typeof data === "string" ? data : "",
         typeof raw === "string" ? raw : undefined,
       )
@@ -162,8 +175,9 @@ export default function ScanMedicationScreen() {
               setCameraReady(true)
             }}
             onBarcodeScanned={cameraReady
-              ? ({ data, raw }) => {
+              ? ({ type, data, raw }) => {
                 acceptBarcode(
+                  type,
                   typeof data === "string" ? data : "",
                   typeof raw === "string" ? raw : undefined,
                 )
