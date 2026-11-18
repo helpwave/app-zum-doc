@@ -1,15 +1,11 @@
-use std::path::Path;
 use std::time::{Duration, Instant};
 
 use deadpool_postgres::Pool;
 use tokio_postgres::NoTls;
 
-use crate::{
-    load_dataset, search_by_name, search_by_pzn, Dataset, LoadError, NameSearch, Product, PznSearch,
-};
+use crate::{search_by_name, search_by_pzn, Dataset, NameSearch, Product, PznSearch};
 
 const CONNECT_WAIT: Duration = Duration::from_secs(60);
-const INSERT_CHUNK: usize = 1_000;
 
 const SCHEMA: &str = "
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
@@ -36,7 +32,6 @@ pub enum DbError {
     Query(tokio_postgres::Error),
     Config(String),
     MissingDataset,
-    Load(LoadError),
 }
 
 impl std::fmt::Display for DbError {
@@ -47,7 +42,6 @@ impl std::fmt::Display for DbError {
             Self::Query(error) => write!(formatter, "postgres query failed: {error}"),
             Self::Config(message) => write!(formatter, "invalid database configuration: {message}"),
             Self::MissingDataset => write!(formatter, "dataset is not loaded"),
-            Self::Load(error) => write!(formatter, "failed to read dataset files: {error}"),
         }
     }
 }
@@ -57,12 +51,6 @@ impl std::error::Error for DbError {}
 impl From<tokio_postgres::Error> for DbError {
     fn from(error: tokio_postgres::Error) -> Self {
         Self::Query(error)
-    }
-}
-
-impl From<LoadError> for DbError {
-    fn from(error: LoadError) -> Self {
-        Self::Load(error)
     }
 }
 
@@ -81,22 +69,10 @@ pub fn pool(database_url: &str) -> Result<Pool, DbError> {
         .map_err(|error| DbError::Config(error.to_string()))
 }
 
-pub async fn import_dataset(database_url: &str, data_dir: &Path) -> Result<usize, DbError> {
-    let dataset = load_dataset(data_dir)?;
-    let mut client = connect(database_url).await?;
+pub async fn ensure_schema(database_url: &str) -> Result<(), DbError> {
+    let client = connect(database_url).await?;
     client.batch_execute(SCHEMA).await?;
-    let transaction = client.transaction().await?;
-    transaction.batch_execute("TRUNCATE products").await?;
-    transaction
-        .execute(
-            "INSERT INTO dataset (singleton, date, source) VALUES (TRUE, $1, $2)
-             ON CONFLICT (singleton) DO UPDATE SET date = EXCLUDED.date, source = EXCLUDED.source",
-            &[&dataset.date, &dataset.source],
-        )
-        .await?;
-    insert_products(&transaction, &dataset.products).await?;
-    transaction.commit().await?;
-    Ok(dataset.products.len())
+    Ok(())
 }
 
 pub async fn search_name(pool: &Pool, query: &str, page: u32) -> Result<NameSearch, DbError> {
@@ -202,39 +178,6 @@ async fn product_for_pzn(
         )
         .await?;
     Ok(rows.iter().map(product_from_row).collect())
-}
-
-async fn insert_products(
-    transaction: &tokio_postgres::Transaction<'_>,
-    products: &[Product],
-) -> Result<(), DbError> {
-    for chunk in products.chunks(INSERT_CHUNK) {
-        let mut sql =
-            String::from("INSERT INTO products (id, pzn, kind, name, ingredient) VALUES ");
-        let mut values: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> =
-            Vec::with_capacity(chunk.len() * 5);
-        for (index, product) in chunk.iter().enumerate() {
-            if index > 0 {
-                sql.push_str(", ");
-            }
-            let offset = index * 5;
-            sql.push_str(&format!(
-                "(${}, ${}, ${}, ${}, ${})",
-                offset + 1,
-                offset + 2,
-                offset + 3,
-                offset + 4,
-                offset + 5,
-            ));
-            values.push(&product.id);
-            values.push(&product.pzn);
-            values.push(&product.kind);
-            values.push(&product.name);
-            values.push(&product.ingredient);
-        }
-        transaction.execute(&sql, &values).await?;
-    }
-    Ok(())
 }
 
 fn product_from_row(row: &tokio_postgres::Row) -> Product {

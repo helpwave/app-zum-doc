@@ -34,6 +34,12 @@ fn first_page() -> u32 {
 async fn main() {
     let database_url = required_env("DATABASE_URL");
     let bind = std::env::var("BIND").unwrap_or_else(|_| "0.0.0.0:8080".to_owned());
+    db::ensure_schema(&database_url)
+        .await
+        .unwrap_or_else(|error| {
+            eprintln!("{error}");
+            std::process::exit(1);
+        });
     let pool = db::pool(&database_url).unwrap_or_else(|error| {
         eprintln!("{error}");
         std::process::exit(1);

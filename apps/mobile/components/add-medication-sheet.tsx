@@ -250,7 +250,9 @@ export function AddMedicationSheet({
                     paddingVertical: theme.spacing.xl,
                   }}
                 >
-                  {t("noSearchResults")}
+                  {/^\d{8}$/.test(debouncedSearch.trim())
+                    ? t("noPznSearchResults")
+                    : t("noSearchResults")}
                 </ThemedText>
               ) : (
                 <VirtualList

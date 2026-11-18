@@ -23,12 +23,18 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://medical_product_search:medical_product_search@postgres:5432/medical_product_search
-      DATA_DIR: /data
       BIND: 0.0.0.0:8080
-    volumes:
-      - ./services/medical-product-search/data:/data:ro
     ports:
       - "8080:8080"
+
+  example-data:
+    build:
+      context: ./example-data/medical-product-search
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://medical_product_search:medical_product_search@postgres:5432/medical_product_search
 
 volumes:
   medical-product-search-postgres:
