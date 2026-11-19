@@ -29,13 +29,63 @@ import {
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
 import { CircleMinus, Plus } from "lucide-react-native"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native"
 
 type DraftMedication = {
   key: string
   name: string
   size: MedicationSize
+}
+
+type PrescriptionForm = {
+  doctorId: string | null
+  profileId: string | null
+  medications: DraftMedication[]
+  shipByMail: boolean
+  note: string
+  didPrefillReorder: boolean
+}
+
+type PrescriptionParams = {
+  profiles: { id: string }[]
+  reorder: {
+    doctorsOffice: { id: string }
+    profileId: string
+    shipByMail: boolean
+    note: string
+    medications: {
+      id: string
+      name: string
+      size: MedicationSize
+    }[]
+  } | undefined
+}
+
+function applyPrescriptionParams(
+  current: PrescriptionForm,
+  previous: PrescriptionParams,
+  next: PrescriptionParams,
+) {
+  if (next.reorder && next.reorder !== previous.reorder && !current.didPrefillReorder) {
+    return {
+      doctorId: next.reorder.doctorsOffice.id,
+      profileId: next.reorder.profileId,
+      shipByMail: next.reorder.shipByMail,
+      note: next.reorder.note,
+      medications: next.reorder.medications.map((medication) => ({
+        key: medication.id,
+        name: medication.name,
+        size: medication.size,
+      })),
+      didPrefillReorder: true,
+    }
+  }
+  const onlyProfile = next.profiles.length === 1 ? next.profiles[0] : undefined
+  if (next.profiles !== previous.profiles && onlyProfile) {
+    return { ...current, profileId: onlyProfile.id }
+  }
+  return current
 }
 
 export default function CreatePrescriptionScreen() {
@@ -68,19 +118,37 @@ export default function CreatePrescriptionScreen() {
     }))
   }, [profilesQuery.data, t])
 
-  const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
-  const [profileId, setProfileId] = useState<string | null>(null)
-  const [medications, setMedications] = useState<DraftMedication[]>([])
-  const [shipByMail, setShipByMail] = useState(false)
-  const [note, setNote] = useState("")
+  const paramsSource: PrescriptionParams = {
+    profiles: profileOptions,
+    reorder: reorderQuery.data,
+  }
+  const [form, setForm] = useState(() => applyPrescriptionParams(
+    {
+      doctorId: initialDoctorId,
+      profileId: null,
+      medications: [],
+      shipByMail: false,
+      note: "",
+      didPrefillReorder: false,
+    },
+    { profiles: [], reorder: undefined },
+    paramsSource,
+  ))
+  const [initialParams, setInitialParams] = useState(paramsSource)
+  if (
+    paramsSource.profiles !== initialParams.profiles
+    || paramsSource.reorder !== initialParams.reorder
+  ) {
+    setInitialParams(paramsSource)
+    setForm((current) => applyPrescriptionParams(current, initialParams, paramsSource))
+  }
   const [openSheet, setOpenSheet] = useState<"profile" | "medication" | null>(
     null,
   )
-  const [didPrefillReorder, setDidPrefillReorder] = useState(false)
 
   const officeQuery = useDoctorsOffice({
-    parameters: doctorId === null ? undefined : {
-      id: doctorId,
+    parameters: form.doctorId === null ? undefined : {
+      id: form.doctorId,
       locale,
     }
   })
@@ -101,46 +169,15 @@ export default function CreatePrescriptionScreen() {
     return options
   }, [homeQuery.data?.myDoctors, officeQuery.data])
 
-  useEffect(() => {
-    if (initialDoctorId) {
-      setDoctorId(initialDoctorId)
-    }
-  }, [initialDoctorId])
-
-  useEffect(() => {
-    if (profileOptions.length === 1 && profileOptions[0]) {
-      setProfileId(profileOptions[0].id)
-    }
-  }, [profileOptions])
-
-  useEffect(() => {
-    if (didPrefillReorder || !reorderQuery.data) {
-      return
-    }
-    const prescription = reorderQuery.data
-    setDoctorId(prescription.doctorsOffice.id)
-    setProfileId(prescription.profileId)
-    setShipByMail(prescription.shipByMail)
-    setNote(prescription.note)
-    setMedications(
-      prescription.medications.map((medication) => ({
-        key: medication.id,
-        name: medication.name,
-        size: medication.size,
-      })),
-    )
-    setDidPrefillReorder(true)
-  }, [didPrefillReorder, reorderQuery.data])
-
   const canSubmit =
-    doctorId != null
-    && profileId != null
-    && medications.length > 0
+    form.doctorId != null
+    && form.profileId != null
+    && form.medications.length > 0
 
   const isPending =
     homeQuery.isPending
     || profilesQuery.isPending
-    || (reorderFrom != null && reorderQuery.isPending && !didPrefillReorder)
+    || (reorderFrom != null && reorderQuery.isPending && !form.didPrefillReorder)
 
   return (
     <KeyboardAvoidingView
@@ -177,8 +214,10 @@ export default function CreatePrescriptionScreen() {
         >
           <LabeledField label={t("doctor")}>
             <Select
-              value={doctorId}
-              onValueChange={setDoctorId}
+              value={form.doctorId}
+              onValueChange={(doctorId) => {
+                setForm((current) => ({ ...current, doctorId }))
+              }}
               placeholder={t("selectPractice")}
               style={{ width: "100%" }}
             >
@@ -190,8 +229,10 @@ export default function CreatePrescriptionScreen() {
 
           <LabeledField label={t("patient")}>
             <Select
-              value={profileId}
-              onValueChange={setProfileId}
+              value={form.profileId}
+              onValueChange={(profileId) => {
+                setForm((current) => ({ ...current, profileId }))
+              }}
               placeholder={t("patient")}
               style={{ width: "100%" }}
               readOnly={profileOptions.length < 2}
@@ -204,7 +245,7 @@ export default function CreatePrescriptionScreen() {
 
           <LabeledField label={t("medicationsSection")}>
             <View style={{ flex: 1, gap: theme.spacing.md }}>
-              {medications.map((medication) => (
+              {form.medications.map((medication) => (
                 <View
                   key={medication.key}
                   style={{
@@ -226,9 +267,10 @@ export default function CreatePrescriptionScreen() {
                     variant="foreground"
                     accessibilityLabel={t("deleteMedication")}
                     onPress={() => {
-                      setMedications((current) =>
-                        current.filter((item) => item.key !== medication.key),
-                      )
+                      setForm((current) => ({
+                        ...current,
+                        medications: current.medications.filter((item) => item.key !== medication.key),
+                      }))
                     }}
                   />
                 </View>
@@ -251,12 +293,14 @@ export default function CreatePrescriptionScreen() {
             <ListActionItem
               title={t("shipPrescriptionByMail")}
               onPress={() => {
-                setShipByMail(!shipByMail)
+                setForm((current) => ({ ...current, shipByMail: !current.shipByMail }))
               }}
               trailing={
                 <Switch
-                  value={shipByMail}
-                  onValueChange={setShipByMail}
+                  value={form.shipByMail}
+                  onValueChange={(shipByMail) => {
+                    setForm((current) => ({ ...current, shipByMail }))
+                  }}
                 />
               }
             />
@@ -264,8 +308,10 @@ export default function CreatePrescriptionScreen() {
 
           <LabeledField label={t("appointmentNote")}>
             <Textarea
-              value={note}
-              onValueChange={setNote}
+              value={form.note}
+              onValueChange={(note) => {
+                setForm((current) => ({ ...current, note }))
+              }}
               placeholder={t("prescriptionNotePlaceholder")}
             />
           </LabeledField>
@@ -274,17 +320,17 @@ export default function CreatePrescriptionScreen() {
             disabled={!canSubmit}
             isProcessing={createPrescription.isPending}
             onPress={() => {
-              if (doctorId == null || profileId == null) {
+              if (form.doctorId == null || form.profileId == null) {
                 return
               }
               void createPrescription.mutateAsync({
                 locale,
                 input: {
-                  doctorsOfficeId: doctorId,
-                  profileId,
-                  shipByMail,
-                  note,
-                  medications: medications.map((medication) => ({
+                  doctorsOfficeId: form.doctorId,
+                  profileId: form.profileId,
+                  shipByMail: form.shipByMail,
+                  note: form.note,
+                  medications: form.medications.map((medication) => ({
                     name: medication.name,
                     size: medication.size,
                   })),
@@ -302,16 +348,20 @@ export default function CreatePrescriptionScreen() {
         </ScrollView>
       </QueryState>
       <AddMedicationSheet
+        key={openSheet === "medication" ? "open" : "closed"}
         visible={openSheet === "medication"}
         onSubmit={(selection) => {
-          setMedications((current) => [
+          setForm((current) => ({
             ...current,
-            {
-              key: `${selection.catalogId}-${selection.size}-${Date.now()}`,
-              name: selection.name,
-              size: selection.size,
-            },
-          ])
+            medications: [
+              ...current.medications,
+              {
+                key: `${selection.catalogId}-${selection.size}-${Date.now()}`,
+                name: selection.name,
+                size: selection.size,
+              },
+            ],
+          }))
           setOpenSheet(null)
         }}
         onClose={() => {

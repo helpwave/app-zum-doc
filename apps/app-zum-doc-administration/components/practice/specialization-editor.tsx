@@ -30,7 +30,6 @@ export function SpecializationEditor({
               placeholder={t('specialization')}
               showSearch
               onValueChange={(next) => {
-                console.log(next)
                 if (next == null) {
                   return
                 }

@@ -11,6 +11,7 @@ import {
   timeSlotsOnDate,
   toAppLocale,
   patientProfileFullName,
+  type DoctorsOfficeOpeningHours,
 } from "@app-zum-doc/utils/api"
 import {
   useCreateAppointment,
@@ -28,8 +29,51 @@ import {
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
+
+type AppointmentForm = {
+  doctorId: string | null
+  profileId: string | null
+  date?: string
+  time?: string
+  isEmergency: boolean
+  note: string
+}
+
+type AppointmentParams = {
+  profiles: { id: string }[]
+  openingHours: DoctorsOfficeOpeningHours | undefined
+  timeSlots: string[]
+}
+
+function applyAppointmentParams(
+  current: AppointmentForm,
+  previous: AppointmentParams,
+  next: AppointmentParams,
+) {
+  let form = current
+  const onlyProfile = next.profiles.length === 1 ? next.profiles[0] : undefined
+  if (next.profiles !== previous.profiles && onlyProfile) {
+    form = { ...form, profileId: onlyProfile.id }
+  }
+  if (
+    next.openingHours !== previous.openingHours
+    && form.date
+    && next.openingHours
+    && !isOfficeOpenOnDate(next.openingHours, parseIsoDate(form.date))
+  ) {
+    form = { ...form, date: undefined, time: undefined }
+  }
+  if (
+    next.timeSlots !== previous.timeSlots
+    && form.time
+    && !next.timeSlots.includes(form.time)
+  ) {
+    form = { ...form, time: undefined }
+  }
+  return form
+}
 
 export default function RequestAppointmentScreen() {
   const t = useAppTranslation()
@@ -52,16 +96,20 @@ export default function RequestAppointmentScreen() {
     }))
   }, [profilesQuery.data, t])
 
-  const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
-  const [profileId, setProfileId] = useState<string | null>(null)
-  const [date, setDate] = useState<string | undefined>()
-  const [time, setTime] = useState<string | undefined>()
-  const [isEmergency, setIsEmergency] = useState(false)
-  const [note, setNote] = useState("")
+  const [form, setForm] = useState(() => applyAppointmentParams(
+    {
+      doctorId: initialDoctorId,
+      profileId: null,
+      isEmergency: false,
+      note: "",
+    },
+    { profiles: [], openingHours: undefined, timeSlots: [] },
+    { profiles: profileOptions, openingHours: undefined, timeSlots: [] },
+  ))
 
   const officeQuery = useDoctorsOffice({
-    parameters: doctorId === null ? undefined : {
-      id: doctorId,
+    parameters: form.doctorId === null ? undefined : {
+      id: form.doctorId,
       locale
     }
   })
@@ -83,45 +131,31 @@ export default function RequestAppointmentScreen() {
   }, [homeQuery.data?.myDoctors, officeQuery.data])
   const openingHours = officeQuery.data?.openingHours
   const timeSlots = useMemo(() => {
-    if (!openingHours || !date) {
+    if (!openingHours || !form.date) {
       return []
     }
-    return timeSlotsOnDate(openingHours, parseIsoDate(date))
-  }, [date, openingHours])
-
-  useEffect(() => {
-    if (initialDoctorId) {
-      setDoctorId(initialDoctorId)
-    }
-  }, [initialDoctorId])
-
-  useEffect(() => {
-    if (profileOptions.length === 1 && profileOptions[0]) {
-      setProfileId(profileOptions[0].id)
-    }
-  }, [profileOptions])
-
-  useEffect(() => {
-    if (!date || !openingHours) {
-      return
-    }
-    if (!isOfficeOpenOnDate(openingHours, parseIsoDate(date))) {
-      setDate(undefined)
-      setTime(undefined)
-    }
-  }, [date, openingHours])
-
-  useEffect(() => {
-    if (time && !timeSlots.includes(time)) {
-      setTime(undefined)
-    }
-  }, [time, timeSlots])
+    return timeSlotsOnDate(openingHours, parseIsoDate(form.date))
+  }, [form.date, openingHours])
+  const paramsSource: AppointmentParams = {
+    profiles: profileOptions,
+    openingHours,
+    timeSlots,
+  }
+  const [initialParams, setInitialParams] = useState(paramsSource)
+  if (
+    paramsSource.profiles !== initialParams.profiles
+    || paramsSource.openingHours !== initialParams.openingHours
+    || paramsSource.timeSlots !== initialParams.timeSlots
+  ) {
+    setInitialParams(paramsSource)
+    setForm((current) => applyAppointmentParams(current, initialParams, paramsSource))
+  }
 
   const canSubmit =
-    doctorId != null
-    && profileId != null
-    && date != null
-    && time != null
+    form.doctorId != null
+    && form.profileId != null
+    && form.date != null
+    && form.time != null
 
   return (
     <KeyboardAvoidingView
@@ -155,8 +189,10 @@ export default function RequestAppointmentScreen() {
         >
           <LabeledField label={t("practice")}>
             <Select
-              value={doctorId}
-              onValueChange={setDoctorId}
+              value={form.doctorId}
+              onValueChange={(doctorId) => {
+                setForm((current) => ({ ...current, doctorId }))
+              }}
               placeholder={t("selectPractice")}
             >
               {doctorOptions.map((option) => (
@@ -171,8 +207,10 @@ export default function RequestAppointmentScreen() {
 
           <LabeledField label={t("selectProfile")}>
             <Select
-              value={profileId}
-              onValueChange={setProfileId}
+              value={form.profileId}
+              onValueChange={(profileId) => {
+                setForm((current) => ({ ...current, profileId }))
+              }}
               placeholder={t("patient")}
               style={{ width: "100%" }}
               readOnly={profileOptions.length < 2}
@@ -185,11 +223,22 @@ export default function RequestAppointmentScreen() {
 
           <LabeledField label={t("selectDay")}>
             <DateInput
-              value={date}
-              onValueChange={setDate}
+              value={form.date}
+              onValueChange={(date) => {
+                setForm((current) => {
+                  const slots = openingHours
+                    ? timeSlotsOnDate(openingHours, parseIsoDate(date))
+                    : []
+                  return {
+                    ...current,
+                    date,
+                    time: current.time && slots.includes(current.time) ? current.time : undefined,
+                  }
+                })
+              }}
               placeholder={t("selectDay")}
               title={t("selectDay")}
-              disabled={!doctorId || officeQuery.isPending}
+              disabled={!form.doctorId || officeQuery.isPending}
               isDateEnabled={(nextDate) =>
                 openingHours != null && isOfficeOpenOnDate(openingHours, nextDate)
               }
@@ -198,12 +247,14 @@ export default function RequestAppointmentScreen() {
 
           <LabeledField label={t("appointmentTime")}>
             <TimeSlotInput
-              value={time}
-              onValueChange={setTime}
+              value={form.time}
+              onValueChange={(time) => {
+                setForm((current) => ({ ...current, time }))
+              }}
               slots={timeSlots}
               placeholder={t("selectTimePlaceholder")}
               title={t("selectTime")}
-              disabled={!date}
+              disabled={!form.date}
             />
           </LabeledField>
 
@@ -211,12 +262,14 @@ export default function RequestAppointmentScreen() {
             <ListActionItem
               title={t("isEmergency")}
               onPress={() => {
-                setIsEmergency(!isEmergency)
+                setForm((current) => ({ ...current, isEmergency: !current.isEmergency }))
               }}
               trailing={
                 <Switch
-                  value={isEmergency}
-                  onValueChange={setIsEmergency}
+                  value={form.isEmergency}
+                  onValueChange={(isEmergency) => {
+                    setForm((current) => ({ ...current, isEmergency }))
+                  }}
                 />
               }
             />
@@ -224,8 +277,10 @@ export default function RequestAppointmentScreen() {
 
           <LabeledField label={t("appointmentNote")}>
             <Textarea
-              value={note}
-              onValueChange={setNote}
+              value={form.note}
+              onValueChange={(note) => {
+                setForm((current) => ({ ...current, note }))
+              }}
               placeholder={t("appointmentNotePlaceholder")}
             />
           </LabeledField>
@@ -234,18 +289,18 @@ export default function RequestAppointmentScreen() {
             disabled={!canSubmit}
             isProcessing={createAppointment.isPending}
             onPress={() => {
-              if (!date || !time || doctorId == null || profileId == null) {
+              if (!form.date || !form.time || form.doctorId == null || form.profileId == null) {
                 return
               }
               void createAppointment.mutateAsync({
                 locale,
                 input: {
-                  doctorsOfficeId: doctorId,
-                  profileId,
-                  date,
-                  time,
-                  isEmergency,
-                  note,
+                  doctorsOfficeId: form.doctorId,
+                  profileId: form.profileId,
+                  date: form.date,
+                  time: form.time,
+                  isEmergency: form.isEmergency,
+                  note: form.note,
                 },
               }).then((appointment) => {
                 router.replace({

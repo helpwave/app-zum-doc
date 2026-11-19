@@ -4,9 +4,9 @@ import { IconButton, ThemedText } from "@helpwave/hightide-native/components"
 import { ColorPairToken } from "@helpwave/hightide-design/theme-tokens"
 import { ContentThemeOverrideProvider } from "@helpwave/hightide-native/global-contexts"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
-import { useRouter } from "expo-router"
+import { useFocusEffect, useRouter } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
-import type { ReactNode } from "react"
+import { useCallback, useState, type ReactNode } from "react"
 import { View, type StyleProp, type ViewProps, type ViewStyle } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
@@ -35,7 +35,14 @@ export function AppBar({
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const router = useRouter()
-  const showBack = !noDefaultBackNavigation && router.canGoBack()
+  const [canGoBack, setCanGoBack] = useState(false)
+  useFocusEffect(useCallback(() => {
+    setCanGoBack(router.canGoBack())
+    return () => {
+      setCanGoBack(false)
+    }
+  }, [router]))
+  const showBack = !noDefaultBackNavigation && canGoBack
   const insets = useSafeAreaInsets()
 
   const color = colorOverride ?? theme.colors.surface

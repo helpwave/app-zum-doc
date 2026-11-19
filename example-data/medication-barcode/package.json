@@ -1,0 +1,27 @@
+{
+  "name": "@app-zum-doc/medication-barcode",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Write Code 39 and Data Matrix images for a PZN",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "medication-barcode": "./bin/medication-barcode.js"
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "init": "node -e \"process.exit(0)\"",
+    "build": "node -e \"process.exit(0)\"",
+    "lint": "tsc --noEmit --pretty false",
+    "test": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "bwip-js": "^4.7.0",
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.5.2",
+    "@types/pngjs": "^6.0.5",
+    "typescript": "~5.9.2"
+  }
+}

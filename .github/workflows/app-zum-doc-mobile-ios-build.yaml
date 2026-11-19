@@ -169,8 +169,48 @@ jobs:
           IOS_DIR="${GITHUB_WORKSPACE}/apps/mobile/ios"
           cd "${IOS_DIR}"
 
-          find . -maxdepth 2 -name project.pbxproj -not -path './Pods/*' -print0 | xargs -0 sed -i '' \
-            -e 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g'
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          bundle_id = os.environ["BUNDLE_ID"]
+          profile_name = os.environ["PROFILE_NAME"]
+          team_id = os.environ["TEAM_ID"]
+          projects = [
+            path for path in Path(".").glob("*/*.xcodeproj/project.pbxproj")
+            if "Pods" not in path.parts
+          ]
+          if len(projects) != 1:
+            raise SystemExit(f"Expected one app project, found {projects}")
+
+          project = projects[0]
+          text = project.read_text()
+          settings = {
+            "CODE_SIGN_STYLE": "Manual",
+            "CODE_SIGN_IDENTITY": '"Apple Distribution"',
+            "DEVELOPMENT_TEAM": team_id,
+            "PROVISIONING_PROFILE_SPECIFIER": f'"{profile_name}"',
+          }
+
+          def patch(match):
+            block = match.group(0)
+            if bundle_id not in block or "PRODUCT_BUNDLE_IDENTIFIER" not in block:
+              return block
+            for key, value in settings.items():
+              line = f"{key} = {value};"
+              pattern = re.compile(rf"^[ \t]*{key} = .*;$", re.M)
+              if pattern.search(block):
+                block = pattern.sub(line, block)
+              else:
+                block = block.replace("buildSettings = {", "buildSettings = {\n\t\t\t\t" + line, 1)
+            return block
+
+          updated = re.sub(r"buildSettings = \{.*?\n[ \t]*\};", patch, text, flags=re.S)
+          if updated == text:
+            raise SystemExit(f"No build settings found for bundle id {bundle_id}")
+          project.write_text(updated)
+          PY
 
           WORKSPACE="$(find . -maxdepth 1 -name '*.xcworkspace' | head -n 1)"
           if [[ -z "${WORKSPACE}" ]]; then
@@ -231,11 +271,7 @@ jobs:
             -scheme "${SCHEME}" \
             -configuration Release \
             -destination "generic/platform=iOS" \
-            -archivePath "${ARCHIVE_PATH}" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM="${TEAM_ID}" \
-            PROVISIONING_PROFILE_SPECIFIER="${PROFILE_NAME}"
+            -archivePath "${ARCHIVE_PATH}"
 
           xcodebuild -exportArchive \
             -archivePath "${ARCHIVE_PATH}" \

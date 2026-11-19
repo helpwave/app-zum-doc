@@ -148,7 +148,7 @@ jobs:
 
       - uses: android-actions/setup-android@v4
         with:
-          packages: "platform-tools platforms;android-36 build-tools;36.0.0" # @sync android.sdkPackages
+          packages: "platform-tools platforms;android-37.0 build-tools;36.0.0" # @sync android.sdkPackages
 
       - name: Sign and verify against the F-Droid build
         env:

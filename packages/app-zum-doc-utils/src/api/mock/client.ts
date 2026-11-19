@@ -1,5 +1,11 @@
 import type { ApiClient } from '../client'
 import {
+  emptyMedicationSearchPage,
+  fetchMedicalProductByPzn,
+  fetchMedicalProductsByName,
+  medicalProductSearchBaseUrl
+} from '../medicalProductSearch'
+import {
   appointmentsSeed,
   citiesSeed,
   conversationsSeed,
@@ -37,8 +43,10 @@ import {
   type DoctorsOffice,
   type DoctorsOfficeOpeningHours,
   type Medication,
-  type MedicationCatalogItem,
+  type MedicationPznSearch,
+  type MedicationSearchPage,
   type MedicationSize,
+  type Substance,
   type Message,
   type MessagePreview,
   type MyDoctors,
@@ -116,7 +124,22 @@ export type CreateMockApiClientOptions = {
 export function createMockApiClient(
   options: CreateMockApiClientOptions = {}
 ): MockApiClient {
-  const delayMs = options.delayMs ?? 550
+  let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
+  let messagesState: Record<string, Message[]> = structuredClone(
+    messagesByConversation
+  )
+  let myDoctorIds = new Set<string>(initialMyDoctorIds)
+  let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
+  let prescriptionsState: PrescriptionRecord[] = structuredClone(prescriptionsSeed)
+  let referralsState: ReferralRecord[] = structuredClone(referralsSeed)
+  let doctorsOfficesState: Record<string, DoctorsOfficeSeed> = structuredClone(doctorsOfficesSeed)
+  let practiceConversationsState: ConversationPreview[] = structuredClone(practiceConversationsSeed)
+  let practiceMessagesState: Record<string, Message[]> = structuredClone(
+    practiceMessagesByConversation
+  )
+  let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
+  let blockedPracticePatientIds = new Set<string>()
+  const delayMs = options.delayMs ?? 500
 
   function isoDate(date: Date): string {
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -146,12 +169,21 @@ export function createMockApiClient(
       })
   }
 
+  function requireMedicalProductSearchBaseUrl() {
+    const baseUrl = medicalProductSearchBaseUrl()
+    if (!baseUrl) {
+      throw new Error('Medikamentensuche ist nicht konfiguriert.')
+    }
+    return baseUrl
+  }
+
   function createAppointmentsState(): AppointmentRecord[] {
     return [
       ...structuredClone(appointmentsSeed),
       ...listedTodayAppointmentRecords(),
     ]
   }
+  let appointmentsState: AppointmentRecord[] = createAppointmentsState()
 
   function ensureListedTodayAppointments(): void {
     const date = isoDate(new Date())
@@ -180,22 +212,7 @@ export function createMockApiClient(
     return new Date(now.getFullYear(), now.getMonth(), now.getDate())
   }
 
-  let conversationsState: ConversationPreview[] = structuredClone(conversationsSeed)
-  let messagesState: Record<string, Message[]> = structuredClone(
-    messagesByConversation
-  )
-  let myDoctorIds = new Set<string>(initialMyDoctorIds)
-  let patientMedicationsState: Medication[] = structuredClone(patientMedicationsSeed)
-  let appointmentsState: AppointmentRecord[] = createAppointmentsState()
-  let prescriptionsState: PrescriptionRecord[] = structuredClone(prescriptionsSeed)
-  let referralsState: ReferralRecord[] = structuredClone(referralsSeed)
-  let doctorsOfficesState: Record<string, DoctorsOfficeSeed> = structuredClone(doctorsOfficesSeed)
-  let practiceConversationsState: ConversationPreview[] = structuredClone(practiceConversationsSeed)
-  let practiceMessagesState: Record<string, Message[]> = structuredClone(
-    practiceMessagesByConversation
-  )
-  let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
-  let blockedPracticePatientIds = new Set<string>()
+
 
   type PracticeAccountState = {
     hasDoctorsOffice: boolean,
@@ -208,6 +225,8 @@ export function createMockApiClient(
       publicKey: null,
     }
   }
+  let practiceAccountState: PracticeAccountState = defaultPracticeAccount()
+  let forceFail = options.forceFail === true
 
   function toSpkiBase64(value: string): string | null {
     const trimmed = value.trim()
@@ -230,9 +249,6 @@ export function createMockApiClient(
   function writePracticeAccount(next: PracticeAccountState): void {
     practiceAccountState = next
   }
-
-  let practiceAccountState: PracticeAccountState = defaultPracticeAccount()
-  let forceFail = options.forceFail === true
 
   function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {
@@ -682,6 +698,7 @@ export function createMockApiClient(
           id: `rx-med-${Date.now()}-${index}`,
           name: medication.name,
           size: medication.size,
+          ingredient: [],
         })),
         status: 'inProgress',
       }
@@ -780,43 +797,70 @@ export function createMockApiClient(
 
   async function searchMedications(params: {
     search?: string,
-  }): Promise<MedicationCatalogItem[]> {
-    return withMockLatency(() => {
-      const query = params.search?.trim().toLowerCase() ?? ''
-      return medicationCatalogSeed
-        .filter((item) => !query || matchesQuery(item.name, query))
-        .map((item) => ({ ...item }))
-    }, { failKey: params.search })
+    page?: number,
+  }): Promise<MedicationSearchPage> {
+    const baseUrl = requireMedicalProductSearchBaseUrl()
+    const page = Math.max(1, params.page ?? 1)
+    const search = (params.search ?? '').trim()
+    if (/^\d{8}$/.test(search)) {
+      if (page > 1) {
+        return emptyMedicationSearchPage(page)
+      }
+      const found = await fetchMedicalProductByPzn(baseUrl, search)
+      return {
+        ...emptyMedicationSearchPage(1),
+        date: found.date,
+        source: found.source,
+        results: found.hasResult && found.results != null ? [found.results] : [],
+      }
+    }
+    return fetchMedicalProductsByName(baseUrl, search, page)
+  }
+
+  async function searchMedicationByPzn(pzn: string): Promise<MedicationPznSearch> {
+    const baseUrl = requireMedicalProductSearchBaseUrl()
+    return fetchMedicalProductByPzn(baseUrl, pzn)
   }
 
   async function addPatientMedication(params: {
     catalogId: string,
+    name: string,
     size: MedicationSize,
+    ingredient: Substance[],
   }): Promise<Medication[]> {
     return withMockLatency(() => {
       const catalogItem = medicationCatalogSeed.find(
         (item) => item.id === params.catalogId
       )
-      if (!catalogItem) {
+      const name = catalogItem?.name ?? params.name.trim()
+      if (!name) {
         throw new Error('Medikament nicht gefunden.')
       }
+      const catalogId = catalogItem?.id ?? params.catalogId
+      const ingredient = params.ingredient.length > 0
+        ? params.ingredient
+        : catalogItem?.ingredient ?? []
 
       const alreadyAdded = patientMedicationsState.some(
         (medication) =>
-          medication.name === catalogItem.name && medication.size === params.size
+          medication.name === name && medication.size === params.size
       )
       if (!alreadyAdded) {
         patientMedicationsState = [
           ...patientMedicationsState,
           {
-            id: `med-${catalogItem.id}-${params.size}-${Date.now()}`,
-            name: catalogItem.name,
+            id: `med-${catalogId}-${params.size}-${Date.now()}`,
+            name,
             size: params.size,
+            ingredient,
           },
         ]
       }
 
-      return patientMedicationsState.map((medication) => ({ ...medication }))
+      return patientMedicationsState.map((medication) => ({
+        ...medication,
+        ingredient: medication.ingredient.map((substance) => ({ ...substance })),
+      }))
     })
   }
 
@@ -1046,6 +1090,8 @@ export function createMockApiClient(
   function matchesQuery(haystack: string, query: string): boolean {
     return haystack.toLowerCase().includes(query)
   }
+
+
 
   async function fetchCities(params: {
     search?: string,
@@ -1650,6 +1696,7 @@ export function createMockApiClient(
     markPracticeConversationRead,
     resolveCardAction,
     searchMedications,
+    searchMedicationByPzn,
     sendMessage,
     sendPracticeMessage,
     addMyDoctor,

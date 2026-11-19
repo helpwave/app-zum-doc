@@ -128,7 +128,7 @@ export default function HomeScreen() {
                 )}
               >
                 <View style={{ gap: theme.spacing.md + theme.spacing.xs }}>
-                  {homeQuery.data.recentRequests.map((request) => (
+                  {homeQuery.data.recentRequests.slice(0, 3).map((request) => (
                     <RequestTile
                       key={request.id}
                       request={request}

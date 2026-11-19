@@ -24,6 +24,21 @@
     {
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
 
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          medical-product-search = pkgs.rustPlatform.buildRustPackage {
+            pname = "medical-product-search";
+            version = "0.1.0";
+            src = ./services/medical-product-search;
+            cargoLock.lockFile = ./services/medical-product-search/Cargo.lock;
+          };
+        }
+      );
+
       devShells = forAllSystems (
         system:
         let
@@ -50,6 +65,10 @@
               pkgs.jq
               pkgs.yq-go
               pkgs.curl
+              pkgs.rustc
+              pkgs.cargo
+              pkgs.rustfmt
+              pkgs.clippy
             ]
             ++ lib.optional (lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.fdroidserver) pkgs.fdroidserver;
 

@@ -59,7 +59,8 @@ export const specializationKeys = {
 export const medicationKeys = {
   all: ['medications'] as const,
   patient: ['medications', 'patient'] as const,
-  search: (params?: { search: string }) => ['medications', 'search', params?.search ?? ''] as const,
+  search: (params?: { search: string, page?: number }) =>
+    ['medications', 'search', params?.search ?? '', params?.page ?? 1] as const,
 }
 
 export const appointmentKeys = {

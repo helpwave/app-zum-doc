@@ -6,7 +6,7 @@ import { toIsoDate } from "@app-zum-doc/utils/api"
 import { Button, IconButton, ListActionItem, ThemedPressable, ThemedText } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { Check, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react-native"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
@@ -66,23 +66,25 @@ export function DatePickerSheet({
   )
   const [isYearSelectOpen, setIsYearSelectOpen] = useState(false)
 
+  const wasVisible = useRef(visible)
   useEffect(() => {
-    if (!visible) {
-      setIsYearSelectOpen(false)
-      return
+    if (visible && !wasVisible.current) {
+      const today = startOfToday()
+      const start = startDate ? parseIsoLocal(startDate) : today
+      const end = endDate ? parseIsoLocal(endDate) : undefined
+      const next = value ? parseIsoLocal(value) : today
+
+      setVisibleMonth(
+        clampMonthToRange(
+          new Date(next.getFullYear(), next.getMonth(), 1),
+          start,
+          end,
+        ),
+      )
     }
-    const nextToday = startOfToday()
-    const start = startDate ? parseIsoLocal(startDate) : nextToday
-    const end = endDate ? parseIsoLocal(endDate) : undefined
-    const next = value ? parseIsoLocal(value) : nextToday
-    setVisibleMonth(
-      clampMonthToRange(
-        new Date(next.getFullYear(), next.getMonth(), 1),
-        start,
-        end,
-      ),
-    )
-  }, [endDate, startDate, value, visible])
+
+    wasVisible.current = visible
+  }, [visible, startDate, endDate, value])
 
   const canGoToPreviousMonth = monthIntersectsRange(
     visibleMonth.getFullYear(),
@@ -301,7 +303,7 @@ export function DatePickerSheet({
           </View>
         </View>
       </BottomSheetOverlay>
-      {hasYearSelect && isYearSelectOpen ? (
+      {hasYearSelect && visible && isYearSelectOpen ? (
         <YearSelectSheet
           visible={visible}
           years={years}
