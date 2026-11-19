@@ -55,7 +55,8 @@ resolve_key() {
       if (compile == null || tools == null) {
         fail("android.compileSdkVersion and android.buildToolsVersion are required to derive android.sdkPackages");
       }
-      return "platform-tools platforms;android-" + compile + " build-tools;" + tools;
+      const platform = Number(compile) >= 37 ? compile + ".0" : compile;
+      return "platform-tools platforms;android-" + platform + " build-tools;" + tools;
     }
     let v;
     if (key === "android.sdkPackages") {
@@ -126,7 +127,8 @@ function sdkPackages() {
   if (compile == null || tools == null) {
     fail("android.compileSdkVersion and android.buildToolsVersion are required to derive android.sdkPackages");
   }
-  return `platform-tools platforms;android-${compile} build-tools;${tools}`;
+  const platform = Number(compile) >= 37 ? `${compile}.0` : compile;
+  return `platform-tools platforms;android-${platform} build-tools;${tools}`;
 }
 
 function getKey(key) {
