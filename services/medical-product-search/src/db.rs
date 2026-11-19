@@ -19,10 +19,65 @@ CREATE TABLE IF NOT EXISTS products (
     pzn text NOT NULL,
     kind text NOT NULL,
     name text NOT NULL,
-    ingredient text NOT NULL
+    package_size text
+);
+CREATE TABLE IF NOT EXISTS substances (
+    product_id text NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+    id text NOT NULL,
+    name text NOT NULL,
+    strength text NOT NULL,
+    position integer NOT NULL DEFAULT 0,
+    PRIMARY KEY (product_id, id)
 );
 CREATE INDEX IF NOT EXISTS products_pzn_idx ON products (pzn);
 CREATE INDEX IF NOT EXISTS products_name_trgm ON products USING gin (lower(name) gin_trgm_ops);
+ALTER TABLE products ADD COLUMN IF NOT EXISTS package_size text;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'products'
+          AND column_name = 'ingredient'
+          AND udt_name = 'text'
+    ) THEN
+        ALTER TABLE products
+            ALTER COLUMN ingredient TYPE jsonb
+            USING CASE
+                WHEN ingredient IS NULL OR btrim(ingredient) = '' THEN '[]'::jsonb
+                WHEN left(btrim(ingredient), 1) = '[' THEN ingredient::jsonb
+                ELSE jsonb_build_array(jsonb_build_object('id', id, 'name', ingredient, 'strength', ''))
+            END;
+    END IF;
+END $$;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'products'
+          AND column_name = 'ingredient'
+    ) THEN
+        INSERT INTO substances (product_id, id, name, strength, position)
+        SELECT
+            products.id,
+            COALESCE(NULLIF(item->>'id', ''), products.id || '-' || ordinality::text),
+            COALESCE(item->>'name', ''),
+            COALESCE(item->>'strength', ''),
+            ordinality::integer
+        FROM products
+        CROSS JOIN LATERAL jsonb_array_elements(
+            CASE
+                WHEN jsonb_typeof(ingredient) = 'array' THEN ingredient
+                ELSE '[]'::jsonb
+            END
+        ) WITH ORDINALITY AS elements(item, ordinality)
+        ON CONFLICT (product_id, id) DO NOTHING;
+        ALTER TABLE products DROP COLUMN ingredient;
+    END IF;
+END $$;
 ";
 
 #[derive(Debug)]
@@ -154,9 +209,15 @@ async fn products_for_tokens(
         .collect::<Vec<_>>();
     let rows = client
         .query(
-            "SELECT id, pzn, kind, name, ingredient
+            "SELECT products.id, products.pzn, products.kind, products.name, products.package_size,
+                    COALESCE(json_agg(
+                        json_build_object('id', substances.id, 'name', substances.name, 'strength', substances.strength)
+                        ORDER BY substances.position, substances.id
+                    ) FILTER (WHERE substances.id IS NOT NULL), '[]'::json)::text
              FROM products
-             WHERE lower(name) LIKE ALL ($1::text[])",
+             LEFT JOIN substances ON substances.product_id = products.id
+             WHERE lower(products.name) LIKE ALL ($1::text[])
+             GROUP BY products.id",
             &[&patterns],
         )
         .await?;
@@ -169,10 +230,16 @@ async fn product_for_pzn(
 ) -> Result<Vec<Product>, DbError> {
     let rows = client
         .query(
-            "SELECT id, pzn, kind, name, ingredient
+            "SELECT products.id, products.pzn, products.kind, products.name, products.package_size,
+                    COALESCE(json_agg(
+                        json_build_object('id', substances.id, 'name', substances.name, 'strength', substances.strength)
+                        ORDER BY substances.position, substances.id
+                    ) FILTER (WHERE substances.id IS NOT NULL), '[]'::json)::text
              FROM products
-             WHERE pzn = $1
-             ORDER BY id
+             LEFT JOIN substances ON substances.product_id = products.id
+             WHERE products.pzn = $1
+             GROUP BY products.id
+             ORDER BY products.id
              LIMIT 1",
             &[&pzn],
         )
@@ -181,12 +248,24 @@ async fn product_for_pzn(
 }
 
 fn product_from_row(row: &tokio_postgres::Row) -> Product {
+    let ingredient_json: String = row.get(5);
+    let ingredient = serde_json::from_str(&ingredient_json).unwrap_or_default();
     Product {
         id: row.get(0),
         pzn: row.get(1),
         kind: row.get(2),
         name: row.get(3),
-        ingredient: row.get(4),
+        ingredient,
+        package_size: package_size(row.get(4)),
+    }
+}
+
+fn package_size(value: Option<String>) -> Option<String> {
+    match value.as_deref().map(str::trim) {
+        Some("N1" | "n1") => Some("N1".to_owned()),
+        Some("N2" | "n2") => Some("N2".to_owned()),
+        Some("N3" | "n3") => Some("N3".to_owned()),
+        _ => None,
     }
 }
 

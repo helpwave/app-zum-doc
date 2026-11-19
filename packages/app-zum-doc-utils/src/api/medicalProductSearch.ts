@@ -1,7 +1,9 @@
 import type {
   MedicationCatalogItem,
   MedicationPznSearch,
-  MedicationSearchPage
+  MedicationSearchPage,
+  PackageSize,
+  Substance
 } from './medication'
 
 const pageSize = 20
@@ -18,7 +20,8 @@ type ServiceProduct = {
   pzn: string,
   type: string,
   name: string,
-  ingredient: string,
+  ingredient: Substance[] | null,
+  packageSize?: PackageSize | null,
 }
 
 type ServiceNameSearch = {
@@ -65,10 +68,16 @@ function serviceUrl(baseUrl: string, path: string) {
 }
 
 function toCatalogItem(product: ServiceProduct): MedicationCatalogItem {
+  const packageSize = product.packageSize === 'N1' || product.packageSize === 'N2' || product.packageSize === 'N3'
+    ? product.packageSize
+    : undefined
   return {
     id: product.id,
+    pzn: product.pzn,
+    kind: product.type,
     name: product.name,
-    ingredient: product.ingredient,
+    ingredient: Array.isArray(product.ingredient) ? product.ingredient : [],
+    packageSize,
   }
 }
 

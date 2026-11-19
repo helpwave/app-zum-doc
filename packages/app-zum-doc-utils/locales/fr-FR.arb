@@ -143,7 +143,7 @@
   "deleteMedication": "Retirer le médicament",
   "loadingMedications": "Chargement des médicaments…",
   "next": "Suivant",
-  "medicationSize": "{size, select, n1{N1 - petit} n2{N2 - moyen} n3{N3 - grand} other{}}",
+  "medicationSize": "{size, select, n1{Conditionnement de 10 jours (N1)} n2{Conditionnement de 30 jours (N2)} n3{Conditionnement de 100 jours (N3)} other{}}",
   "@medicationSize": {
     "placeholders": {
       "size": {

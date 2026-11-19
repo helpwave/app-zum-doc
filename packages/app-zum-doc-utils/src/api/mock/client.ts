@@ -43,10 +43,10 @@ import {
   type DoctorsOffice,
   type DoctorsOfficeOpeningHours,
   type Medication,
-  type MedicationCatalogItem,
   type MedicationPznSearch,
   type MedicationSearchPage,
   type MedicationSize,
+  type Substance,
   type Message,
   type MessagePreview,
   type MyDoctors,
@@ -698,6 +698,7 @@ export function createMockApiClient(
           id: `rx-med-${Date.now()}-${index}`,
           name: medication.name,
           size: medication.size,
+          ingredient: [],
         })),
         status: 'inProgress',
       }
@@ -825,6 +826,7 @@ export function createMockApiClient(
     catalogId: string,
     name: string,
     size: MedicationSize,
+    ingredient: Substance[],
   }): Promise<Medication[]> {
     return withMockLatency(() => {
       const catalogItem = medicationCatalogSeed.find(
@@ -835,6 +837,9 @@ export function createMockApiClient(
         throw new Error('Medikament nicht gefunden.')
       }
       const catalogId = catalogItem?.id ?? params.catalogId
+      const ingredient = params.ingredient.length > 0
+        ? params.ingredient
+        : catalogItem?.ingredient ?? []
 
       const alreadyAdded = patientMedicationsState.some(
         (medication) =>
@@ -847,11 +852,15 @@ export function createMockApiClient(
             id: `med-${catalogId}-${params.size}-${Date.now()}`,
             name,
             size: params.size,
+            ingredient,
           },
         ]
       }
 
-      return patientMedicationsState.map((medication) => ({ ...medication }))
+      return patientMedicationsState.map((medication) => ({
+        ...medication,
+        ingredient: medication.ingredient.map((substance) => ({ ...substance })),
+      }))
     })
   }
 

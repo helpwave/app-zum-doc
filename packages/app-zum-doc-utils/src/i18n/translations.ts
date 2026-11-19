@@ -260,9 +260,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Der Server für die Medikamentensuche ist nicht erreichbar.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - klein`,
-        'n2': `N2 - mittel`,
-        'n3': `N3 - groß`,
+        'n1': `10-Tage-Packung (N1)`,
+        'n2': `30-Tage-Packung (N2)`,
+        'n3': `100-Tage-Packung (N3)`,
       })
     },
     'medicationsSection': `Medikamente`,
@@ -464,9 +464,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Δεν είναι δυνατή η σύνδεση με τον διακομιστή αναζήτησης φαρμάκων.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - μικρή`,
-        'n2': `N2 - μεσαία`,
-        'n3': `N3 - μεγάλη`,
+        'n1': `Συσκευασία 10 ημερών (N1)`,
+        'n2': `Συσκευασία 30 ημερών (N2)`,
+        'n3': `Συσκευασία 100 ημερών (N3)`,
       })
     },
     'medicationsSection': `Φάρμακα`,
@@ -668,9 +668,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `The medication search server could not be reached.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - small`,
-        'n2': `N2 - medium`,
-        'n3': `N3 - large`,
+        'n1': `10 Days Package (N1)`,
+        'n2': `30 Days Package (N2)`,
+        'n3': `100 Days Package (N3)`,
       })
     },
     'medicationsSection': `Medications`,
@@ -872,9 +872,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `No se puede conectar con el servidor de búsqueda de medicamentos.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - pequeño`,
-        'n2': `N2 - mediano`,
-        'n3': `N3 - grande`,
+        'n1': `Envase para 10 días (N1)`,
+        'n2': `Envase para 30 días (N2)`,
+        'n3': `Envase para 100 días (N3)`,
       })
     },
     'medicationsSection': `Medicamentos`,
@@ -1076,9 +1076,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Impossible de joindre le serveur de recherche de médicaments.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - petit`,
-        'n2': `N2 - moyen`,
-        'n3': `N3 - grand`,
+        'n1': `Conditionnement de 10 jours (N1)`,
+        'n2': `Conditionnement de 30 jours (N2)`,
+        'n3': `Conditionnement de 100 jours (N3)`,
       })
     },
     'medicationsSection': `Médicaments`,
@@ -1280,9 +1280,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Impossibile connettersi al server di ricerca farmaci.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - piccola`,
-        'n2': `N2 - media`,
-        'n3': `N3 - grande`,
+        'n1': `Confezione da 10 giorni (N1)`,
+        'n2': `Confezione da 30 giorni (N2)`,
+        'n3': `Confezione da 100 giorni (N3)`,
       })
     },
     'medicationsSection': `Farmaci`,
@@ -1484,9 +1484,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `De server voor medicijnzoeken is niet bereikbaar.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - klein`,
-        'n2': `N2 - middel`,
-        'n3': `N3 - groot`,
+        'n1': `Verpakking voor 10 dagen (N1)`,
+        'n2': `Verpakking voor 30 dagen (N2)`,
+        'n3': `Verpakking voor 100 dagen (N3)`,
       })
     },
     'medicationsSection': `Medicijnen`,
@@ -1688,9 +1688,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Nie można połączyć się z serwerem wyszukiwania leków.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - małe`,
-        'n2': `N2 - średnie`,
-        'n3': `N3 - duże`,
+        'n1': `Opakowanie na 10 dni (N1)`,
+        'n2': `Opakowanie na 30 dni (N2)`,
+        'n3': `Opakowanie na 100 dni (N3)`,
       })
     },
     'medicationsSection': `Leki`,
@@ -1892,9 +1892,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Não foi possível conectar ao servidor de busca de medicamentos.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - pequena`,
-        'n2': `N2 - média`,
-        'n3': `N3 - grande`,
+        'n1': `Embalagem para 10 dias (N1)`,
+        'n2': `Embalagem para 30 dias (N2)`,
+        'n3': `Embalagem para 100 dias (N3)`,
       })
     },
     'medicationsSection': `Medicamentos`,
@@ -2096,9 +2096,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Serverul de căutare a medicamentelor nu poate fi contactat.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - mic`,
-        'n2': `N2 - mediu`,
-        'n3': `N3 - mare`,
+        'n1': `Ambalaj pentru 10 zile (N1)`,
+        'n2': `Ambalaj pentru 30 zile (N2)`,
+        'n3': `Ambalaj pentru 100 zile (N3)`,
       })
     },
     'medicationsSection': `Medicamente`,
@@ -2300,9 +2300,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `Не удалось подключиться к серверу поиска лекарств.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - маленькая`,
-        'n2': `N2 - средняя`,
-        'n3': `N3 - большая`,
+        'n1': `Упаковка на 10 дней (N1)`,
+        'n2': `Упаковка на 30 дней (N2)`,
+        'n3': `Упаковка на 100 дней (N3)`,
       })
     },
     'medicationsSection': `Лекарства`,
@@ -2504,9 +2504,9 @@ export const appZumDocTranslation: Translation<AppZumDocTranslationLocales, Part
     'medicationSearchUnavailable': `İlaç arama sunucusuna bağlanılamadı.`,
     'medicationSize': ({ size }): string => {
       return TranslationGen.resolveSelect(size, {
-        'n1': `N1 - küçük`,
-        'n2': `N2 - orta`,
-        'n3': `N3 - büyük`,
+        'n1': `10 günlük ambalaj (N1)`,
+        'n2': `30 günlük ambalaj (N2)`,
+        'n3': `100 günlük ambalaj (N3)`,
       })
     },
     'medicationsSection': `İlaçlar`,

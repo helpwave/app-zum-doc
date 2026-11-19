@@ -143,7 +143,7 @@
   "deleteMedication": "Remover medicamento",
   "loadingMedications": "Carregando medicamentos…",
   "next": "Avançar",
-  "medicationSize": "{size, select, n1{N1 - pequena} n2{N2 - média} n3{N3 - grande} other{}}",
+  "medicationSize": "{size, select, n1{Embalagem para 10 dias (N1)} n2{Embalagem para 30 dias (N2)} n3{Embalagem para 100 dias (N3)} other{}}",
   "@medicationSize": {
     "placeholders": {
       "size": {

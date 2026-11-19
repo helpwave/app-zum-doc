@@ -15,13 +15,13 @@ import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 type ChatMessageItemProps = {
   message: Message
   onCardAction?: (messageId: string, actionId: string) => void
-  isCardActionPending?: boolean
+  pendingActionIds?: string[]
 }
 
 export function ChatMessageItem({
   message,
   onCardAction,
-  isCardActionPending = false,
+  pendingActionIds = [],
 }: ChatMessageItemProps) {
   const { locale: localizationLocale } = useLocalization()
   const locale = toAppLocale(localizationLocale)
@@ -39,7 +39,7 @@ export function ChatMessageItem({
     return (
       <StructuredCard
         message={message}
-        isActionPending={isCardActionPending}
+        pendingActionIds={pendingActionIds}
         onAction={(actionId) => onCardAction?.(message.id, actionId)}
       />
     )

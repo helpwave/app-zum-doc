@@ -4,7 +4,6 @@ import { useAzdTheme } from "@/hooks/useAzdTheme"
 import type { ConversationPreview } from "@app-zum-doc/utils/api"
 import { useConversations } from "@app-zum-doc/utils/hooks"
 import {
-  ChatConversationList,
   SearchBar,
 } from "@helpwave/hightide-native/components"
 import { useRouter } from "expo-router"

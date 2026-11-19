@@ -143,7 +143,7 @@
   "deleteMedication": "Удалить лекарство",
   "loadingMedications": "Загрузка лекарств…",
   "next": "Далее",
-  "medicationSize": "{size, select, n1{N1 - маленькая} n2{N2 - средняя} n3{N3 - большая} other{}}",
+  "medicationSize": "{size, select, n1{Упаковка на 10 дней (N1)} n2{Упаковка на 30 дней (N2)} n3{Упаковка на 100 дней (N3)} other{}}",
   "@medicationSize": {
     "placeholders": {
       "size": {

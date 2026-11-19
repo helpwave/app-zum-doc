@@ -143,7 +143,7 @@
   "deleteMedication": "Αφαίρεση φαρμάκου",
   "loadingMedications": "Φόρτωση φαρμάκων…",
   "next": "Επόμενο",
-  "medicationSize": "{size, select, n1{N1 - μικρή} n2{N2 - μεσαία} n3{N3 - μεγάλη} other{}}",
+  "medicationSize": "{size, select, n1{Συσκευασία 10 ημερών (N1)} n2{Συσκευασία 30 ημερών (N2)} n3{Συσκευασία 100 ημερών (N3)} other{}}",
   "@medicationSize": {
     "placeholders": {
       "size": {

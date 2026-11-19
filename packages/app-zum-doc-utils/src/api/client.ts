@@ -1,6 +1,6 @@
 import type { DoctorsOffice, MyDoctors, UpdateDoctorsOfficeInput } from './doctorsOffice'
 import type { AppLocale, MedicationSize, PatientRequestStatus, PatientRequestType } from './enums'
-import type { Medication, MedicationPznSearch, MedicationSearchPage } from './medication'
+import type { Medication, MedicationPznSearch, MedicationSearchPage, Substance } from './medication'
 import type { ConversationPreview, Message } from './message'
 import type { PatientProfile, PatientProfileSummary, PracticePatient, CreatePracticePatientInput } from './patientProfile'
 import type {
@@ -127,6 +127,7 @@ export type ApiClient = {
     catalogId: string,
     name: string,
     size: MedicationSize,
+    ingredient: Substance[],
   }) => Promise<Medication[]>,
   cancelAppointment: (
     appointmentId: string,

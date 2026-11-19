@@ -2,6 +2,7 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { setScannedMedication, useScannedMedication } from "@/state/scanned-medication"
 import {
+  medicationSizeFromPackageSize,
   MedicationSizeUtils,
   type MedicationSize,
 } from "@app-zum-doc/utils/api"
@@ -30,7 +31,7 @@ export function ScannedMedicationPopup() {
 
   if ((item?.id ?? null) !== sizedItemId) {
     setSizedItemId(item?.id ?? null)
-    setSelectedSize(undefined)
+    setSelectedSize(medicationSizeFromPackageSize(item?.packageSize))
   }
 
   const close = () => {
@@ -48,6 +49,7 @@ export function ScannedMedicationPopup() {
       catalogId: item.id,
       name: item.name,
       size: selectedSize,
+      ingredient: item.ingredient,
     }).then(() => {
       setScannedMedication(null)
     })
@@ -82,12 +84,14 @@ export function ScannedMedicationPopup() {
               {item.name}
             </ThemedText>
           )}
-          {item?.ingredient ? (
+          {item != null && item.ingredient.length > 0 ? (
             <ThemedText
               appearance="description"
               style={theme.typography.body.md}
             >
-              {item.ingredient}
+              {item.ingredient
+                .map((substance) => `${substance.name} ${substance.strength}`.trim())
+                .join(", ")}
             </ThemedText>
           ) : null}
         </View>

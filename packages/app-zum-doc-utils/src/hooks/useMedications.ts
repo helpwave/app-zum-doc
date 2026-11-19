@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Medication, MedicationSearchPage, MedicationSize } from '../api/types'
+import type { Medication, MedicationSearchPage, MedicationSize, Substance } from '../api/types'
 import { getApiClient } from './apiClient'
 import {
   assertNotUndefined,
@@ -46,6 +46,7 @@ type AddPatientMedicationInput = {
   catalogId: string,
   name: string,
   size: MedicationSize,
+  ingredient: Substance[],
 }
 
 export function useAddPatientMedication(
@@ -57,8 +58,8 @@ export function useAddPatientMedication(
 
   return useMutation({
     ...rest,
-    mutationFn: ({ catalogId, name, size }: AddPatientMedicationInput) =>
-      client.addPatientMedication({ catalogId, name, size }),
+    mutationFn: ({ catalogId, name, size, ingredient }: AddPatientMedicationInput) =>
+      client.addPatientMedication({ catalogId, name, size, ingredient }),
     onSuccess: async (...args) => {
       const [medications] = args
       queryClient.setQueryData(medicationKeys.patient, medications)

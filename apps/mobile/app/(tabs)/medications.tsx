@@ -1,5 +1,6 @@
 import { AddMedicationSheet } from "@/components/add-medication-sheet"
 import { AppBar } from "@/components/app-bar"
+import { MedicationCard } from "@/components/medication-card"
 import { QueryState } from "@/components/query-state"
 import { ScannedMedicationPopup } from "@/components/scanned-medication-popup"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
@@ -18,7 +19,7 @@ import {
   ThemedText,
 } from "@helpwave/hightide-native/components"
 import { useRouter, type Href } from "expo-router"
-import { Camera, CirclePlus, Pill, Trash, TriangleAlert } from "lucide-react-native"
+import { Camera, CirclePlus, Trash, TriangleAlert } from "lucide-react-native"
 import { useState } from "react"
 import { ScrollView, View } from "react-native"
 
@@ -136,42 +137,32 @@ export default function MedicationsScreen() {
           ) : null}
 
           {medications.map((medication) => (
-            <Card key={medication.id}>
-              <ListActionItem
-                title={medication.name}
-                subtitle={t("medicationSize", { size: medication.size })}
-                leading={
-                  <ThemedIcon
-                    icon={Pill}
-                    color={theme.colors.primary.color}
-                  />
-                }
-                titleStyle={(previous) => ({
-                  ...previous,
-                  color: theme.colors.primary.color,
-                })}
-                trailing={
-                  <IconButton
-                    icon={Trash}
-                    size="sm"
-                    variant="foreground"
-                    color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color }}
-                    accessibilityLabel={t("deleteMedication")}
-                    isProcessing={
-                      removeMedication.isPending
-                      && removeMedication.variables === medication.id
-                    }
-                    disabled={
-                      removeMedication.isPending
-                      && removeMedication.variables !== medication.id
-                    }
-                    onPress={() => {
-                      void removeMedication.mutateAsync(medication.id)
-                    }}
-                  />
-                }
-              />
-            </Card>
+            <MedicationCard
+              key={medication.id}
+              name={medication.name}
+              size={medication.size}
+              ingredient={medication.ingredient}
+              trailing={
+                <IconButton
+                  icon={Trash}
+                  size="sm"
+                  variant="foreground"
+                  color={{color: theme.colors.surface.onColor, onColor: theme.colors.surface.color }}
+                  accessibilityLabel={t("deleteMedication")}
+                  isProcessing={
+                    removeMedication.isPending
+                    && removeMedication.variables === medication.id
+                  }
+                  disabled={
+                    removeMedication.isPending
+                    && removeMedication.variables !== medication.id
+                  }
+                  onPress={() => {
+                    void removeMedication.mutateAsync(medication.id)
+                  }}
+                />
+              }
+            />
           ))}
         </ScrollView>
       </QueryState>

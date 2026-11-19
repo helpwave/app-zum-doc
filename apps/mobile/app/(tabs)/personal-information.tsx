@@ -19,13 +19,51 @@ import {
   Input,
   Select,
 } from "@helpwave/hightide-native/components"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   View,
 } from "react-native"
+
+type PersonalInformationFormState = {
+  firstName: string
+  lastName: string
+  dateOfBirth: string
+  email: string
+  phone: string
+  insuranceType: InsuranceType
+  insuranceProviderId: string | null
+  insuranceNumber: string
+}
+
+function formFromProfile(profile: PatientProfile): PersonalInformationFormState {
+  return {
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    dateOfBirth: toIsoDate(profile.dateOfBirth),
+    email: profile.email,
+    phone: profile.phone,
+    insuranceType: findInsuranceCompany(profile.insurance.insuranceProviderId)?.type ?? "public",
+    insuranceProviderId: profile.insurance.insuranceProviderId || null,
+    insuranceNumber: profile.insurance.insuranceNumber,
+  }
+}
+
+function withInsuranceType(
+  form: PersonalInformationFormState,
+  insuranceType: InsuranceType,
+): PersonalInformationFormState {
+  const selectedCompany = findInsuranceCompany(form.insuranceProviderId ?? "")
+  return {
+    ...form,
+    insuranceType,
+    insuranceProviderId: selectedCompany && selectedCompany.type !== insuranceType
+      ? null
+      : form.insuranceProviderId,
+  }
+}
 
 type PersonalInformationFormProps = {
   profile: PatientProfile
@@ -35,34 +73,11 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const today = startOfDay(new Date())
-
-  const [firstName, setFirstName] = useState(profile.firstName)
-  const [lastName, setLastName] = useState(profile.lastName)
-  const [dateOfBirth, setDateOfBirth] = useState(toIsoDate(profile.dateOfBirth))
-  const [email, setEmail] = useState(profile.email)
-  const [phone, setPhone] = useState(profile.phone)
-  const [insuranceType, setInsuranceType] = useState<InsuranceType>(
-    findInsuranceCompany(profile.insurance.insuranceProviderId)?.type ?? "public",
-  )
-  const [insuranceProviderId, setInsuranceProviderId] = useState<string | null>(
-    profile.insurance.insuranceProviderId || null,
-  )
-  const [insuranceNumber, setInsuranceNumber] = useState(
-    profile.insurance.insuranceNumber,
-  )
-
-  const insuranceOptions = useMemo(() =>
-    filterInsuranceCompaniesByType(insuranceType).map((company) => ({
-      id: company.id,
-      label: company.name,
-    })), [insuranceType])
-
-  useEffect(() => {
-    const selectedCompany = findInsuranceCompany(insuranceProviderId ?? "")
-    if (selectedCompany && selectedCompany.type !== insuranceType) {
-      setInsuranceProviderId(null)
-    }
-  }, [insuranceProviderId, insuranceType])
+  const [form, setForm] = useState(() => formFromProfile(profile))
+  const insuranceOptions = filterInsuranceCompaniesByType(form.insuranceType).map((company) => ({
+    id: company.id,
+    label: company.name,
+  }))
 
   return (
     <ScrollView
@@ -76,8 +91,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
     >
       <LabeledField label={t("firstName")}>
         <Input
-          value={firstName}
-          onValueChange={setFirstName}
+          value={form.firstName}
+          onValueChange={(firstName) => {
+            setForm((current) => ({ ...current, firstName }))
+          }}
           autoComplete="given-name"
           textContentType="givenName"
           style={{ width: "100%" }}
@@ -86,8 +103,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("lastName")}>
         <Input
-          value={lastName}
-          onValueChange={setLastName}
+          value={form.lastName}
+          onValueChange={(lastName) => {
+            setForm((current) => ({ ...current, lastName }))
+          }}
           autoComplete="family-name"
           textContentType="familyName"
           style={{ width: "100%" }}
@@ -96,8 +115,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("dateOfBirth")}>
         <DateInput
-          value={dateOfBirth}
-          onValueChange={setDateOfBirth}
+          value={form.dateOfBirth}
+          onValueChange={(dateOfBirth) => {
+            setForm((current) => ({ ...current, dateOfBirth }))
+          }}
           placeholder={t("dateOfBirth")}
           title={t("selectDateOfBirth")}
           hasYearSelect
@@ -108,8 +129,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("email")}>
         <Input
-          value={email}
-          onValueChange={setEmail}
+          value={form.email}
+          onValueChange={(email) => {
+            setForm((current) => ({ ...current, email }))
+          }}
           autoComplete="email"
           keyboardType="email-address"
           textContentType="emailAddress"
@@ -119,8 +142,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("phoneNumber")}>
         <Input
-          value={phone}
-          onValueChange={setPhone}
+          value={form.phone}
+          onValueChange={(phone) => {
+            setForm((current) => ({ ...current, phone }))
+          }}
           keyboardType="phone-pad"
           autoComplete="tel"
           textContentType="telephoneNumber"
@@ -130,8 +155,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <Section title={t("insuranceType")}>
         <SegmentedControl
-          value={insuranceType}
-          onChange={setInsuranceType}
+          value={form.insuranceType}
+          onChange={(insuranceType) => {
+            setForm((current) => withInsuranceType(current, insuranceType))
+          }}
           options={[
             { id: "public", label: t("insuranceStatutory") },
             { id: "private", label: t("insurancePrivate") },
@@ -141,8 +168,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("insuranceProvider")}>
         <Select
-          value={insuranceProviderId}
-          onValueChange={setInsuranceProviderId}
+          value={form.insuranceProviderId}
+          onValueChange={(insuranceProviderId) => {
+            setForm((current) => ({ ...current, insuranceProviderId }))
+          }}
           placeholder={t("insuranceProvider")}
           style={{ width: "100%" }}
         >
@@ -154,8 +183,10 @@ function PersonalInformationForm({ profile }: PersonalInformationFormProps) {
 
       <LabeledField label={t("insuranceNumberOptional")}>
         <Input
-          value={insuranceNumber}
-          onValueChange={setInsuranceNumber}
+          value={form.insuranceNumber}
+          onValueChange={(insuranceNumber) => {
+            setForm((current) => ({ ...current, insuranceNumber }))
+          }}
           autoCapitalize="characters"
           style={{ width: "100%" }}
         />

@@ -117,7 +117,11 @@ export default function ChatThreadScreen() {
             <ChatMessageItem
               key={item.id}
               message={item}
-              isCardActionPending={resolveCard.isPending}
+              pendingActionIds={
+                resolveCard.isPending && resolveCard.variables?.messageId === item.id
+                  ? [resolveCard.variables.actionId]
+                  : []
+              }
               onCardAction={(messageId, actionId) => {
                 resolveCard.mutate({ messageId, actionId })
               }}

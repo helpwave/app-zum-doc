@@ -9,31 +9,24 @@ import {
   ThemedText,
 } from "@helpwave/hightide-native/components"
 import { CalendarDays } from "lucide-react-native"
-import { useEffect, useState } from "react"
 import { View } from "react-native"
 
 type StructuredCardProps = {
   message: StructuredCardMessage
   onAction?: (actionId: string) => void
-  isActionPending?: boolean
+  pendingActionIds?: string[]
 }
 
 export function StructuredCard({
   message,
   onAction,
-  isActionPending = false,
+  pendingActionIds = [],
 }: StructuredCardProps) {
   const { theme } = useAzdTheme()
   const tonalPrimary = theme.semantics.coloringColorVariant({colorPair: theme.colors.primary, variant: "tonal"})
   const showActions =
     !message.selectedActionId && message.actions && message.actions.length > 0
-  const [pendingActionId, setPendingActionId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!isActionPending) {
-      setPendingActionId(null)
-    }
-  }, [isActionPending])
+  const hasPendingAction = pendingActionIds.length > 0
 
   return (
     <ChatMessageBubble
@@ -82,10 +75,9 @@ export function StructuredCard({
                   key={action.id}
                   color={theme.colors.primary}
                   variant={isMainAction ? "filled" : "tonal"}
-                  disabled={isActionPending && pendingActionId !== action.id}
-                  isProcessing={isActionPending && pendingActionId === action.id}
+                  disabled={hasPendingAction && !pendingActionIds.includes(action.id)}
+                  isProcessing={pendingActionIds.includes(action.id)}
                   onPress={() => {
-                    setPendingActionId(action.id)
                     onAction?.(action.id)
                   }}
                   style={{ flex: 1 }}

@@ -9,6 +9,7 @@ import {
   MedicalProductSearchUnavailableError,
   pznFromBarcode,
   type MedicationBarcodeFormat,
+  type MedicationCatalogItem,
 } from "@app-zum-doc/utils/api"
 import { getApiClient } from "@app-zum-doc/utils/hooks"
 import { Button, ThemedText } from "@helpwave/hightide-native/components"
@@ -61,16 +62,8 @@ export default function ScanMedicationScreen() {
     router.replace("/(tabs)/medications" as Href)
   }, [router])
 
-  const finishWithMedication = useCallback((
-    catalogId: string,
-    catalogName: string,
-    catalogIngredient: string,
-  ) => {
-    setScannedMedication({
-      id: catalogId,
-      name: catalogName,
-      ingredient: catalogIngredient || undefined,
-    })
+  const finishWithMedication = useCallback((item: MedicationCatalogItem) => {
+    setScannedMedication(item)
     returnToPreviousScreen()
   }, [returnToPreviousScreen])
 
@@ -95,11 +88,7 @@ export default function ScanMedicationScreen() {
         returnToPreviousScreen()
         return
       }
-      finishWithMedication(
-        result.results.id,
-        result.results.name,
-        result.results.ingredient ?? "",
-      )
+      finishWithMedication(result.results)
     }).catch((error: unknown) => {
       scanLock.current = false
       setBusy(false)

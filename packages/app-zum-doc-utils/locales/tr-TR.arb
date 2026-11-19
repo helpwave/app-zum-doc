@@ -143,7 +143,7 @@
   "deleteMedication": "İlacı kaldır",
   "loadingMedications": "İlaçlar yükleniyor…",
   "next": "İleri",
-  "medicationSize": "{size, select, n1{N1 - küçük} n2{N2 - orta} n3{N3 - büyük} other{}}",
+  "medicationSize": "{size, select, n1{10 günlük ambalaj (N1)} n2{30 günlük ambalaj (N2)} n3{100 günlük ambalaj (N3)} other{}}",
   "@medicationSize": {
     "placeholders": {
       "size": {

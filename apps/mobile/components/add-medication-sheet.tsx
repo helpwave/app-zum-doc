@@ -5,10 +5,12 @@ import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
+  medicationSizeFromPackageSize,
   MedicalProductSearchUnavailableError,
   MedicationSizeUtils,
   type MedicationCatalogItem,
   type MedicationSize,
+  type Substance,
 } from "@app-zum-doc/utils/api"
 import { useMedicationSearch } from "@app-zum-doc/utils/hooks"
 import {
@@ -33,11 +35,20 @@ type AddMedicationSheetProps = {
     catalogId: string
     name: string
     size: MedicationSize
+    ingredient: Substance[]
   }) => void
   onClose: () => void
 }
 
 const stepCount = 2
+
+function substanceLabel(ingredient: Substance[]) {
+  const label = ingredient
+    .map((substance) => `${substance.name} ${substance.strength}`.trim())
+    .filter((value) => value.length > 0)
+    .join(", ")
+  return label.length > 0 ? label : undefined
+}
 
 export function AddMedicationSheet({
   visible,
@@ -59,6 +70,7 @@ export function AddMedicationSheet({
     null,
   )
   const [selectedSize, setSelectedSize] = useState<MedicationSize | undefined>()
+  const [openedPzn, setOpenedPzn] = useState<string | null>(null)
   const searchQuery = useMedicationSearch({
     parameters: {
       search: debouncedSearch,
@@ -80,7 +92,10 @@ export function AddMedicationSheet({
     setDebouncedSearch("")
     setPage(1)
     setItems([])
-    setSelectedSize(undefined)
+    setSelectedSize(
+      initialItem ? medicationSizeFromPackageSize(initialItem.packageSize) : undefined,
+    )
+    setOpenedPzn(null)
     if (initialItem) {
       setSelectedItem(initialItem)
       setCurrentStep(1)
@@ -107,6 +122,24 @@ export function AddMedicationSheet({
     })
   }, [page, searchQuery.data])
 
+  useEffect(() => {
+    const pzn = debouncedSearch.trim()
+    if (currentStep !== 0 || !/^\d{8}$/.test(pzn) || items.length !== 1) {
+      return
+    }
+    if (searchQuery.isFetching || openedPzn === pzn) {
+      return
+    }
+    setOpenedPzn(pzn)
+    const item = items[0]
+    if (item == null) {
+      return
+    }
+    setSelectedItem(item)
+    setSelectedSize(medicationSizeFromPackageSize(item.packageSize))
+    setCurrentStep(1)
+  }, [currentStep, debouncedSearch, items, openedPzn, searchQuery.isFetching])
+
   const close = () => {
     onClose()
   }
@@ -129,6 +162,7 @@ export function AddMedicationSheet({
         catalogId: selectedItem.id,
         name: selectedItem.name,
         size: selectedSize,
+        ingredient: selectedItem.ingredient,
       })
     }
   }
@@ -269,7 +303,7 @@ export function AddMedicationSheet({
                     return (
                       <ListActionItem
                         title={item.name}
-                        subtitle={item.ingredient ? item.ingredient : undefined}
+                        subtitle={substanceLabel(item.ingredient)}
                         color={isSelected ? theme.colors.primary : undefined}
                         leading={<ThemedIcon icon={Pill} />}
                         trailing={
@@ -277,7 +311,7 @@ export function AddMedicationSheet({
                         }
                         onPress={() => {
                           setSelectedItem(item)
-                          setSelectedSize(undefined)
+                          setSelectedSize(medicationSizeFromPackageSize(item.packageSize))
                           setCurrentStep(1)
                         }}
                         style={{
