@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react"
+import { useEffect, useId, useState } from "react"
 import {
   Animated,
   Easing,
@@ -43,7 +43,7 @@ export function AppZumDocLogo({
   accessibilityLabel,
 }: AppZumDocLogoProps) {
   const clipId: string = useId().replace(/[^a-zA-Z0-9]/g, "")
-  const progress = useRef(new Animated.Value(0)).current
+  const [progress] = useState(() => new Animated.Value(0))
   const isLoadingAnimation: boolean = animate === "loading"
 
   useEffect(() => {

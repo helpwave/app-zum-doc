@@ -7,6 +7,7 @@ export default [
       'next-env.d.ts',
       '.next/*',
       'scripts/*',
+      'out/*',
     ],
   },
   {

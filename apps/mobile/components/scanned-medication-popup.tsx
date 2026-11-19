@@ -2,7 +2,6 @@ import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import { setScannedMedication, useScannedMedication } from "@/state/scanned-medication"
 import {
-  medicationSizeFromPackageSize,
   MedicationSizeUtils,
   type MedicationSize,
 } from "@app-zum-doc/utils/api"
@@ -31,7 +30,7 @@ export function ScannedMedicationPopup() {
 
   if ((item?.id ?? null) !== sizedItemId) {
     setSizedItemId(item?.id ?? null)
-    setSelectedSize(medicationSizeFromPackageSize(item?.packageSize))
+    setSelectedSize(item?.size)
   }
 
   const close = () => {

@@ -139,7 +139,7 @@ export function createMockApiClient(
   )
   let practicePatientsState: PatientProfile[] = structuredClone(practicePatientsSeed)
   let blockedPracticePatientIds = new Set<string>()
-  const delayMs = options.delayMs ?? 550
+  const delayMs = options.delayMs ?? 500
 
   function isoDate(date: Date): string {
     const month = String(date.getMonth() + 1).padStart(2, '0')

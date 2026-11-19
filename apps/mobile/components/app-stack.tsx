@@ -22,6 +22,48 @@ export function AppStack() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="doctors"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="doctor-search"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="doctor/[id]"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="personal-information"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="medications"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="requests/index"
+          options={{
+            animation: "slide_from_right",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="scan-medication"
           options={{
             animation: "slide_from_right",

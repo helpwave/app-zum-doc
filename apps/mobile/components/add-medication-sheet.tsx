@@ -5,7 +5,6 @@ import { VirtualList } from "@/components/virtual-list"
 import { useAppTranslation } from "@/hooks/useAppTranslation"
 import { useAzdTheme } from "@/hooks/useAzdTheme"
 import {
-  medicationSizeFromPackageSize,
   MedicalProductSearchUnavailableError,
   MedicationSizeUtils,
   type MedicationCatalogItem,
@@ -15,6 +14,7 @@ import {
 import { useMedicationSearch } from "@app-zum-doc/utils/hooks"
 import {
   Button,
+  IconButton,
   ListActionItem,
   SearchBar,
   ThemedIcon,
@@ -22,8 +22,9 @@ import {
 } from "@helpwave/hightide-native/components"
 import { StyleAdapterUtils } from "@helpwave/hightide-native/theme"
 import { useDebouncer } from "@helpwave/hightide-utils/hooks"
-import { Check, Pill, RotateCcw } from "lucide-react-native"
-import { useEffect, useState } from "react"
+import { useRouter, type Href } from "expo-router"
+import { Camera, Check, Pill, RotateCcw } from "lucide-react-native"
+import { useState } from "react"
 import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
@@ -41,6 +42,49 @@ type AddMedicationSheetProps = {
 }
 
 const stepCount = 2
+
+type MedicationSheetState = {
+  search: string
+  debouncedSearch: string
+  page: number
+  items: MedicationCatalogItem[]
+  currentStep: number
+  selectedItem: MedicationCatalogItem | null
+  selectedSize: MedicationSize | undefined
+  openedPzn: string | null
+}
+
+const emptyMedicationSheetState: MedicationSheetState = {
+  search: "",
+  debouncedSearch: "",
+  page: 1,
+  items: [],
+  currentStep: 0,
+  selectedItem: null,
+  selectedSize: undefined,
+  openedPzn: null,
+}
+
+function openSinglePzn(current: MedicationSheetState) {
+  const pzn = current.debouncedSearch.trim()
+  const item = current.items[0]
+  if (
+    current.currentStep !== 0
+    || current.items.length !== 1
+    || item == null
+    || !/^\d{8}$/.test(pzn)
+    || current.openedPzn === pzn
+  ) {
+    return current
+  }
+  return {
+    ...current,
+    openedPzn: pzn,
+    selectedItem: item,
+    selectedSize: item.size,
+    currentStep: 1,
+  }
+}
 
 function substanceLabel(ingredient: Substance[]) {
   const label = ingredient
@@ -60,17 +104,22 @@ export function AddMedicationSheet({
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
   const insets = useSafeAreaInsets()
+  const router = useRouter()
   const debounceSearch = useDebouncer()
-  const [search, setSearch] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [page, setPage] = useState(1)
-  const [items, setItems] = useState<MedicationCatalogItem[]>([])
-  const [currentStep, setCurrentStep] = useState(0)
-  const [selectedItem, setSelectedItem] = useState<MedicationCatalogItem | null>(
-    null,
-  )
-  const [selectedSize, setSelectedSize] = useState<MedicationSize | undefined>()
-  const [openedPzn, setOpenedPzn] = useState<string | null>(null)
+  const [sheet, setSheet] = useState<MedicationSheetState>(initialItem ? {
+    ...emptyMedicationSheetState,
+    selectedItem: initialItem,
+    selectedSize: initialItem.size
+  } : emptyMedicationSheetState)
+  const {
+    search,
+    debouncedSearch,
+    page,
+    items,
+    currentStep,
+    selectedItem,
+    selectedSize,
+  } = sheet
   const searchQuery = useMedicationSearch({
     parameters: {
       search: debouncedSearch,
@@ -79,66 +128,38 @@ export function AddMedicationSheet({
     enabled: visible && currentStep === 0,
     retry: false,
   })
+  const [prevSearchData, setPrevSearchData] = useState(searchQuery.data)
+  if(searchQuery.data !== prevSearchData) {
+    const pageData = searchQuery.data
+    setPrevSearchData(pageData)
+    if (pageData) {
+      setSheet((current) => {
+        if (current.page !== pageData.page) {
+          return current
+        }
+        const withItems = pageData.page === 1
+          ? { ...current, items: pageData.results }
+          : {
+            ...current,
+            items: [
+              ...current.items,
+              ...pageData.results.filter((item) => {
+                return !current.items.some((existing) => existing.id === item.id)
+              }),
+            ],
+          }
+        if (searchQuery.isFetching) {
+          return withItems
+        }
+        return openSinglePzn(withItems)
+      })
+    }
+  }
+
   const showInitialLoading = searchQuery.isPending && page === 1 && items.length === 0
   const isLastStep = currentStep === stepCount - 1
   const canGoForward =
     currentStep === 0 ? selectedItem != null : selectedSize != null
-
-  useEffect(() => {
-    if (!visible) {
-      return
-    }
-    setSearch("")
-    setDebouncedSearch("")
-    setPage(1)
-    setItems([])
-    setSelectedSize(
-      initialItem ? medicationSizeFromPackageSize(initialItem.packageSize) : undefined,
-    )
-    setOpenedPzn(null)
-    if (initialItem) {
-      setSelectedItem(initialItem)
-      setCurrentStep(1)
-      return
-    }
-    setSelectedItem(null)
-    setCurrentStep(0)
-  }, [visible, initialItem])
-
-  useEffect(() => {
-    const pageData = searchQuery.data
-    if (!pageData || pageData.page !== page) {
-      return
-    }
-    setItems((current) => {
-      if (page === 1) {
-        return pageData.results
-      }
-      const seen = new Set(current.map((item) => item.id))
-      return [
-        ...current,
-        ...pageData.results.filter((item) => !seen.has(item.id)),
-      ]
-    })
-  }, [page, searchQuery.data])
-
-  useEffect(() => {
-    const pzn = debouncedSearch.trim()
-    if (currentStep !== 0 || !/^\d{8}$/.test(pzn) || items.length !== 1) {
-      return
-    }
-    if (searchQuery.isFetching || openedPzn === pzn) {
-      return
-    }
-    setOpenedPzn(pzn)
-    const item = items[0]
-    if (item == null) {
-      return
-    }
-    setSelectedItem(item)
-    setSelectedSize(medicationSizeFromPackageSize(item.packageSize))
-    setCurrentStep(1)
-  }, [currentStep, debouncedSearch, items, openedPzn, searchQuery.isFetching])
 
   const close = () => {
     onClose()
@@ -149,12 +170,15 @@ export function AddMedicationSheet({
       close()
       return
     }
-    setCurrentStep((step) => step - 1)
+    setSheet((current) => ({
+      ...current,
+      currentStep: current.currentStep - 1,
+    }))
   }
 
   const goForward = () => {
     if (currentStep === 0 && selectedItem != null) {
-      setCurrentStep(1)
+      setSheet((current) => ({ ...current, currentStep: 1 }))
       return
     }
     if (selectedItem != null && selectedSize != null) {
@@ -168,15 +192,21 @@ export function AddMedicationSheet({
   }
 
   const updateSearch = (value: string, immediate = false) => {
-    setSearch(value)
-    setPage(1)
+    setSheet((current) => ({
+      ...current,
+      search: value,
+      page: 1,
+      ...(immediate ? { debouncedSearch: value } : {}),
+    }))
     if (immediate) {
-      setDebouncedSearch(value)
       return
     }
     debounceSearch(() => {
-      setPage(1)
-      setDebouncedSearch(value)
+      setSheet((current) => ({
+        ...current,
+        page: 1,
+        debouncedSearch: value,
+      }))
     })
   }
 
@@ -207,19 +237,49 @@ export function AddMedicationSheet({
             }}
           />
         </View>
-        <ThemedText
+        <View
           style={{
-            ...theme.typography.heading.md,
-            fontWeight: theme.fontWeights.bold,
-            textAlign: "center",
-            paddingHorizontal: theme.spacing.lg,
+            justifyContent: "center",
+            minHeight: theme.semantics.touchTargetSize({}),
             marginBottom: theme.spacing.lg,
           }}
         >
-          {currentStep === 0
-            ? t("addMedication")
-            : t("selectMedicationSize")}
-        </ThemedText>
+          <ThemedText
+            style={{
+              ...theme.typography.heading.md,
+              fontWeight: theme.fontWeights.bold,
+              textAlign: "center",
+              paddingHorizontal: theme.spacing.lg + theme.semantics.touchTargetSize({}),
+            }}
+          >
+            {currentStep === 0
+              ? t("addMedication")
+              : t("selectMedicationSize")}
+          </ThemedText>
+          {currentStep === 0 ? (
+            <View
+              style={{
+                position: "absolute",
+                right: theme.spacing.md,
+                top: 0,
+                bottom: 0,
+                justifyContent: "center",
+              }}
+            >
+              <IconButton
+                icon={Camera}
+                size="sm"
+                variant="foreground"
+                color={theme.colors.surfaceInverse}
+                accessibilityLabel={t("scanMedication")}
+                onPress={() => {
+                  onClose()
+                  router.push("/scan-medication" as Href)
+                }}
+              />
+            </View>
+          ) : null}
+        </View>
         <View style={{ flex: 1 }}>
           {currentStep === 0 ? (
             <>
@@ -295,7 +355,7 @@ export function AddMedicationSheet({
                   style={{ marginTop: theme.spacing.md, flex: 1 }}
                   onEndReached={() => {
                     if (searchQuery.data?.hasMore && !searchQuery.isFetching) {
-                      setPage((value) => value + 1)
+                      setSheet((current) => ({ ...current, page: current.page + 1 }))
                     }
                   }}
                   renderItem={({ item }) => {
@@ -310,9 +370,12 @@ export function AddMedicationSheet({
                           isSelected ? <ThemedIcon icon={Check} /> : undefined
                         }
                         onPress={() => {
-                          setSelectedItem(item)
-                          setSelectedSize(medicationSizeFromPackageSize(item.packageSize))
-                          setCurrentStep(1)
+                          setSheet((current) => ({
+                            ...current,
+                            selectedItem: item,
+                            selectedSize: item.size,
+                            currentStep: 1,
+                          }))
                         }}
                         style={{
                           ...StyleAdapterUtils.padding({
@@ -351,7 +414,7 @@ export function AddMedicationSheet({
                       isSelected ? <ThemedIcon icon={Check} /> : undefined
                     }
                     onPress={() => {
-                      setSelectedSize(size)
+                      setSheet((current) => ({ ...current, selectedSize: size }))
                     }}
                     style={{
                       ...StyleAdapterUtils.padding({

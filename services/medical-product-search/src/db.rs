@@ -262,9 +262,9 @@ fn product_from_row(row: &tokio_postgres::Row) -> Product {
 
 fn package_size(value: Option<String>) -> Option<String> {
     match value.as_deref().map(str::trim) {
-        Some("N1" | "n1") => Some("N1".to_owned()),
-        Some("N2" | "n2") => Some("N2".to_owned()),
-        Some("N3" | "n3") => Some("N3".to_owned()),
+        Some("N1" | "n1") => Some("n1".to_owned()),
+        Some("N2" | "n2") => Some("n2".to_owned()),
+        Some("N3" | "n3") => Some("n3".to_owned()),
         _ => None,
     }
 }

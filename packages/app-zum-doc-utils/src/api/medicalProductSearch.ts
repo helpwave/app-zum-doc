@@ -1,8 +1,8 @@
+import { MedicationSizeUtils, type MedicationSize } from './enums'
 import type {
   MedicationCatalogItem,
   MedicationPznSearch,
   MedicationSearchPage,
-  PackageSize,
   Substance
 } from './medication'
 
@@ -21,7 +21,7 @@ type ServiceProduct = {
   type: string,
   name: string,
   ingredient: Substance[] | null,
-  packageSize?: PackageSize | null,
+  packageSize?: string | null,
 }
 
 type ServiceNameSearch = {
@@ -67,17 +67,25 @@ function serviceUrl(baseUrl: string, path: string) {
   return new URL(path, normalized)
 }
 
+function toMedicationSize(value: string | null | undefined): MedicationSize | undefined {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+  const normalized = value.trim().toLowerCase()
+  if (MedicationSizeUtils.typeCheck(normalized)) {
+    return normalized
+  }
+  return undefined
+}
+
 function toCatalogItem(product: ServiceProduct): MedicationCatalogItem {
-  const packageSize = product.packageSize === 'N1' || product.packageSize === 'N2' || product.packageSize === 'N3'
-    ? product.packageSize
-    : undefined
   return {
     id: product.id,
     pzn: product.pzn,
     kind: product.type,
     name: product.name,
     ingredient: Array.isArray(product.ingredient) ? product.ingredient : [],
-    packageSize,
+    size: toMedicationSize(product.packageSize),
   }
 }
 

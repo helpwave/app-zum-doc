@@ -19,7 +19,7 @@ import {
   type BarcodeType,
 } from "expo-camera"
 import { useFocusEffect, useRouter, type Href } from "expo-router"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { View } from "react-native"
 
 const barcodeTypes: BarcodeType[] = ["code39", "datamatrix"]
@@ -59,7 +59,7 @@ export default function ScanMedicationScreen() {
       router.back()
       return
     }
-    router.replace("/(tabs)/medications" as Href)
+    router.replace("/medications" as Href)
   }, [router])
 
   const finishWithMedication = useCallback((item: MedicationCatalogItem) => {
@@ -101,7 +101,9 @@ export default function ScanMedicationScreen() {
   }, [finishWithMedication, returnToPreviousScreen, t])
 
   const acceptBarcodeRef = useRef(acceptBarcode)
-  acceptBarcodeRef.current = acceptBarcode
+  useEffect(() => {
+    acceptBarcodeRef.current = acceptBarcode
+  }, [acceptBarcode])
 
   const openScanner = useCallback(() => {
     if (!CameraView.isModernBarcodeScannerAvailable) {
@@ -130,7 +132,6 @@ export default function ScanMedicationScreen() {
     }
     const subscription = CameraView.onModernBarcodeScanned(({ type, data, raw }) => {
       void CameraView.dismissScanner()
-      console.log("type", type)
       acceptBarcodeRef.current(
         type,
         typeof data === "string" ? data : "",

@@ -19,8 +19,60 @@ import {
 } from "@helpwave/hightide-native/components"
 import { useLocalization } from "@helpwave/hightide-native/global-contexts"
 import { useLocalSearchParams, useRouter, type Href } from "expo-router"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native"
+
+type ReferralForm = {
+  doctorId: string | null
+  profileId: string | null
+  specialization: string | null
+  reason: string
+  didPrefillReorder: boolean
+}
+
+type ReferralSource = {
+  doctorId: string | null
+  profiles: { id: string }[]
+  reorder: {
+    doctorsOffice: { id: string }
+    profileId: string
+    specialization: string
+    reason: string
+  } | undefined
+}
+
+const emptyReferralForm: ReferralForm = {
+  doctorId: null,
+  profileId: null,
+  specialization: null,
+  reason: "",
+  didPrefillReorder: false,
+}
+
+function applyReferralSources(
+  current: ReferralForm,
+  previous: ReferralSource,
+  next: ReferralSource,
+) {
+  if (next.reorder && next.reorder !== previous.reorder && !current.didPrefillReorder) {
+    return {
+      doctorId: next.reorder.doctorsOffice.id,
+      profileId: next.reorder.profileId,
+      specialization: next.reorder.specialization,
+      reason: next.reorder.reason,
+      didPrefillReorder: true,
+    }
+  }
+  let form = current
+  if (next.doctorId && next.doctorId !== previous.doctorId) {
+    form = { ...form, doctorId: next.doctorId }
+  }
+  const onlyProfile = next.profiles.length === 1 ? next.profiles[0] : undefined
+  if (next.profiles !== previous.profiles && onlyProfile) {
+    form = { ...form, profileId: onlyProfile.id }
+  }
+  return form
+}
 
 export default function CreateReferralScreen() {
   const t = useAppTranslation()
@@ -49,15 +101,29 @@ export default function CreateReferralScreen() {
     [profilesQuery.data],
   )
 
-  const [doctorId, setDoctorId] = useState<string | null>(initialDoctorId)
-  const [profileId, setProfileId] = useState<string | null>(null)
-  const [specialization, setSpecialization] = useState<string | null>(null)
-  const [reason, setReason] = useState("")
-  const [didPrefillReorder, setDidPrefillReorder] = useState(false)
+  const source: ReferralSource = {
+    doctorId: initialDoctorId,
+    profiles,
+    reorder: reorderQuery.data,
+  }
+  const [form, setForm] = useState(() => applyReferralSources(
+    emptyReferralForm,
+    { doctorId: null, profiles: [], reorder: undefined },
+    source,
+  ))
+  const [previousReferralSource, setPreviousReferralSource] = useState(source)
+  if (
+    source.doctorId !== previousReferralSource.doctorId
+    || source.profiles !== previousReferralSource.profiles
+    || source.reorder !== previousReferralSource.reorder
+  ) {
+    setPreviousReferralSource(source)
+    setForm((current) => applyReferralSources(current, previousReferralSource, source))
+  }
 
   const officeQuery = useDoctorsOffice({
-    parameters: doctorId === null ? undefined : {
-      id: doctorId,
+    parameters: form.doctorId === null ? undefined : {
+      id: form.doctorId,
       locale,
     }
   })
@@ -92,42 +158,18 @@ export default function CreateReferralScreen() {
     [specializationsQuery.data],
   )
 
-  useEffect(() => {
-    if (initialDoctorId) {
-      setDoctorId(initialDoctorId)
-    }
-  }, [initialDoctorId])
-
-  useEffect(() => {
-    if (profiles.length === 1 && profiles[0]) {
-      setProfileId(profiles[0].id)
-    }
-  }, [profiles])
-
-  useEffect(() => {
-    if (didPrefillReorder || !reorderQuery.data) {
-      return
-    }
-    const referral = reorderQuery.data
-    setDoctorId(referral.doctorsOffice.id)
-    setProfileId(referral.profileId)
-    setSpecialization(referral.specialization)
-    setReason(referral.reason)
-    setDidPrefillReorder(true)
-  }, [didPrefillReorder, reorderQuery.data])
-
   const canSubmit =
-    doctorId != null
-    && profileId != null
-    && specialization != null
-    && specialization.trim().length > 0
-    && reason.trim().length > 0
+    form.doctorId != null
+    && form.profileId != null
+    && form.specialization != null
+    && form.specialization.trim().length > 0
+    && form.reason.trim().length > 0
 
   const isPending =
     homeQuery.isPending
     || profilesQuery.isPending
     || specializationsQuery.isPending
-    || (reorderFrom != null && reorderQuery.isPending && !didPrefillReorder)
+    || (reorderFrom != null && reorderQuery.isPending && !form.didPrefillReorder)
 
   return (
     <KeyboardAvoidingView
@@ -139,6 +181,7 @@ export default function CreateReferralScreen() {
     >
       <AppBar
         title={t("orderReferral")}
+        showBackNavigation
       />
       <QueryState
         isPending={isPending}
@@ -175,8 +218,10 @@ export default function CreateReferralScreen() {
         >
           <LabeledField label={t("doctor")}>
             <Select
-              value={doctorId}
-              onValueChange={setDoctorId}
+              value={form.doctorId}
+              onValueChange={(doctorId) => {
+                setForm((current) => ({ ...current, doctorId }))
+              }}
               placeholder={t("selectPractice")}
               style={{ width: "100%" }}
             >
@@ -188,8 +233,10 @@ export default function CreateReferralScreen() {
 
           <LabeledField label={t("patient")}>
             <Select
-              value={profileId}
-              onValueChange={setProfileId}
+              value={form.profileId}
+              onValueChange={(profileId) => {
+                setForm((current) => ({ ...current, profileId }))
+              }}
               placeholder={t("patient")}
               style={{ width: "100%" }}
               readOnly={profileOptions.length < 2}
@@ -202,8 +249,10 @@ export default function CreateReferralScreen() {
 
           <LabeledField label={t("referralToSpecialist")}>
             <Select
-              value={specialization}
-              onValueChange={setSpecialization}
+              value={form.specialization}
+              onValueChange={(specialization) => {
+                setForm((current) => ({ ...current, specialization }))
+              }}
               placeholder={t("selectSpecialization")}
               style={{ width: "100%" }}
             >
@@ -215,8 +264,10 @@ export default function CreateReferralScreen() {
 
           <LabeledField label={t("referralReason")}>
             <Textarea
-              value={reason}
-              onValueChange={setReason}
+              value={form.reason}
+              onValueChange={(reason) => {
+                setForm((current) => ({ ...current, reason }))
+              }}
               placeholder={t("referralReasonPlaceholder")}
             />
           </LabeledField>
@@ -225,16 +276,16 @@ export default function CreateReferralScreen() {
             disabled={!canSubmit}
             isProcessing={createReferral.isPending}
             onPress={() => {
-              if (doctorId == null || profileId == null || specialization == null) {
+              if (form.doctorId == null || form.profileId == null || form.specialization == null) {
                 return
               }
               void createReferral.mutateAsync({
                 locale,
                 input: {
-                  doctorsOfficeId: doctorId,
-                  profileId,
-                  specialization,
-                  reason,
+                  doctorsOfficeId: form.doctorId,
+                  profileId: form.profileId,
+                  specialization: form.specialization,
+                  reason: form.reason,
                 },
               }).then((referral) => {
                 router.replace({

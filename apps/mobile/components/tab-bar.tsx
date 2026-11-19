@@ -18,20 +18,8 @@ const tabIcons = {
 type VisibleTab = keyof typeof tabIcons
 
 function highlightedTab(routeName: string): VisibleTab | null {
-  if (
-    routeName === "index"
-    || routeName === "doctor/[id]"
-    || routeName === "doctors"
-    || routeName === "doctor-search"
-    || routeName === "requests"
-  ) {
-    return "index"
-  }
-  if (routeName === "chat") {
-    return "chat"
-  }
-  if (routeName === "profile" || routeName === "personal-information" || routeName === "medications") {
-    return "profile"
+  if (routeName === "index" || routeName === "chat" || routeName === "profile") {
+    return routeName
   }
   return null
 }

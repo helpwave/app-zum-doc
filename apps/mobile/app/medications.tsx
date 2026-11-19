@@ -14,19 +14,16 @@ import {
   Button,
   Card,
   IconButton,
-  ListActionItem,
   ThemedIcon,
   ThemedText,
 } from "@helpwave/hightide-native/components"
-import { useRouter, type Href } from "expo-router"
-import { Camera, CirclePlus, Trash, TriangleAlert } from "lucide-react-native"
+import { CirclePlus, Trash, TriangleAlert } from "lucide-react-native"
 import { useState } from "react"
 import { ScrollView, View } from "react-native"
 
 export default function MedicationsScreen() {
   const t = useAppTranslation()
   const { theme } = useAzdTheme()
-  const router = useRouter()
   const medicationsQuery = usePatientMedications()
   const addMedication = useAddPatientMedication()
   const removeMedication = useRemovePatientMedication()
@@ -48,13 +45,13 @@ export default function MedicationsScreen() {
         title={t("medicationList")}
         trailing={
           <IconButton
-            icon={Camera}
+            icon={CirclePlus}
             size="sm"
             variant="foreground"
             color={theme.colors.surfaceInverse}
-            accessibilityLabel={t("scanMedication")}
+            accessibilityLabel={t("addMedication")}
             onPress={() => {
-              router.push("/scan-medication" as Href)
+              setSheetVisible(true)
             }}
           />
         }
@@ -76,21 +73,6 @@ export default function MedicationsScreen() {
           }}
           showsVerticalScrollIndicator={false}
         >
-          <ListActionItem
-            title={t("addMedication")}
-            color={theme.colors.primary}
-            leading={<ThemedIcon icon={CirclePlus} />}
-            itemStyle={{
-              borderRadius: theme.borderRadius.lg,
-            }}
-            titleStyle={{
-              fontWeight: theme.fontWeights.semibold,
-            }}
-            onPress={() => {
-              setSheetVisible(true)
-            }}
-          />
-
           {showHint ? (
             <Card
               style={{
@@ -168,6 +150,7 @@ export default function MedicationsScreen() {
       </QueryState>
 
       <AddMedicationSheet
+        key={sheetVisible ? "open" : "closed"}
         visible={sheetVisible}
         isSubmitting={addMedication.isPending}
         onSubmit={(selection) => {
